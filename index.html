@@ -160,8 +160,10 @@ button { font: inherit; cursor: pointer; }
 .orb, .spark { border-radius: 50%; }
 .num { position: fixed; font-weight: 900; font-size: 24px; -webkit-text-stroke: 1px #2a1d16; text-shadow: 0 2px 0 #2a1d16; white-space: nowrap; }
 .num.big { font-size: 34px; }
-.pop { position: fixed; left: 50%; top: 42%; font-size: 54px; font-weight: 900; color: var(--gold); -webkit-text-stroke: 2px #5a3300;
-  text-shadow: 0 4px 0 #5a3300, 0 0 30px #ffcf4a99; white-space: nowrap; }
+.pop { position: fixed; left: 50%; top: 42%; font-size: min(54px, 10vw); line-height: 1; font-weight: 900; color: var(--gold); -webkit-text-stroke: 2px #5a3300;
+  text-shadow: 0 4px 0 #5a3300, 0 0 30px #ffcf4a99; text-align: center; width: max-content;
+  /* /1.2: the pop animation overshoots to scale(1.2) */
+  max-width: calc((100vw - 32px) / 1.2); }
 #vignette { position: fixed; inset: 0; pointer-events: none; z-index: 49; box-shadow: inset 0 0 120px 40px #e04a3a; opacity: 0; }
 
 /* overlays */
@@ -396,13 +398,13 @@ const ENEMY = {
   gremlin:    { name: 'Гремлин-вор', art: 'gremlin', hp: 20, flee: 12, cycle: [{ t: 'atk', v: 4, turns: 2 }, { t: 'steal', v: 1, turns: 2 }] },
   frost:      { name: 'Инейный дух', art: 'ghost', hp: 24, cycle: [{ t: 'freeze', v: 3, turns: 2 }, { t: 'atk', v: 5, turns: 2 }] },
   shroom:     { name: 'Грибница', art: 'shroom', hp: 26, cycle: [{ t: 'spores', v: 2, turns: 2 }, { t: 'atk', v: 6, turns: 3 }] },
-  slimeKing:  { name: 'Король слизней', art: 'slimeKing', hp: 42, boss: true,
+  slimeKing:  { name: 'Король слизней', art: 'slimeKing', hp: 36, boss: true,
                 cycle: [{ t: 'atk', v: 7, turns: 3 }, { t: 'spores', v: 2, turns: 2 }, { t: 'atk', v: 9, turns: 3 }] },
-  frostQueen: { name: 'Ледяная королева', art: 'queen', hp: 55, boss: true,
+  frostQueen: { name: 'Ледяная королева', art: 'queen', hp: 40, boss: true,
                 cycle: [{ t: 'freeze', v: 3, turns: 2 }, { t: 'atk', v: 8, turns: 3 }, { t: 'shield', v: 8, turns: 2 }, { t: 'atk', v: 10, turns: 3 }] },
-  trickster:  { name: 'Алхимик-обманщик', art: 'wizard', hp: 70, boss: true,
+  trickster:  { name: 'Алхимик-обманщик', art: 'wizard', hp: 44, boss: true,
                 cycle: [{ t: 'atk', v: 8, turns: 3 }, { t: 'swap', turns: 2 }, { t: 'shield', v: 10, turns: 2 }, { t: 'buff', turns: 1 }, { t: 'atk', v: 7, turns: 3 }] },
-  golemKing:  { name: 'Древний голем', art: 'golemKing', hp: 80, boss: true,
+  golemKing:  { name: 'Древний голем', art: 'golemKing', hp: 48, boss: true,
                 cycle: [{ t: 'stone', v: 3, turns: 2 }, { t: 'atk', v: 12, turns: 4 }, { t: 'shield', v: 12, turns: 2 }] },
 };
 const BOSSES = ['slimeKing', 'frostQueen', 'trickster', 'golemKing'];
@@ -415,16 +417,17 @@ function levelStages(L) {
 }
 const coinsFor = (boss, L) => (boss ? 15 + 5 * L : 4 + L);
 // Balance knobs (tuned with the headless bot). Per-level growth is multiplied by t = level − 1;
-// every boss before a level's last one is a weakened herald (earlyBoss × HP).
-const BAL = { regHp: 0.1, bossHp: 0.1, regAtk: 3, bossAtk: 2, earlyBoss: 1, regHeal: 0, bossHeal: 0.25 };
+// every boss before a level's last one is a herald: earlyBoss × HP and no rage. Rage starts at rageAt of max HP.
+const BAL = { hp: 50, regHp: 0.4, bossHp: 0.45, regAtk: 2, bossAtk: 1.5, earlyBoss: 0.7, heraldCalm: true, rage: 1, rageAt: 0.33,
+  regHeal: 0.1, bossHeal: 0.25, labGrow: 2.1 };
 
 // ================= meta (between levels) =================
 const LAB = {
-  hp:    { icon: '🧴', name: 'Прочная склянка', max: 6, base: 20, eff: t => `+${5 * t} к максимуму здоровья` },
-  fire:  { icon: '🔥', name: 'Эссенция огня', max: 5, base: 25, eff: t => `огонь: +${t} урона` },
-  water: { icon: '💧', name: 'Эссенция воды', max: 5, base: 25, eff: t => `вода: +${t} щита` },
-  life:  { icon: '✚', name: 'Эссенция жизни', max: 5, base: 25, eff: t => `жизнь: +${t} лечения` },
-  cork:  { icon: '🍾', name: 'Пробка мастера', max: 4, base: 30, eff: t => `щит ${3 * t} в начале каждого боя` },
+  hp:    { icon: '🧴', name: 'Прочная склянка', max: 10, base: 20, eff: t => `+${5 * t} к максимуму здоровья` },
+  fire:  { icon: '🔥', name: 'Эссенция огня', max: 8, base: 25, eff: t => `огонь: +${t} урона` },
+  water: { icon: '💧', name: 'Эссенция воды', max: 8, base: 25, eff: t => `вода: +${t} щита` },
+  life:  { icon: '✚', name: 'Эссенция жизни', max: 8, base: 25, eff: t => `жизнь: +${t} лечения` },
+  cork:  { icon: '🍾', name: 'Пробка мастера', max: 6, base: 30, eff: t => `щит ${3 * t} в начале каждого боя` },
   belt:  { icon: '🎒', name: 'Пояс зелий', max: 1, base: 60, eff: () => 'третье зелье на старте (случайное)' },
   sense: { icon: '👁', name: 'Чутьё', max: 1, base: 180, eff: () => '4 варианта выбора вместо 3' },
   slot:  { icon: '➕', name: 'Лишний слот', max: 2, base: 250, eff: t => `+${t} пустых колб в каждом бою` },
@@ -434,7 +437,7 @@ const firstLaunch = !store('concept.meta');
 let meta = Object.assign(META0(), store('concept.meta') || {});
 const saveMeta = () => store('concept.meta', meta);
 const labTier = id => meta.lab[id] || 0;
-const labCost = (id, t = labTier(id)) => Math.round(LAB[id].base * 1.6 ** t);
+const labCost = (id, t = labTier(id)) => Math.round(LAB[id].base * BAL.labGrow ** t);
 try { localStorage.removeItem('concept.best'); } catch (e) { /* storage blocked */ }
 function plural(n, one, few, many) {
   const a = n % 10, b = n % 100;
@@ -640,7 +643,7 @@ function log(msg) { F.log.unshift(msg); F.log.length = Math.min(F.log.length, 2)
 
 // Everything in `run` lives for one level attempt; only `meta` survives it.
 function newRun(L) {
-  const maxHp = 50 + 5 * labTier('hp');
+  const maxHp = BAL.hp + 5 * labTier('hp');
   const potions = ['undo', 'heal'];
   for (let i = 0; i < labTier('belt'); i++) potions.push(pick(Object.keys(POTIONS)));
   run = {
@@ -673,13 +676,13 @@ function makeMonster(key) {
   const hp = Math.round(d.hp * (1 + (d.boss ? BAL.bossHp : BAL.regHp) * t) * (early ? BAL.earlyBoss : 1));
   const atkBonus = Math.floor(t / (d.boss ? BAL.bossAtk : BAL.regAtk));
   const cycle = d.cycle.map(c => (c.t === 'atk' ? Object.assign({}, c, { v: c.v + atkBonus }) : c));
-  const m = { key, d, hp, maxHp: hp, cycle, block: 0, poison: [], frozen: 0, buff: 1, ci: 0, intent: null, counter: 0, rage: false, first: true };
+  const m = { key, d, hp, maxHp: hp, cycle, block: 0, poison: [], frozen: 0, buff: 1, ci: 0, intent: null, counter: 0, rage: false, first: true, herald: early && BAL.heraldCalm };
   setIntent(m);
   return m;
 }
 function setIntent(m) {
   const it = m.cycle[m.ci++ % m.cycle.length];
-  let c = it.turns + run.mods.slow - (m.rage ? 1 : 0);
+  let c = it.turns + run.mods.slow - (m.rage ? BAL.rage : 0);
   if (m.first && has('hourglass')) c++;
   m.first = false;
   m.intent = it;
@@ -862,7 +865,7 @@ function hitMonster(dmg, color = '#ffd9d2') {
   if (real) floatNum(monEl, '−' + real, color, real >= 12);
   animClass(monEl, 'hurt', 360);
   Snd.play('hit');
-  if (!m.rage && m.d.boss && m.hp > 0 && m.hp <= m.maxHp / 2) {
+  if (!m.rage && m.d.boss && m.hp > 0 && m.hp <= m.maxHp * BAL.rageAt && !m.herald) {
     m.rage = true;
     bigPop('ЯРОСТЬ!', '#ff6b5b');
     shakeEl($('stage'), 10);
@@ -1349,7 +1352,7 @@ function levelWon() {
   const o = overlay(`<div class="center"><h2>Уровень ${L} пройден! 🎉</h2>
     <div class="avatars"><div class="bossav">${enemySVG(F.monster.d.art)}</div></div>
     <p>Все ${n} ${plural(n, 'этап', 'этапа', 'этапов')} позади. Врагов побеждено: ${run.stats.kills}, лучшая серия: ${run.stats.bestCombo}.</p>
-    <p>За врагов: <b>+${run.coins} 🪙</b>${bonus ? ` · первое прохождение: <b>+${bonus} 🪙</b>` : ''}<br>Всего: <b>🪙 <span class="coinv">${meta.coins}</span></b></p>
+    <p>За врагов: <b>+${run.coins}&nbsp;🪙</b>${bonus ? `<br>Первое прохождение: <b>+${bonus}&nbsp;🪙</b>` : ''}<br>Всего: <b>🪙&nbsp;<span class="coinv">${meta.coins}</span></b></p>
     ${first ? `<p>Открыт уровень ${L + 1}.</p>` : ''}
     <div class="row" style="justify-content:center;margin-top:10px">
       <button class="btn" data-a="next">Следующий уровень</button>
@@ -1372,7 +1375,7 @@ function levelLost() {
     <div class="avatars"><div>${enemySVG(F.monster.d.art)}</div></div>
     <p>Уровень ${L}: этап <b>${reached}</b> из ${n} — ${F.monster.d.name}.</p>
     <p>🚩 Рекорд: этап ${meta.best[L]} из ${n}${rec ? ' — <b>новый рекорд!</b>' : ''}</p>
-    <p>Монеты за попытку: <b>+${run.coins} 🪙</b> — они твои.<br>Всего: <b>🪙 <span class="coinv">${meta.coins}</span></b></p>
+    <p>Монеты за попытку: <b>+${run.coins}&nbsp;🪙</b> — они твои.<br>Всего: <b>🪙&nbsp;<span class="coinv">${meta.coins}</span></b></p>
     <p data-hint>${labHint()}</p>
     <div class="row" style="justify-content:center;margin-top:10px">
       <button class="btn" data-a="lab">⚗ Лаборатория</button>
@@ -1733,7 +1736,7 @@ function rulesHtml() {
     <p>Закрытия подряд — <b>серия</b>: ×1 → ×1.5 → ×2 → ×3. Если упавшие слои сами закрыли колбу — <b>каскад</b>, ход бесплатный.</p>
     <p>Над врагом — что он сделает и через сколько ходов. Мусор льётся только на такой же мусор или в пустую колбу: 🪨 полная колба камней рассыпается (камни ещё и бьются, когда закрывается соседняя колба), 🫧 полная колба слизи растворяется (+3 щита).</p>
     <p>🚰 Слить — колба пустеет (ход и −3 ❤). Если ходов нет — <b>тупик</b>, слив бесплатный.</p>
-    <p><b>Уровень N</b> — 2N+1 этапов, из них N боссов, последний — босс. Здоровье переходит между этапами. После рядового врага — модификатор или находка, после босса — +25% ❤ и реликвия. Всё это сгорает в конце уровня.</p>
+    <p><b>Уровень N</b> — 2N+1 этапов, из них N боссов, последний — босс. Здоровье переходит между этапами. После рядового врага — +10% ❤ и модификатор или находка, после босса — +25% ❤ и реликвия. Боссы до последнего — вестники: слабее и без ярости. Всё это сгорает в конце уровня.</p>
     <p>Проиграл — переиграй уровень. 🪙 монеты за врагов остаются: трать их в <b>Лаборатории</b> на вечные улучшения. 🚩 на полоске этапов — твой рекорд.</p></div>`;
 }
 function showRules() { Snd.init(); overlay(`<h2>Как играть</h2>${rulesHtml()}<button class="btn" data-close>Понятно</button>`); }
