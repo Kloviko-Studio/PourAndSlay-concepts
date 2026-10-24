@@ -185,11 +185,17 @@ test('enemy ops: addStones only into non-frozen tubes with space', () => {
 test('enemy ops: stealTop skips junk tops and frozen tubes', () => {
   const rng = Rng.make(2);
   for (let k = 0; k < 30; k++) {
-    const F = mk([['a', 'stone'], ['b', 'c'], { layers: ['d'], frozen: 1 }, []]);
+    const F = mk([['a', 'stone'], ['b', 'c'], { layers: ['d'], frozen: 1 }, []], { minLayers: 0 });
     assert.deepStrictEqual(Fd.stealTop(F, rng), { tube: 1, color: 'c' });
     assert.deepStrictEqual(F.tubes[1].layers, ['b']);
   }
   assert.strictEqual(Fd.stealTop(mk([['a', 'slime'], []]), rng), null);
+  // A thin field gets an empty tube refilled from the queue, so a thief can't empty it.
+  const T = mk([['a'], [], []], { minLayers: 4 });
+  const r = Fd.stealTop(T, rng);
+  assert.strictEqual(r.tube, 0);
+  assert.strictEqual(r.refilled, 0);
+  assert.deepStrictEqual(T.tubes[0].layers, ['fire', 'fire', 'fire', 'fire']);
 });
 
 test('enemy ops: swapColors, freezeRandom, tickFrozen, sporeQueue', () => {

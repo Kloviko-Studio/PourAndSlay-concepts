@@ -132,7 +132,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const m = enemyMeta();
     if (!m) return;
     const mon = monEl();
-    mon.querySelector('.bt-mon-body').innerHTML = UI.enemyArt(m.e.id, { rage: S.vm.rage });
+    mon.querySelector('.bt-mon-body').innerHTML = UI.enemyArt(m.e.id, { rage: S.vm.rage, patched: m.e.patched });
     mon.classList.remove('dead', 'flee');
     mon.classList.toggle('gone', m.e && S.R.battle.status !== 'active' && S.R.battle.status !== 'lost');
     if (enter) Fx.animClass(mon, 'enter', 560);
@@ -159,8 +159,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     $('.bt-einfo .bt-bar').querySelectorAll('.bt-mark').forEach(x => x.remove());
     const hint = $('.bt-ehint');
     let mark = null;
-    if (pv.fleeAt != null && pv.fleeAt > 0) { mark = { at: pv.fleeAt, cls: '' }; hint.textContent = `сбежит при ${pv.fleeAt} HP и вернётся позже`; hint.dataset.tip = '<b>Встреча с боссом</b><br>Сбей HP до отметки — босс сбежит и вернётся на следующей встрече с остатком здоровья.'; }
-    else if (pv.rageAt != null && !vm.rage) { mark = { at: pv.rageAt, cls: ' rage' }; hint.textContent = `ярость при ${pv.rageAt} HP`; hint.dataset.tip = '<b>Ярость</b><br>Раненый финальный босс действует на 1 ход раньше.'; }
+    if (pv.rageAt != null && !vm.rage) { mark = { at: pv.rageAt, cls: ' rage' }; hint.textContent = `ярость при ${pv.rageAt} HP`; hint.dataset.tip = '<b>Ярость</b><br>Раненый финальный босс действует на 1 ход раньше.'; }
     else { hint.textContent = ''; delete hint.dataset.tip; }
     if (mark && vm.eMax) {
       const i = document.createElement('i');
@@ -183,8 +182,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (vm.frozen > 0) out.push(['c-ice', `❄ ${vm.frozen}`, `Враг заморожен ещё на ${turnsTxt(vm.frozen)}: таймер стоит, по нему +50% урона.`]);
     if (vm.buff > 1) out.push(['c-buff', '💪 ×2', 'Следующая атака врага ×2.']);
     if (vm.rage) out.push(['c-rage', '😡 ярость', 'Ярость: действует на 1 ход раньше.']);
-    const pv = PS.Combat.preview(B);
-    if (pv.fleeIn != null) out.push(['c-flee', `🏃 ${pv.fleeIn}`, `Сбежит через ${turnsTxt(pv.fleeIn)} — без награды за убийство.`]);
     if (B.burn && B.burn.length) out.push(['c-rage', `🔥 ${B.burn.reduce((s, b) => s + b.dmg, 0)}`, 'Поджог: урон тебе каждый ход, мимо щита.']);
     $('.bt-chips').innerHTML = out.map(c => `<span class="bt-chip ${c[0]}" data-tip="${esc(c[2])}">${c[1]}</span>`).join('');
   }
@@ -276,15 +273,21 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function beltList() { const R = S.R; return (R.phase === 'battle' && R.battle ? R.battle.potions : R.potions) || []; }
+  function beltStacks(list) {
+    const out = [];
+    list.forEach((id, idx) => { const g = out.find(x => x.id === id); if (g) g.n++; else out.push({ id, idx, n: 1 }); });
+    return out;
+  }
   function renderBelt() {
-    const R = S.R, list = beltList(), n = Math.max(R.beltSize || 3, list.length);
+    const R = S.R, list = beltList();
+    const armedId = S.mode && S.mode.type === 'potion' ? list[S.mode.idx] : null;
     let html = '';
-    for (let i = 0; i < n; i++) {
-      const id = list[i];
-      if (!id) { html += '<div class="bt-pot empty">·</div>'; continue; }
-      const p = UI.item('potions', id), armed = S.mode && S.mode.type === 'potion' && S.mode.idx === i;
-      html += `<button class="bt-pot${armed ? ' armed' : ''}" data-pot="${i}" data-tip="<b>${esc(p.icon + ' ' + p.name)}</b><br>${esc(p.desc)}">${p.icon}</button>`;
-    }
+    // Same potions stack into one icon; a tap uses the first copy in the belt.
+    beltStacks(list).forEach(g => {
+      const p = UI.item('potions', g.id);
+      html += `<button class="bt-pot${g.id === armedId ? ' armed' : ''}" data-pot="${g.idx}" data-tip="<b>${esc(p.icon + ' ' + p.name)}${g.n > 1 ? ' ×' + g.n : ''}</b><br>${esc(p.desc)}">${p.icon}${g.n > 1 ? `<span class="bt-pot-n">${g.n}</span>` : ''}</button>`;
+    });
+    for (let i = list.length; i < (R.beltSize || 3); i++) html += '<div class="bt-pot empty">·</div>';
     $('.bt-belt').innerHTML = html;
     const dr = $('.bt-drain'), B = R.battle;
     const stuck = inBattle() && B.stuck;
@@ -519,7 +522,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         case 'steal':
           if (ev.target) {
             const from = tubeEl(ev.target.tube);
-            renderTubes(ev.tubes);
+            renderTubes(ev.tubes, ev.target.refilled != null ? { drop: ev.target.refilled } : null);
             await Fx.fly(from, mon, colorDef(ev.target.color).css, { size: 18 });
           } else renderTubes(ev.tubes);
           Snd.play('bad');
@@ -579,8 +582,17 @@ var PS = globalThis.PS || (globalThis.PS = {});
       mon.classList.add('dead');
       await sleep(750);
     },
-    async boss_fled() { monEl().classList.add('flee'); Fx.bigPop('Сбежал!'); Snd.play('swipe'); await sleep(900); },
-    async enemy_fled() { monEl().classList.add('flee'); Fx.bigPop('Враг сбежал'); Snd.play('swipe'); await sleep(900); },
+    // No caption on purpose: the boss just staggers and runs off; the tutorial explains it the first time.
+    async boss_fled() {
+      const mon = monEl();
+      Snd.play('hit');
+      Fx.animClass(mon, 'hurt', 350);
+      await sleep(380);
+      mon.classList.add('flee');
+      Snd.play('swipe');
+      Fx.burstAt(mon, '#e6dcc4', 16, 70);
+      await sleep(900);
+    },
     async player_dead() { Fx.vignette('#000'); Snd.play('lose'); await sleep(700); },
     stage_clear() { if (S.R.phase !== 'won') Fx.bigPop('Этап пройден!'); return 500; },
     coins(ev) { if (ev.v) { hitNum($('.bt-arena'), `+${ev.v} 🪙`, '#ffcf4a', true); Snd.play('coin'); } return 350; },
@@ -906,7 +918,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     ['🧪', 'Переливание', '<p>Тапни колбу, затем куда лить. Льётся весь верхний одноцветный блок — <b>на такой же цвет</b> или <b>в пустую колбу</b>.</p><p>Каждое переливание — ход.</p>'],
     ['✨', 'Закрытие', '<p>Колба, полная одного цвета, <b>закрывается</b>: срабатывает эффект цвета, на её место приходят слои из очереди.</p><p>🔥 огонь — урон · 💧 вода — щит · 🌿 жизнь — лечение. Долгое нажатие на что угодно — подробности.</p>'],
     ['🔥', 'Комбо', '<p>Закрытия ход за ходом растят комбо: <b>×1,5 → ×2 → ×3</b>. Ход без закрытия его сбрасывает.</p><p>Если новые слои сами закрыли колбу — <b>каскад</b>, без траты хода.</p>'],
-    ['⚔️', 'Враг', '<p>Над врагом — его следующее действие и <b>через сколько ходов</b> оно наступит. Щит поглощает урон и сгорает после атаки.</p><p>Боссы сбегают при отметке на полоске HP и возвращаются позже.</p>'],
+    ['⚔️', 'Враг', '<p>Над врагом — его следующее действие и <b>через сколько ходов</b> оно наступит. Щит поглощает урон и сгорает после атаки.</p><p>Побитый босс может убежать и вернуться на следующей встрече с половиной здоровья. На последнем этапе острова он бьётся до конца.</p>'],
     ['🪨', 'Мусор', '<p>🪨 Камень и 🫧 слизь льются только на такой же мусор или в пустую колбу.</p><p>Закрытие соседней колбы разбивает камни. Полная колба слизи даёт щит.</p>'],
     ['🚰', 'Слив и зелья', '<p><b>Слить</b> — нажми кнопку, затем колбу: она опустеет за 3 HP и ход. В <b>тупике</b> — даром.</p><p>Зелья на поясе — тап, чтобы выпить. Некоторые просят выбрать колбу.</p>'],
   ];
@@ -959,7 +971,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       return itemTile(r.icon, r.name, esc(rr.name || ''), `<b>${r.name}</b><br>${r.desc}`, ' r-' + r.rarity);
     }).join('');
     const tubes = R.slots.map(k => { const t = d.tubes[k]; return itemTile(t.icon, t.name, '', `<b>${t.name}</b><br>${t.desc}`); }).join('');
-    const pots = beltList().map(id => { const p = UI.item('potions', id); return itemTile(p.icon, p.name, '', `<b>${p.name}</b><br>${p.desc}`); }).join('');
+    const pots = beltStacks(beltList()).map(g => { const p = UI.item('potions', g.id); return itemTile(p.icon, p.name, g.n > 1 ? '×' + g.n : '', `<b>${p.name}</b><br>${p.desc}`); }).join('');
     const empty = t => `<div class="bt-empty">${t}</div>`;
     UI.overlay(`<button class="btn-icon ov-x" data-close>✕</button><h2 class="ov-title">🎒 Сборка</h2>
       <div class="tiny dim center">Долгое нажатие — подробности</div>
@@ -982,7 +994,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (T) T.hide();
     const e = B.enemy;
     e.shield = 0;
-    e.hp = Math.max(1, (e.fleeAt || 0) + 1);
+    e.hp = 1;
     B.potions.push('firebomb');
     const idx = B.potions.length - 1;
     const evs = PS.Run.act(R, { type: 'potion', idx });

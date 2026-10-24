@@ -71,7 +71,6 @@ function closesOf(B) { let n = 0; for (const k in B.stats.closes) n += B.stats.c
 function value(B) {
   if (B.status === 'lost') return -1e6;
   if (B.status === 'won' || B.status === 'fled') return 1e6;
-  if (B.status === 'enemy_fled') return 5e5;
   const e = B.enemy, p = B.player;
   let poison = 0;
   for (const x of e.poison) poison += x.tick * x.turns;
@@ -144,8 +143,7 @@ function ruleAction(B) {
   let i = idx('firebomb');
   if (i >= 0) {
     const dmg = 3 * Cb.effectValue(B, 'fire', 1, 'plain');
-    const floor = e.boss && !e.final ? e.fleeAt : 0;
-    if (dmg >= e.shield + e.hp - floor || (B.potions.length >= 3 && dmg >= 0.5 * (e.hp - floor))) return { type: 'potion', idx: i };
+    if (dmg >= e.shield + e.hp || (B.potions.length >= 3 && dmg >= 0.5 * e.hp)) return { type: 'potion', idx: i };
   }
   i = idx('heal');
   if (i >= 0 && p.maxHp - p.hp >= 0.2 * p.maxHp && (p.hp <= p.maxHp * 0.4 || (inc > 0 && p.hp <= inc * 1.3 && p.hp < p.maxHp * 0.7))) return { type: 'potion', idx: i };

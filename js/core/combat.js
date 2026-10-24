@@ -80,14 +80,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
   // ---- damage / heal plumbing ----
   function checkEnemy(B, ev) {
     const e = B.enemy;
-    if (e.boss && !e.final && e.hp <= e.fleeAt) {
-      e.hp = e.fleeAt; // overkill doesn't carry over to the next encounter
-      B.status = 'fled';
-      ev.push({ type: 'boss_fled' });
-    } else if (e.hp <= 0) {
+    if (e.hp <= 0) {
       e.hp = 0;
-      B.status = 'won';
-      ev.push({ type: 'enemy_dead' });
+      // A beaten boss retreats until its last encounter, where it can only win or die.
+      const fled = e.boss && !e.final;
+      B.status = fled ? 'fled' : 'won';
+      ev.push({ type: fled ? 'boss_fled' : 'enemy_dead' });
     } else if (e.boss && e.final && !e.rage && e.hp <= e.maxHp * D().economy.boss.rageAt) {
       e.rage = true;
       ev.push({ type: 'rage' });
@@ -375,11 +373,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
       if (!alive(B)) return;
     }
 
-    if (e.fleeTurns && B.turn >= e.fleeTurns) {
-      B.status = 'enemy_fled';
-      ev.push({ type: 'enemy_fled' });
-      return;
-    }
     if (e.frozen > 0) {
       e.frozen--;
       ev.push({ type: 'frozen_enemy', turns: e.frozen, tick: true });
@@ -540,8 +533,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
       intent: e.intent, timer: e.timer, frozen: e.frozen, rage: e.rage,
       rageSoon: !!(e.boss && e.final && !e.rage),
       rageAt: e.boss && e.final ? Math.floor(e.maxHp * D().economy.boss.rageAt) : null,
-      fleeAt: e.boss && !e.final ? e.fleeAt : null,
-      fleeIn: e.fleeTurns ? Math.max(0, e.fleeTurns - B.turn) : null,
       buff: e.buff,
     };
   }
@@ -558,7 +549,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       enemy: {
         id: es.id, boss: !!es.boss, name: es.name || es.id, hp: es.hp, maxHp: es.maxHp || es.hp, shield: 0,
         cycle: es.cycle.map(c => ({ t: c.t, v: c.v, turns: c.turns })), ci: 0, intent: null, timer: 0,
-        frozen: 0, poison: [], buff: 1, rage: false, first: true, fleeAt: es.fleeAt || 0, final: es.final !== false, fleeTurns: es.fleeTurns || 0,
+        frozen: 0, poison: [], buff: 1, rage: false, first: true, final: es.final !== false, patched: !!es.patched,
       },
       mods: U().clone(rc.mods || {}), relics: (rc.relics || []).slice(), deck: U().clone(rc.deck), labFlat: U().clone(rc.labFlat || {}),
       masteryPct: rc.masteryPct || 0, firstStrike: rc.firstStrike || 1, filter: !!rc.filter,

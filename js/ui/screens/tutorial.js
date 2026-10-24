@@ -126,7 +126,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           if (e.color === 'water' && !seen('water')) queue.push({ key: 'water', target: '.bt-shield', title: '💧 Вода = щит', text: 'Щит поглощает урон от атаки врага и сгорает после неё.' });
           if (e.color === 'life' && !seen('life')) queue.push({ key: 'life', target: '.bt-player .bar', title: '🌿 Жизнь = лечение', text: 'Жизнь восстанавливает HP. HP переходит между этапами.' });
         }
-        if (e.type === 'boss_fled' && !seen('bossfled')) queue.push({ key: 'bossfled', target: '.bt-sbar', title: 'Босс сбежал!', text: 'Он вернётся на следующей встрече с тем HP, что у него осталось. Добей его там.' });
+        if (e.type === 'boss_fled' && !seen('bossfled')) queue.push({ key: 'bossfled', target: '.bt-sbar', title: 'Ещё увидимся!', text: 'Побитый босс может убежать. Он вернётся на следующей встрече с половиной здоровья — и с пластырем. На последнем этапе острова он бьётся до конца.' });
         if (e.type === 'rage' && !seen('rage')) queue.push({ key: 'rage', target: '.bt-intent', title: 'Ярость!', text: 'Финальный босс ранен — теперь он действует на 1 ход раньше. Торопись!' });
       });
       if (guided() && R.phase === 'battle') {
@@ -164,7 +164,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         if (st === 1 && !seen('combo')) steps.push({ key: 'combo', target: '.bt-combo', title: 'Комбо', text: 'Закрывай колбы ход за ходом — эффект растёт: ×1,5 → ×2 → ×3. Ход без закрытия сбрасывает комбо.' });
         if (st === 2 && !seen('drain')) steps.push({ key: 'drain', target: '.bt-drain', title: 'Слить колбу', text: 'Нажми «Слить», затем колбу — она опустеет. Стоит 3 HP и ход. Если ходов нет (тупик) — даром.' });
         if (st === 2 && !seen('potions')) steps.push({ key: 'potions', target: '.bt-belt', title: 'Зелья', text: 'Тапни зелье, чтобы выпить. ↶ Отмена откатит последний ход, ❤ вылечит. Долгое нажатие — описание.' });
-        if (b.enemy.boss && !seen('boss')) steps.push({ key: 'boss', target: '.bt-einfo', title: 'Босс!', text: 'Боссы встречаются на нескольких этапах острова. Сбей ему часть HP — он сбежит и вернётся позже с остатком здоровья. На последней встрече он бьётся до конца.' });
+        if (b.enemy.boss && !seen('boss')) steps.push({ key: 'boss', target: '.bt-einfo', title: 'Босс!', text: 'Хозяин острова: сильнее обычных врагов и действует хитрее. Победи его, чтобы пройти остров.' });
       }
       const F = b.field;
       const find = f => F.tubes.findIndex(f);

@@ -268,11 +268,21 @@ PS.Art = (function () {
     var u = uid(), rage = !!(opts && opts.rage), p = f(u, rage);
     return wrapMon(120, u, rage, p[0], p[1]);
   }
+  // Forehead spot above the right eye of each boss; a returning boss wears a plaster there.
+  var PLASTER_AT = { slime_king: [106, 70, -30], ancient_golem: [104, 50, -25], ice_queen: [104, 56, -30], mycelium_mother: [104, 118, -25], lava_serpent: [134, 38, -20], trickster: [100, 46, -30] };
+  function plaster(at) {
+    function strip(rot) {
+      return '<g transform="rotate(' + rot + ')"><rect x="-17" y="-5.5" width="34" height="11" rx="5.5" fill="#f4c99a" stroke="#b07a4a" stroke-width="1.5"/>' +
+        '<rect x="-5.5" y="-4" width="11" height="8" rx="2" fill="#fbe3c6"/><g fill="#b07a4a" opacity=".55"><circle cx="-11" cy="-1.5" r=".9"/><circle cx="-11" cy="1.8" r=".9"/><circle cx="11" cy="-1.5" r=".9"/><circle cx="11" cy="1.8" r=".9"/></g></g>';
+    }
+    return '<g class="plaster" transform="translate(' + at[0] + ' ' + at[1] + ')">' + strip(at[2]) + strip(at[2] + 90) + '</g>';
+  }
   function boss(id, opts) {
     var f = B[id];
     if (!f) return '';
     var u = uid(), rage = !!(opts && opts.rage), p = f(u, rage);
-    return wrapMon(160, u, rage, p[0], p[1]);
+    var body = p[1] + (opts && opts.patched && PLASTER_AT[id] ? plaster(PLASTER_AT[id]) : '');
+    return wrapMon(160, u, rage, p[0], body);
   }
 
   // ---------- islands (viewBox 320 x 260) ----------

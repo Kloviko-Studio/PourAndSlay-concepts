@@ -9,7 +9,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const R = params.run, res = UI.finishOnce(params);
       const n = R.island, isl = UI.island(n);
       const runCoins = R.coins || 0, firstBonus = Math.max(0, res.coins - runCoins);
-      const unlocked = (res.unlocked || []).map(UI.unlockLabel).filter(Boolean);
+      // Only gameplay novelties get a card (max 2 per island); lab upgrades and relic rarity are one quiet line.
+      const quiet = u => u.kind === 'lab' || u.kind === 'relicRarity';
+      const ORDER = ['colors', 'tubes', 'potions', 'mods', 'finds'], rank = u => ORDER.indexOf(u.kind);
+      const unlocked = (res.unlocked || []).filter(u => !quiet(u)).sort((a, b) => rank(a) - rank(b)).map(UI.unlockLabel).filter(Boolean);
+      const also = res.firstClear ? (res.unlocked || []).filter(quiet).map(UI.unlockLabel).filter(Boolean) : [];
+      const labNew = also.filter(u => u.kind === 'lab'), restNew = also.filter(u => u.kind !== 'lab');
+      const alsoText = [labNew.length ? `🧪 Лаборатория: ${labNew.map(u => esc(u.name)).join(', ')}` : '']
+        .concat(restNew.map(u => `${u.icon} ${esc(u.name)}`)).filter(Boolean).join(' · ');
       const hasNext = res.firstClear && n < UI.islandCount();
       let doubled = false, step = 0;
 
@@ -30,6 +37,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
             <div class="res-line"><span class="muted">За попытку</span><b class="c-gold" data-run>${UI.fmt(runCoins)} 🪙</b></div>
             ${firstBonus ? `<div class="res-line"><span class="muted">Первое прохождение</span><b class="c-gold">+${UI.fmt(firstBonus)} 🪙</b></div>` : ''}
             ${res.gems ? `<div class="res-line"><span class="muted">Кристаллы</span><b class="c-gem" data-gems>+${res.gems} 💎</b></div>` : ''}
+            ${alsoText ? `<div class="small muted" style="margin-top:8px">Также открыто: ${alsoText}</div>` : ''}
             ${runCoins > 0 && UI.ads.online ? '<div class="gap"></div><button class="btn btn-green btn-ad btn-block" data-a="x2">×2 монет за попытку</button>' : ''}
           </div>
           <div class="res-actions"><button class="btn btn-cta btn-lg btn-block" data-a="next">${unlocked.length ? 'Дальше' : 'На главный'}</button></div>`;

@@ -21,8 +21,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
           <div class="scr-head"><button class="btn-icon" data-a="back">‹</button><h1>📜 Задания</h1><span class="tag">⏳ <span data-t>${UI.hhmm(UI.msToMidnight())}</span></span></div>
           <div class="cards">${list.map((q, i) => {
             const pct = Math.min(100, q.progress / q.target * 100);
-            const side = q.claimed ? '<span class="tag tag-ok">✓</span>'
-              : q.done ? `<button class="btn btn-sm btn-cta" data-claim="${i}">Забрать</button>`
+            const side = q.claimed ? `<span class="tag tag-ok">✓ +${reward} 🪙</span>`
+              : q.done ? `<button class="btn btn-sm btn-cta q-claim" data-claim="${i}">Забрать<b>+${reward} 🪙</b></button>`
               : `<span class="q-reward">+${reward} 🪙</span>`;
             return `<div class="card${q.done && !q.claimed ? ' q-done' : ''}${q.claimed ? ' q-claimed' : ''}">
               <div class="card-ico">${q.claimed ? '✅' : q.done ? '🎉' : '📜'}</div>
@@ -32,7 +32,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           }).join('')}</div>
           <div class="gap"></div>
           <div class="panel ${allDone ? 'gold' : 'soft'} row"><span style="font-size:30px">💎</span>
-            <div class="grow"><b>Все три задания</b><div class="small muted">${p.quests.bonusClaimed ? 'Бонус получен' : `Бонус: ${bonus} 💎`}</div></div>
+            <div class="grow"><b>Бонус за все три задания</b><div class="small muted">${p.quests.bonusClaimed ? `Получено +${bonus} 💎` : `+${bonus} 💎 — придёт сам, когда заберёшь третье`}</div></div>
             <span class="tag ${p.quests.bonusClaimed ? 'tag-ok' : ''}">${list.filter(q => q.claimed).length}/${list.length}</span></div>
           <p class="small dim center" style="margin-top:12px">Задания обновляются в полночь.</p>`;
         el.querySelector('[data-a=back]').onclick = () => { PS.Snd.play('select'); UI.go('main'); };
@@ -42,7 +42,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
           if (!out) return;
           PS.Snd.play('coin');
           UI.flyCurrency(from, 'coins', 6);
-          if (out.gems) { setTimeout(() => UI.flyCurrency(from, 'gems', 5), 250); PS.Fx.bigPop(`+${out.gems} 💎`); }
+          PS.Fx.bigPop(`+${UI.fmt(out.coins)} 🪙`, '#ffcf4a');
+          if (out.gems) setTimeout(() => { UI.flyCurrency(from, 'gems', 5); PS.Snd.play('gem'); PS.Fx.bigPop(`+${out.gems} 💎 бонус`, '#7fe0ff'); }, 900);
           render();
         });
       }

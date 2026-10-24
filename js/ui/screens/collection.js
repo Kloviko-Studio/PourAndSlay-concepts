@@ -31,7 +31,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       return out.sort((a, b) => a.island - b.island);
     }
     const src = D[kind] || {};
-    return Object.keys(src).map(id => {
+    return Object.keys(src).filter(id => !src[id].later).map(id => {
       const it = src[id];
       return { key: kind + ':' + id, island: it.unlock || 1, icon: it.icon || '❔', name: it.name, desc: it.desc, cls: '' };
     }).sort((a, b) => a.island - b.island);

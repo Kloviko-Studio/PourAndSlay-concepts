@@ -320,16 +320,23 @@ test('potions: heal 25%, flask, solvent, shake, sleep, firebomb; none spend a tu
   assert.strictEqual(B.stats.potionsUsed, 6);
 });
 
-test('hourglass delays first intent by 2; rage only in final boss encounter', () => {
+test('hourglass delays first intent by 2; non-final boss retreats at 0 HP; rage only in final encounter', () => {
   const H = mkB({ rc: { relics: ['hourglass'] }, es: { cycle: [{ t: 'atk', v: 5, turns: 3 }] } });
   assert.strictEqual(H.enemy.timer, 5);
-  const nf = mkB({ es: { boss: true, final: false, hp: 100, maxHp: 100, fleeAt: 50, cycle: [{ t: 'atk', v: 5, turns: 3 }] } });
-  nf.enemy.hp = 54; nf.potions = ['firebomb'];
-  const ev = Cb.act(nf, { type: 'potion', idx: 0 });
+  const nf = mkB({ es: { boss: true, final: false, hp: 100, maxHp: 100, cycle: [{ t: 'atk', v: 5, turns: 3 }] } });
+  nf.enemy.hp = 60; nf.potions = ['firebomb'];
+  let ev = Cb.act(nf, { type: 'potion', idx: 0 });
+  assert.strictEqual(nf.status, 'active', 'no early retreat threshold');
+  assert.ok(!ofType(ev, 'rage').length, 'no rage outside the final encounter');
+  nf.enemy.hp = 3; nf.potions = ['firebomb'];
+  ev = Cb.act(nf, { type: 'potion', idx: 0 });
   assert.strictEqual(nf.status, 'fled');
-  assert.strictEqual(nf.enemy.hp, 50);
-  assert.ok(ofType(ev, 'boss_fled').length === 1);
-  assert.ok(!ofType(ev, 'rage').length);
+  assert.strictEqual(nf.enemy.hp, 0);
+  assert.ok(ofType(ev, 'boss_fled').length === 1 && !ofType(ev, 'enemy_dead').length);
+  const fk = mkB({ es: { boss: true, final: true, hp: 3, maxHp: 100, cycle: [{ t: 'atk', v: 5, turns: 3 }] } });
+  fk.potions = ['firebomb'];
+  Cb.act(fk, { type: 'potion', idx: 0 });
+  assert.strictEqual(fk.status, 'won', 'final encounter never retreats');
   const f = mkB({ es: { boss: true, final: true, hp: 40, maxHp: 100, cycle: [{ t: 'atk', v: 5, turns: 3 }, { t: 'shield', v: 5, turns: 3 }] } });
   f.potions = ['firebomb'];
   const ev2 = Cb.act(f, { type: 'potion', idx: 0 });
@@ -339,16 +346,6 @@ test('hourglass delays first intent by 2; rage only in final boss encounter', ()
   f.field = mkF([['fire', 'water'], ['water', 'life'], [], []]);
   const ev3 = pour(f, 0, 2);
   assert.strictEqual(ofType(ev3, 'intent')[0].timer, 2);
-});
-
-test('gremlin flees after 12 turns', () => {
-  const B = mkB({ rc: { hp: 999, maxHp: 999 }, tubes: [['fire', 'water'], ['water', 'life'], [], []], es: { id: 'gremlin', fleeTurns: 12, cycle: [{ t: 'shield', v: 1, turns: 2 }] } });
-  B.field.minLayers = 100;
-  let ev;
-  for (let i = 0; i < 40 && B.status === 'active'; i++) ev = Cb.act(B, { type: 'drain', tube: B.field.tubes.findIndex(t => t.layers.length) });
-  assert.strictEqual(B.turn, 12);
-  assert.strictEqual(B.status, 'enemy_fled');
-  assert.ok(ofType(ev, 'enemy_fled').length === 1);
 });
 
 test('world twists: frozen start, stonefall every 8 turns, burn through shield', () => {

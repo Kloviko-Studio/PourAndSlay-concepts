@@ -71,12 +71,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
   D.potions = {
     undo: { id: 'undo', name: 'Отмена', icon: '↶', unlock: 1, weight: 10, desc: 'Откатывает последний ход целиком: поле, очередь, комбо, HP, щит, врага, яд и таймеры.' },
     heal: { id: 'heal', name: 'Лечение', icon: '❤', unlock: 1, weight: 10, pct: 0.25, desc: 'Лечит 25% от максимума HP.' },
-    flask: { id: 'flask', name: 'Пустая склянка', icon: '🧪', unlock: 2, weight: 8, desc: '+1 пустая колба до конца боя.' },
-    solvent: { id: 'solvent', name: 'Растворитель', icon: '💧', unlock: 3, weight: 8, desc: 'Убирает верхний слой выбранной колбы (цвет или мусор).' },
-    shake: { id: 'shake', name: 'Встряска', icon: '🌀', unlock: 6, weight: 6, desc: 'Перемешивает слои выбранной колбы.' },
-    sleep: { id: 'sleep', name: 'Сонное зелье', icon: '💤', unlock: 4, weight: 6, delay: 3, desc: 'Действие врага наступит на 3 хода позже.' },
+    flask: { id: 'flask', name: 'Пустая склянка', icon: '🧪', unlock: 1, weight: 8, desc: '+1 пустая колба до конца боя.' },
+    solvent: { id: 'solvent', name: 'Растворитель', icon: '💧', unlock: 1, weight: 8, desc: 'Убирает верхний слой выбранной колбы (цвет или мусор).' },
+    shake: { id: 'shake', name: 'Встряска', icon: '🌀', unlock: null, later: 'v1.2', weight: 6, desc: 'Перемешивает слои выбранной колбы.' },
+    sleep: { id: 'sleep', name: 'Сонное зелье', icon: '💤', unlock: 1, weight: 6, delay: 3, desc: 'Действие врага наступит на 3 хода позже.' },
     firebomb: { id: 'firebomb', name: 'Огненная бомба', icon: '💣', unlock: 7, weight: 5, mult: 3, desc: 'Урон = 3 × текущий урон закрытия огня (без комбо).' },
-    combo: { id: 'combo', name: 'Эликсир комбо', icon: '✨', unlock: 9, weight: 5, k: 2, desc: 'Следующее закрытие сразу с комбо ×2, дальше комбо растёт как обычно.' }
+    combo: { id: 'combo', name: 'Эликсир комбо', icon: '✨', unlock: null, later: 'v1.2', weight: 5, k: 2, desc: 'Следующее закрытие сразу с комбо ×2, дальше комбо растёт как обычно.' }
   };
   D.potionStart = ['undo', 'heal'];
 
@@ -85,19 +85,19 @@ var PS = globalThis.PS || (globalThis.PS = {});
     apron: { id: 'apron', name: 'Кожаный фартук', icon: '🦺', cap: 3, unlock: 1, pct: 0.10, desc: '−10% урона от атак врага.' },
     caustic: { id: 'caustic', name: 'Едкая смесь', icon: '🧂', cap: 3, unlock: 1, dmg: 2, desc: '+2 урона огню, молнии и тьме.' },
     bubble: { id: 'bubble', name: 'Пузырь', icon: '🫧', cap: 3, unlock: 1, shield: 6, desc: '+6 щита в начале каждого боя.' },
-    prep: { id: 'prep', name: 'Заготовка', icon: '🎯', cap: 3, unlock: 2, dmg: 6, desc: '6 урона врагу в начале каждого боя.' },
-    thorns: { id: 'thorns', name: 'Шипы', icon: '🌵', cap: 3, unlock: 4, dmg: 3, desc: 'Враг получает 3 урона за каждую свою атаку.' },
-    leech: { id: 'leech', name: 'Кровопийца', icon: '🩸', cap: 3, unlock: 5, pct: 0.10, desc: '10% нанесённого урона лечит (округление вверх).' },
-    combo_master: { id: 'combo_master', name: 'Мастер комбо', icon: '✨', cap: 2, unlock: 7, add: 0.25, desc: '+0,25 к множителям комбо после первого (×1,75 → ×2,25 → ×3,25).' },
+    prep: { id: 'prep', name: 'Заготовка', icon: '🎯', cap: 3, unlock: 1, dmg: 6, desc: '6 урона врагу в начале каждого боя.' },
+    thorns: { id: 'thorns', name: 'Шипы', icon: '🌵', cap: 3, unlock: 1, dmg: 3, desc: 'Враг получает 3 урона за каждую свою атаку.' },
+    leech: { id: 'leech', name: 'Кровопийца', icon: '🩸', cap: 3, unlock: 2, pct: 0.10, desc: '10% нанесённого урона лечит (округление вверх).' },
+    combo_master: { id: 'combo_master', name: 'Мастер комбо', icon: '✨', cap: 2, unlock: null, later: 'v1.2', add: 0.25, desc: '+0,25 к множителям комбо после первого (×1,75 → ×2,25 → ×3,25).' },
     potion_pick: { id: 'potion_pick', name: 'Зелье на выбор', icon: '⚗', cap: 0, unlock: 1, choices: 3, desc: 'Выбери 1 из 3 зелий. Не предлагается при полном поясе.' }
   };
 
   D.finds = {
-    new_color: { id: 'new_color', name: 'Новая эссенция', icon: '🎨', unlock: 2, desc: 'Добавь открытый цвет, которого нет в колоде. При 5 цветах — замени выбранный (его усиления пропадают).' },
+    new_color: { id: 'new_color', name: 'Новая эссенция', icon: '🎨', unlock: 1, desc: 'Добавь открытый цвет, которого нет в колоде. При 5 цветах — замени выбранный (его усиления пропадают).' },
     boost_color: { id: 'boost_color', name: 'Усиление эссенции', icon: '⬆', unlock: 1, cap: 3, desc: '+1 шаг усиления выбранному цвету колоды (до 3 на цвет, кроме зеркала).' },
-    special_tube: { id: 'special_tube', name: 'Особая колба', icon: '🧫', unlock: 3, desc: 'Случайная открытая особая колба в пустой слот; если пустых нет — заменить выбранную.' },
+    special_tube: { id: 'special_tube', name: 'Особая колба', icon: '🧫', unlock: 1, desc: 'Случайная открытая особая колба в пустой слот; если пустых нет — заменить выбранную.' },
     extra_slot: { id: 'extra_slot', name: 'Лишний слот', icon: '➕', unlock: 5, maxSlots: 5, desc: '+1 пустая колба в каждом бою (всего слотов до 5).' },
-    filter: { id: 'filter', name: 'Фильтр', icon: '🧹', unlock: 3, cap: 1, pct: 0.5, requires: 'junkEnemy', desc: 'Камней и спор от врагов и мусора в очереди вдвое меньше.' }
+    filter: { id: 'filter', name: 'Фильтр', icon: '🧹', unlock: 1, cap: 1, pct: 0.5, requires: 'junkEnemy', desc: 'Камней и спор от врагов и мусора в очереди вдвое меньше.' }
   };
 
   D.tubes = {
@@ -167,28 +167,28 @@ var PS = globalThis.PS || (globalThis.PS = {});
     booster_first_strike: { id: 'booster_first_strike', name: 'Первый удар', icon: '🎯', gems: 10, mult: 2, desc: '×2 урона всех эффектов на первом этапе.' }
   };
 
-  function E(id, name, icon, world, archetype, hp, cycle, flee, desc) {
-    return { id: id, name: name, icon: icon, world: world, archetype: archetype, hp: hp, cycle: cycle, flee: flee || 0, art: id, desc: desc };
+  function E(id, name, icon, world, archetype, hp, cycle, desc) {
+    return { id: id, name: name, icon: icon, world: world, archetype: archetype, hp: hp, cycle: cycle, art: id, desc: desc };
   }
   function c(t, v, turns) { return { t: t, v: v, turns: turns }; }
 
   D.enemies = {};
   [
-    E('slime', 'Слизень', '🟢', 1, 'attacker', 18, [c('atk', 5, 3)], 0, 'Бьёт на 5 каждые 3 хода.'),
-    E('gremlin', 'Гремлин-вор', '👺', 1, 'thief', 20, [c('atk', 4, 2), c('steal', 0, 2)], 12, 'Бьёт на 4, ворует слои. Сбегает через 12 ходов.'),
-    E('beetle', 'Колючий жук', '🪲', 1, 'shaman', 22, [c('shield', 6, 2), c('atk', 6, 3)], 0, 'Прикрывается щитом 6, бьёт на 6.'),
-    E('golem', 'Каменный голем', '🗿', 2, 'mason', 28, [c('stone', 2, 3), c('atk', 9, 3)], 0, 'Сыплет камни, бьёт на 9.'),
-    E('boulder', 'Валун-катун', '🪨', 2, 'attacker', 34, [c('atk', 14, 5)], 0, 'Редкий, но тяжёлый удар: 14.'),
-    E('mole', 'Скальный крот', '🦔', 2, 'thief', 24, [c('steal', 0, 2), c('atk', 6, 3)], 0, 'Ворует слои, бьёт на 6.'),
-    E('frost_spirit', 'Инейный дух', '👻', 3, 'froster', 24, [c('freeze', 3, 2), c('atk', 5, 2)], 0, 'Замораживает колбы на 3 хода, бьёт на 5.'),
-    E('ice_wolf', 'Ледяной волк', '🐺', 3, 'attacker', 22, [c('atk', 4, 2)], 0, 'Быстрые укусы: 4 каждые 2 хода.'),
-    E('snow_golem', 'Снежный голем', '⛄', 3, 'mason', 30, [c('stone', 2, 2), c('shield', 6, 2), c('atk', 7, 3)], 0, 'Камни, щит 6 и удар на 7.'),
-    E('mycelium', 'Грибница', '🍄', 4, 'sporer', 26, [c('spores', 2, 2), c('atk', 6, 3)], 0, 'Превращает слои очереди в слизь, бьёт на 6.'),
-    E('toad_shaman', 'Мухомор-шаман', '🐸', 4, 'shaman', 28, [c('shield', 8, 2), c('buff', 0, 1), c('atk', 7, 3)], 0, 'Щит 8, усиливает следующую атаку ×2, бьёт на 7.'),
-    E('rot_slime', 'Гнилой слизень', '🦠', 4, 'sporer', 24, [c('atk', 5, 2), c('spores', 1, 2)], 0, 'Бьёт на 5, гноит очередь.'),
-    E('imp', 'Огненный бес', '👹', 5, 'attacker', 26, [c('atk', 6, 2)], 0, 'Бьёт на 6 каждые 2 хода.'),
-    E('lava_golem', 'Лавовый голем', '🌋', 5, 'mason', 34, [c('stone', 3, 3), c('atk', 10, 3)], 0, 'Сыплет 3 камня, бьёт на 10.'),
-    E('ash_trickster', 'Пепельный плут', '🃏', 5, 'thief', 26, [c('swap', 0, 3), c('atk', 8, 3)], 0, 'Меняет цвета местами, бьёт на 8.')
+    E('slime', 'Слизень', '🟢', 1, 'attacker', 18, [c('atk', 5, 3)], 'Бьёт на 5 каждые 3 хода.'),
+    E('gremlin', 'Гремлин-вор', '👺', 1, 'thief', 20, [c('atk', 4, 2), c('steal', 0, 2)], 'Бьёт на 4, ворует слои.'),
+    E('beetle', 'Колючий жук', '🪲', 1, 'shaman', 22, [c('shield', 6, 2), c('atk', 6, 3)], 'Прикрывается щитом 6, бьёт на 6.'),
+    E('golem', 'Каменный голем', '🗿', 2, 'mason', 28, [c('stone', 2, 3), c('atk', 9, 3)], 'Сыплет камни, бьёт на 9.'),
+    E('boulder', 'Валун-катун', '🪨', 2, 'attacker', 34, [c('atk', 14, 5)], 'Редкий, но тяжёлый удар: 14.'),
+    E('mole', 'Скальный крот', '🦔', 2, 'thief', 24, [c('steal', 0, 2), c('atk', 6, 3)], 'Ворует слои, бьёт на 6.'),
+    E('frost_spirit', 'Инейный дух', '👻', 3, 'froster', 24, [c('freeze', 3, 2), c('atk', 5, 2)], 'Замораживает колбы на 3 хода, бьёт на 5.'),
+    E('ice_wolf', 'Ледяной волк', '🐺', 3, 'attacker', 22, [c('atk', 4, 2)], 'Быстрые укусы: 4 каждые 2 хода.'),
+    E('snow_golem', 'Снежный голем', '⛄', 3, 'mason', 30, [c('stone', 2, 2), c('shield', 6, 2), c('atk', 7, 3)], 'Камни, щит 6 и удар на 7.'),
+    E('mycelium', 'Грибница', '🍄', 4, 'sporer', 26, [c('spores', 2, 2), c('atk', 6, 3)], 'Превращает слои очереди в слизь, бьёт на 6.'),
+    E('toad_shaman', 'Мухомор-шаман', '🐸', 4, 'shaman', 28, [c('shield', 8, 2), c('buff', 0, 1), c('atk', 7, 3)], 'Щит 8, усиливает следующую атаку ×2, бьёт на 7.'),
+    E('rot_slime', 'Гнилой слизень', '🦠', 4, 'sporer', 24, [c('atk', 5, 2), c('spores', 1, 2)], 'Бьёт на 5, гноит очередь.'),
+    E('imp', 'Огненный бес', '👹', 5, 'attacker', 26, [c('atk', 6, 2)], 'Бьёт на 6 каждые 2 хода.'),
+    E('lava_golem', 'Лавовый голем', '🌋', 5, 'mason', 34, [c('stone', 3, 3), c('atk', 10, 3)], 'Сыплет 3 камня, бьёт на 10.'),
+    E('ash_trickster', 'Пепельный плут', '🃏', 5, 'thief', 26, [c('swap', 0, 3), c('atk', 8, 3)], 'Меняет цвета местами, бьёт на 8.')
   ].forEach(function (e) { D.enemies[e.id] = e; });
 
   function B(id, name, icon, islands, hp, cycle, extra, final, desc) {
@@ -253,17 +253,19 @@ var PS = globalThis.PS || (globalThis.PS = {});
     I(10, 'tricksters_tower', 5, 'Башня Обманщика', "Trickster's Tower", 'hard', 15, [5, 10, 15], ['imp', 'lava_golem', 'ash_trickster'], 3.5, 6, true)
   ];
 
+  // At most 2 gameplay novelties per island (one card each after the previous island); lab and relic rarity open quietly.
+  // Finds like new_color / special_tube / filter sit in the starting pool but only show up once they have something to offer.
   D.unlocks = {
-    1: { colors: ['fire', 'water', 'life'], potions: ['undo', 'heal'], mods: ['tough', 'apron', 'caustic', 'bubble', 'potion_pick'], finds: ['boost_color'], tubes: [], lab: ['vitality', 'essence_fire', 'essence_water', 'essence_life', 'start_shield'], relicRarity: 'common', note: 'Обучение: огонь, вода, жизнь' },
-    2: { colors: ['poison'], potions: ['flask'], mods: ['prep'], finds: ['new_color'], tubes: [], lab: ['belt'], relicRarity: null, note: 'Новый цвет: яд' },
-    3: { colors: [], potions: ['solvent'], mods: [], finds: ['special_tube', 'filter'], tubes: ['amp', 'sieve'], lab: ['intuition', 'second_wind'], relicRarity: null, note: 'Особые колбы: Усилитель и Сито' },
-    4: { colors: ['lightning'], potions: ['sleep'], mods: ['thorns'], finds: [], tubes: [], lab: ['thrift'], relicRarity: null, note: 'Новый цвет: молния. Реликвии выпадают и после рядовых этапов' },
-    5: { colors: [], potions: [], mods: ['leech'], finds: ['extra_slot'], tubes: ['catalyst'], lab: ['slot'], relicRarity: 'rare', note: 'Катализатор и редкие реликвии' },
-    6: { colors: ['ice'], potions: ['shake'], mods: [], finds: [], tubes: [], lab: ['mastery'], relicRarity: null, note: 'Новый цвет: лёд' },
-    7: { colors: [], potions: ['firebomb'], mods: ['combo_master'], finds: [], tubes: ['bomb'], lab: [], relicRarity: null, note: 'Бомба и Мастер комбо' },
-    8: { colors: ['dark'], potions: [], mods: [], finds: [], tubes: [], lab: [], relicRarity: 'legendary', note: 'Новый цвет: тьма. Легендарные реликвии' },
-    9: { colors: ['mirror'], potions: ['combo'], mods: [], finds: [], tubes: [], lab: [], relicRarity: null, note: 'Новый цвет: зеркало' },
-    10: { colors: [], potions: [], mods: [], finds: [], tubes: ['big', 'vial'], lab: [], relicRarity: null, note: 'Большая колба, Пробирка и финальный босс' }
+    1: { colors: ['fire', 'water', 'life'], potions: ['undo', 'heal', 'flask', 'solvent', 'sleep'], mods: ['tough', 'apron', 'caustic', 'bubble', 'potion_pick', 'prep', 'thorns'], finds: ['boost_color', 'new_color', 'special_tube', 'filter'], tubes: [], lab: ['vitality', 'essence_fire', 'essence_water', 'essence_life', 'start_shield'], relicRarity: 'common', note: 'Обучение: огонь, вода, жизнь' },
+    2: { colors: ['poison'], potions: [], mods: ['leech'], finds: [], tubes: [], lab: ['belt'], relicRarity: null, note: 'Новый цвет: яд' },
+    3: { colors: [], potions: [], mods: [], finds: [], tubes: ['amp', 'sieve'], lab: ['intuition', 'second_wind'], relicRarity: null, note: 'Особые колбы: Усилитель и Сито' },
+    4: { colors: ['lightning'], potions: [], mods: [], finds: [], tubes: [], lab: ['thrift'], relicRarity: null, note: 'Новый цвет: молния' },
+    5: { colors: [], potions: [], mods: [], finds: ['extra_slot'], tubes: ['catalyst'], lab: ['slot'], relicRarity: 'rare', note: 'Катализатор и Лишний слот' },
+    6: { colors: ['ice'], potions: [], mods: [], finds: [], tubes: [], lab: ['mastery'], relicRarity: null, note: 'Новый цвет: лёд' },
+    7: { colors: [], potions: ['firebomb'], mods: [], finds: [], tubes: ['bomb'], lab: [], relicRarity: null, note: 'Бомба и Огненная бомба' },
+    8: { colors: ['dark'], potions: [], mods: [], finds: [], tubes: [], lab: [], relicRarity: 'legendary', note: 'Новый цвет: тьма' },
+    9: { colors: ['mirror'], potions: [], mods: [], finds: [], tubes: [], lab: [], relicRarity: null, note: 'Новый цвет: зеркало' },
+    10: { colors: [], potions: [], mods: [], finds: [], tubes: ['big', 'vial'], lab: [], relicRarity: null, note: 'Большая колба и Пробирка' }
   };
 
   D.economy = {
@@ -274,7 +276,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     coins: { reg: [3, 1], flee: [8, 3], kill: [15, 5], first: 20, hardMult: 1.25 },
     gems: { start: 30, first: 5, firstHard: 10, adGift: 2, adGiftPerDay: 3, questsAll: 5 },
     revive: { hp: 0.5, gems: [20, 40], freePerRun: 1, maxGems: 2 }, reroll: { gems: 7, mult: 2 }, skip: [5, 1],
-    boss: { poolPerExtra: 0.3, rageAt: 0.33, rageTimer: 1 },
+    // A beaten boss leaves and comes back next encounter with returnHp of its max HP (and a plaster).
+    boss: { returnHp: 0.5, rageAt: 0.33, rageTimer: 1 },
     interstitial: { fromIsland: 3, minSec: 180 },
     ads: { resultsMult: 2, dailyMult: 2 },
     // Pack, daily and quest coins are multiplied by P (M of the max open island).

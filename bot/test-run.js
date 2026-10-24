@@ -17,7 +17,7 @@ function finishBattle(R, hp) {
 }
 function advance(R) {
   let ev = [];
-  if (R.phase === 'battle') ev = finishBattle(R, R.battle.enemy.boss && !R.battle.enemy.final ? R.battle.enemy.fleeAt + 1 : 1);
+  if (R.phase === 'battle') ev = finishBattle(R);
   if (R.phase === 'reward') ev = ev.concat(Run.skip(R));
   return ev;
 }
@@ -60,7 +60,7 @@ test('start: hp, deck, slots, belt, potions with lab and boosters', () => {
   assert.strictEqual(B.enemy.hp, Math.round(D.enemies[R.stages[0].enemy].hp * 1.5));
   // fire (6+3) * 1.1 * 2 = 19.8 -> 20
   assert.strictEqual(Cb.effectValue(B, 'fire', 1), 20);
-  assert.deepStrictEqual(Run.create(ctxOf(), 1, ['booster_potion'], { potion: 'shake' }).R.potions, ['undo', 'heal', 'shake']);
+  assert.deepStrictEqual(Run.create(ctxOf(), 1, ['booster_potion'], { potion: 'sleep' }).R.potions, ['undo', 'heal', 'sleep']);
 });
 
 test('enemy scaling: hp x M, atk + A only', () => {
@@ -97,31 +97,28 @@ test('coin multipliers: hard tier, thrift, seal, golden stopper', () => {
   assert.strictEqual(ofType(finishBattle(plain), 'coins')[0].v, 6);
 });
 
-test('recurring boss: shared pool, flee thresholds, extra action, rage only in final', () => {
+test('recurring boss: full HP, then returns patched with half HP; extra action; rage only in final', () => {
   const { R } = Run.create(ctxOf(), 4, []);
-  const pool = Math.round(48 * 1.9 * 1.6);
-  assert.strictEqual(R.boss.poolMax, pool);
+  const max = Math.round(48 * 1.9);
+  assert.strictEqual(R.boss.maxHp, max);
   const seen = [];
   let guard = 0;
   while (R.phase !== 'won' && guard++ < 50) {
     if (R.phase === 'battle' && R.battle.enemy.boss) {
       const e = R.battle.enemy;
-      seen.push({ hp: e.hp, fleeAt: e.fleeAt, final: e.final, cycle: e.cycle.length });
-      assert.strictEqual(e.maxHp, pool);
+      seen.push({ hp: e.hp, final: e.final, patched: e.patched, cycle: e.cycle.length });
+      assert.strictEqual(e.maxHp, max);
       if (!e.final) {
-        e.hp = e.fleeAt + 2; e.shield = 0;
-        R.battle.potions.push('firebomb');
-        const ev = Run.act(R, { type: 'potion', idx: R.battle.potions.length - 1 });
+        const ev = finishBattle(R);
         assert.ok(ofType(ev, 'boss_fled').length === 1);
         assert.ok(!ofType(ev, 'rage').length);
         assert.strictEqual(ofType(ev, 'coins')[0].v, Math.round((8 + 12) * 1.25));
-        assert.strictEqual(R.boss.pool, e.fleeAt);
         assert.strictEqual(R.offer.kind, 'relic');
         assert.ok(ofType(ev, 'heal_after').length === 1);
         Run.skip(R);
         continue;
       }
-      e.hp = Math.floor(pool * 0.33) + 5; e.shield = 0;
+      e.hp = Math.floor(max * 0.33) + 5; e.shield = 0;
       R.battle.potions.push('firebomb');
       const ev = Run.act(R, { type: 'potion', idx: R.battle.potions.length - 1 });
       assert.ok(ofType(ev, 'rage').length === 1);
@@ -131,8 +128,9 @@ test('recurring boss: shared pool, flee thresholds, extra action, rage only in f
     }
     advance(R);
   }
-  assert.deepStrictEqual(seen.map(s => s.fleeAt), [Math.round(pool * 2 / 3), Math.round(pool / 3), 0]);
-  assert.deepStrictEqual(seen.map(s => s.hp), [pool, Math.round(pool * 2 / 3), Math.round(pool / 3)]);
+  const half = Math.round(max / 2);
+  assert.deepStrictEqual(seen.map(s => s.hp), [max, half, half]);
+  assert.deepStrictEqual(seen.map(s => s.patched), [false, true, true]);
   assert.deepStrictEqual(seen.map(s => s.final), [false, false, true]);
   assert.ok(seen.every(s => s.cycle === D.bosses.ancient_golem.cycle.length + 1)); // island 4 = 2nd island of the boss
   assert.strictEqual(Run.create(ctxOf(), 3, []).R.stages.filter(s => s.type === 'boss').length, 2);
@@ -149,18 +147,6 @@ test('island 1: single final boss encounter, killing it wins the island', () => 
   assert.strictEqual(R.stats.kills, 4);
   assert.strictEqual(R.stats.bossReached, 1);
   assert.strictEqual(R.coins, 4 * 3 + 20 + 3 * 6);
-});
-
-test('gremlin flee: no coins, no offer, next stage starts', () => {
-  const { R } = Run.create(ctxOf(), 2, []);
-  R.battle.enemy.fleeTurns = 1;
-  const c0 = R.coins, s0 = R.stage;
-  const ev = Run.act(R, { type: 'drain', tube: R.battle.field.tubes.findIndex(t => t.layers.length) });
-  assert.ok(ofType(ev, 'enemy_fled').length === 1);
-  assert.strictEqual(R.coins, c0);
-  assert.ok(!ofType(ev, 'offer').length);
-  assert.strictEqual(R.stage, s0 + 1);
-  assert.strictEqual(R.phase, 'battle');
 });
 
 function kill(R) {
@@ -249,6 +235,7 @@ test('pick offer: >=1 mod and >=1 find, size 3 (4 with intuition), respects caps
   Object.keys(D.mods).forEach(id => { rc.mods[id] = D.mods[id].cap; });
   rc.potions = ['heal', 'heal', 'heal'];
   Object.keys(rc.deck).forEach(c => { rc.deck[c] = 3; });
+  rc.filter = true;
   assert.deepStrictEqual(pickOffer(rc), [{ type: 'coins', v: 15 }]);
 });
 

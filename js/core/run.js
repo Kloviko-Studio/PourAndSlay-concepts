@@ -10,7 +10,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const worldOf = isl => D().worlds[isl.world - 1];
   const labTier = (R, id) => (R.ctx.lab && R.ctx.lab[id]) || 0;
   const hasRelic = (R, id) => R.relics.indexOf(id) >= 0;
-  const unlocked = (R, def) => (def.unlock || 1) <= R.ctx.maxIsland;
+  const unlocked = (R, def) => !def.later && (def.unlock || 1) <= R.ctx.maxIsland;
   const SUB_OFFERS = { potion_pick: true, replace_color: true, replace_tube: true };
 
   function stagesOf(n, rng) {
@@ -167,15 +167,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const scale = cycle => cycle.map(c => ({ t: c.t, v: c.t === 'atk' ? c.v + isl.A : c.v, turns: c.turns }));
     if (st.type === 'regular') {
       const d = D().enemies[st.enemy], hp = U().round(d.hp * isl.M);
-      return { id: d.id, name: d.name, boss: false, hp, maxHp: hp, cycle: scale(d.cycle), fleeAt: 0, final: false, fleeTurns: d.flee || 0 };
+      return { id: d.id, name: d.name, boss: false, hp, maxHp: hp, cycle: scale(d.cycle), final: false };
     }
     const b = D().bosses[st.enemy], E = R.boss.encounters, i = st.encounter;
-    const final = i === E - 1;
     const cycle = scale(bossExtra(R) ? b.cycle.concat([b.extra]) : b.cycle);
-    return {
-      id: b.id, name: b.name, boss: true, hp: R.boss.pool, maxHp: R.boss.poolMax, cycle, final,
-      fleeAt: final ? 0 : U().round(R.boss.poolMax * (1 - (i + 1) / E)), fleeTurns: 0,
-    };
+    const hp = i === 0 ? R.boss.maxHp : U().round(R.boss.maxHp * D().economy.boss.returnHp);
+    return { id: b.id, name: b.name, boss: true, hp, maxHp: R.boss.maxHp, cycle, final: i === E - 1, patched: i > 0 };
   }
 
   function labFlat(R) {
@@ -264,8 +261,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
     R.stats.stagesCleared++;
     ev.push({ type: 'stage_clear', stage: R.stage });
 
-    if (B.status === 'enemy_fled') { nextStage(R, ev); return; }
-
     if (st.type === 'regular') {
       R.stats.kills++;
       ev.push({ type: 'kill', enemy: st.enemy, boss: false });
@@ -281,7 +276,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
     }
 
     const fled = B.status === 'fled';
-    R.boss.pool = fled ? B.enemy.hp : 0;
     R.boss.done++;
     if (fled) addCoins(R, U().lin(d.economy.coins.flee, i), 'boss_fled', ev);
     else {
@@ -314,9 +308,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       stats: { closes: {}, junkCloses: 0, kills: 0, bossReached: 0, maxCombo: 0, potionsUsed: 0, stagesCleared: 0, turns: 0, dmgDealt: 0 },
     };
     R.stages = stagesOf(n, R.rng);
-    const b = d.bosses[isl.boss], encounters = isl.bossAt.length;
-    const poolMax = U().round(b.hp * isl.M * (1 + E.boss.poolPerExtra * (encounters - 1)));
-    R.boss = { id: b.id, pool: poolMax, poolMax, encounters, done: 0 };
+    const b = d.bosses[isl.boss];
+    R.boss = { id: b.id, maxHp: U().round(b.hp * isl.M), encounters: isl.bossAt.length, done: 0 };
 
     R.maxHp = E.player.hp + labTier(R, 'vitality') * d.lab.vitality.per.maxHp
       + (boosters.indexOf('booster_vitality') >= 0 ? d.boosters.booster_vitality.maxHp : 0);

@@ -101,7 +101,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     try { if (PS.Art && PS.Art.island) { const s = PS.Art.island(isl ? isl.world : 1, n, opts); if (s) return s; } } catch (e) { console.warn(e); }
     return fallbackIsland(n);
   };
-  // opts: {rage}
+  // opts: {rage, patched}
   UI.enemyArt = function (id, opts) {
     const D_ = D(), boss = !!(D_.bosses || {})[id];
     const it = (D_.enemies || {})[id] || (D_.bosses || {})[id] || {};

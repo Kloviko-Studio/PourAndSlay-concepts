@@ -197,7 +197,13 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const c = idxWhere(F, t => !t.frozen && t.layers.length && !isJunk(top(t)));
     if (!c.length) return null;
     const j = R().pick(rng, c);
-    return { tube: j, color: F.tubes[j].layers.pop() };
+    const out = { tube: j, color: F.tubes[j].layers.pop() };
+    // Like a drain: a thief must not be able to empty the field, so a thin field gets an empty tube refilled.
+    if (totalLayers(F) < F.minLayers) {
+      const e = F.tubes[j].layers.length ? idxWhere(F, t => !t.frozen && !t.layers.length && t.kind !== 'vial')[0] : j;
+      if (e != null) { refill(F, rng, e); out.refilled = e; }
+    }
+    return out;
   }
 
   function swapColors(F, rng) {

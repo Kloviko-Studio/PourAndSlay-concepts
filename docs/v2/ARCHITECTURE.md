@@ -78,18 +78,18 @@ PS.DATA = {
   relics: { hot_crucible: {rarity: 'common', requires: null, dmg: 4}, ... },   // requires: null | {color: 'water'} | {enemy: 'stone'|'spores'|'fieldSpoiler'}
   lab:   { vitality: {tiers: 8, costs: [20, 30, 50, ...], unlock: 1, per: {maxHp: 5}}, ... },   // costs уже посчитаны и округлены до 5
   boosters: { booster_potion: {gems: 13}, booster_flask: {gems: 20}, booster_vitality: {gems: 13, maxHp: 20}, booster_first_strike: {gems: 10, mult: 2} },
-  enemies: { slime: {world: 1, archetype: 'attacker', hp: 18, cycle: [{t: 'atk', v: 5, turns: 3}], flee: 0, art: 'slime'}, ... },
+  enemies: { slime: {world: 1, archetype: 'attacker', hp: 18, cycle: [{t: 'atk', v: 5, turns: 3}], art: 'slime'}, ... },
   bosses:  { slime_king: {hp: 36, cycle: [...], extra: {t: 'shield', v: 6, turns: 2}, art: 'slimeKing'}, ... },
   worlds:  [{ n: 1, id: 'meadows', name, theme: 'day'|'night', twist: null | {type: 'stonefall', every: 8} | {type: 'frozenStart', turns: 3} | {type: 'slimeQueue', pct: 0.1} | {type: 'burn', dmg: 2, turns: 2}, boss: 'slime_king', palette: {sky, ground, accent} }],
   islands: [{ n: 1, id: 'sunny_shallows', world: 1, name, tier: 'easy'|'medium'|'hard', stages: 4, bossAt: [4], regulars: ['slime'], M: 1.0, A: 0, final: false }],
-  unlocks: { 1: {colors: [...], potions: [...], mods: [...], finds: [...], tubes: [...], lab: [...], relicRarity: 'common', note: '...'}, 2: {...}, ... },   // таблица «Что открывает остров»
+  unlocks: { 1: {colors: [...], potions: [...], mods: [...], finds: [...], tubes: [...], lab: [...], relicRarity: 'common', note: '...'}, 2: {...}, ... },   // таблица «Что открывает остров»; предметы с later: 'v1.2' не открываются
   economy: {
     player: {hp: 50}, cap: 4, filledMin: 5, slots: {base: 3, max: 5}, belt: {base: 3}, deckMax: 5,
     drain: {hp: 3}, heal: {regular: 0.10, boss: 0.25}, potionDrop: 0.20, relicInPick: {chance: 0.15, from: 4},
     coins: {reg: [3, 1], flee: [8, 3], kill: [15, 5], first: 20, hardMult: 1.25},   // [a, b] = a + b·i
     gems: {start: 30, first: 5, firstHard: 10, adGift: 2, adGiftPerDay: 3, questsAll: 5},
     revive: {hp: 0.5, gems: [20, 40]}, reroll: {gems: 7, mult: 2}, skip: [5, 1],
-    boss: {poolPerExtra: 0.3, rageAt: 0.33, rageTimer: 1},
+    boss: {returnHp: 0.5, rageAt: 0.33, rageTimer: 1},   // вернувшийся босс: returnHp от макс. HP
     interstitial: {fromIsland: 3, minSec: 180},
   },
   daily: [{coins: 30}, {coins: 50}, {gems: 5}, {coins: 80}, {coins: 100}, {coins: 120}, {gems: 15}],
@@ -141,9 +141,9 @@ PS.Field.closableAfterEnemy(F) -> [i...]    // однотонные полные
 B = {
   rng, field: F, turn: 0, combo: 0, comboGrace: 0, lastColor: null, freePours: 0,
   player: {hp, maxHp, shield},
-  enemy: {id, boss: bool, name, hp, maxHp, shield, cycle, ci, intent: {t, v, turns}, timer, frozen: 0, poison: [{tick, turns}], buff: 1, rage: false, first: true, fleeAt: 0 /*HP-порог побега босса*/, final: bool, fleeTurns: 0},
+  enemy: {id, boss: bool, name, hp, maxHp, shield, cycle, ci, intent: {t, v, turns}, timer, frozen: 0, poison: [{tick, turns}], buff: 1, rage: false, first: true, final: bool /*нефинальный босс при 0 HP уходит*/, patched: bool /*вернувшийся босс с пластырем*/},
   mods, relics, deck: {colorId: boostLevel}, slotsKinds, potions: [ids], // ссылки на данные попытки копируются при старте
-  burn: [{dmg, turns}], twist, stuck: false, history: null /*снимок для Отмены*/, status: 'active'|'won'|'lost'|'fled'|'enemy_fled',
+  burn: [{dmg, turns}], twist, stuck: false, history: null /*снимок для Отмены*/, status: 'active'|'won'|'lost'|'fled',
   stats: {closes: {colorId: n}, maxCombo, potionsUsed, junkCloses},
 }
 PS.Combat.create(runCtx, enemySpec) -> {B, events}   // события старта: Заготовка, Пузырь, замороженная колба мира и т.п.
@@ -158,7 +158,7 @@ PS.Combat.effectValue(B, colorId, k) -> число эффекта (для под
 
 **События** (`{type, ...}`; поля, затрагивающие поле, несут `tubes` — копию слоёв всех колб после шага, чтобы UI рисовал промежуточные состояния):
 
-`pour {from, to, n, color, tubes}` · `swallow {tube}` · `close {tube, color, k, cascade, tubes}` · `effect {color, kind: 'dmg'|'shield'|'heal'|'poison'|'freeze'|'delay'|'self'|'slime'|'stone', value}` · `refill {tube, tubes}` · `stones {tube, n, tubes}` · `bomb {tube, targets, tubes}` · `combo {k}` · `turn {free: bool, reason}` · `poison_tick {dmg}` · `burn_tick {dmg}` · `enemy_act {t, v, tubes?, target?}` · `player_hit {dmg, absorbed}` · `enemy_hit {dmg, absorbed, source}` · `enemy_heal {v}` · `enemy_shield {v}` · `intent {t, v, timer}` · `rage` · `frozen_enemy {turns}` · `dead_end` · `drain {tube, free, refilled, tubes}` · `potion {id, tube?}` · `heal {v}` · `relic {id}` (сработала реликвия) · `twist {type, ...}` · `enemy_dead` · `boss_fled` · `enemy_fled` · `player_dead`.
+`pour {from, to, n, color, tubes}` · `swallow {tube}` · `close {tube, color, k, cascade, tubes}` · `effect {color, kind: 'dmg'|'shield'|'heal'|'poison'|'freeze'|'delay'|'self'|'slime'|'stone', value}` · `refill {tube, tubes}` · `stones {tube, n, tubes}` · `bomb {tube, targets, tubes}` · `combo {k}` · `turn {free: bool, reason}` · `poison_tick {dmg}` · `burn_tick {dmg}` · `enemy_act {t, v, tubes?, target?}` · `player_hit {dmg, absorbed}` · `enemy_hit {dmg, absorbed, source}` · `enemy_heal {v}` · `enemy_shield {v}` · `intent {t, v, timer}` · `rage` · `frozen_enemy {turns}` · `dead_end` · `drain {tube, free, refilled, tubes}` · `potion {id, tube?}` · `heal {v}` · `relic {id}` (сработала реликвия) · `twist {type, ...}` · `enemy_dead` · `boss_fled` · `player_dead`.
 
 ## PS.Run (`js/core/run.js`)
 
@@ -168,7 +168,7 @@ R = {
   island: n, ctx, rng, phase: 'battle'|'reward'|'revive'|'won'|'lost',
   stages: [{type: 'regular'|'boss', enemy: id, encounter: 0..E-1}], stage: 0,
   hp, maxHp, deck: {colorId: boostLevel}, mods: {id: stacks}, relics: [ids], slots: [tubeKind...], potions: [ids], beltSize,
-  boss: {id, pool, poolMax, encounters, done},
+  boss: {id, maxHp, encounters, done},
   boosters: [ids], coins: 0, gemsSpent: 0, revives: {free: 0, gems: 0}, rerolls: 0,
   offer: null | {kind: 'pick'|'relic'|'potion_pick'|'replace_color'|'replace_tube', options: [{type: 'mod'|'find'|'relic'|'potion'|'coins', id, color?, tube?}]},
   battle: B | null, best: 0, stats: {...}, firstClear: bool,
