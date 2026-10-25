@@ -166,7 +166,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const c = idxWhere(F, t => !t.frozen && t.layers.length < t.cap);
       if (!c.length) break;
       const j = R().pick(rng, c);
-      F.tubes[j].layers.push('stone');
+      // A sieve swallows any junk that lands in it, thrown or poured.
+      if (F.tubes[j].kind !== 'sieve') F.tubes[j].layers.push('stone');
       out.push(j);
     }
     return out;

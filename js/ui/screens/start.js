@@ -14,6 +14,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const boss = bossId ? UI.item('bosses', bossId) : null;
       const ids = ORDER.filter(id => PS.DATA.boosters && PS.DATA.boosters[id]).concat(Object.keys(PS.DATA.boosters || {}).filter(id => ORDER.indexOf(id) < 0));
       const picked = {};
+      const E = PS.DATA.economy, slotsFull = E.slots.base + PS.Meta.labTier('slot') * PS.DATA.lab.slot.per.slots >= E.slots.max;
+      const capped = id => id === 'booster_flask' && slotsFull;
 
       el.innerHTML = `
         <div class="scr-head"><button class="btn-icon" data-a="back" aria-label="Назад">‹</button><h1>Старт острова</h1></div>
@@ -34,9 +36,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
         <div class="sec-title">Бусты на попытку</div>
         <div class="col" data-boosts>${ids.map(id => {
           const b = UI.item('boosters', id);
-          return `<button class="boost" data-b="${id}" data-tip="<b>${esc(b.name)}</b><br>${esc(b.desc)}">
+          return `<button class="boost${capped(id) ? ' capped' : ''}" data-b="${id}" ${capped(id) ? 'disabled' : ''} data-tip="<b>${esc(b.name)}</b><br>${esc(b.desc)}">
             <span class="boost-ico">${b.icon}</span><span class="grow"><span class="card-title" style="font-size:15px">${esc(b.name)}</span><br><span class="card-desc">${esc(b.desc)}</span></span>
-            <span class="boost-price">💎${b.gems}</span><span class="boost-chk"></span></button>`;
+            <span class="boost-price">${capped(id) ? '<span class="dim">макс. колб</span>' : `💎${b.gems}`}</span><span class="boost-chk"></span></button>`;
         }).join('')}</div>
         <div class="start-total"><span class="muted">Итого</span><b data-total class="c-gem">💎 0</b></div>
         <div class="spacer"></div>

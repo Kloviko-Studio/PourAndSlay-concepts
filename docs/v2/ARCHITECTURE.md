@@ -88,7 +88,7 @@ PS.DATA = {
     drain: {hp: 3}, heal: {regular: 0.10, boss: 0.25}, potionDrop: 0.20, relicInPick: {chance: 0.15, from: 4},
     coins: {reg: [3, 1], flee: [8, 3], kill: [15, 5], first: 20, hardMult: 1.25},   // [a, b] = a + b·i
     gems: {start: 30, first: 5, firstHard: 10, adGift: 2, adGiftPerDay: 3, questsAll: 5},
-    revive: {hp: 0.5, gems: [20, 40]}, reroll: {gems: 7, mult: 2}, skip: [5, 1],
+    revive: {hp: 0.5, gems: 20, perRun: 1 /*одно воскрешение за попытку из любого источника, включая Перо феникса*/}, enemyHeals: 3, reroll: {gems: 7, mult: 2}, skip: [5, 1],
     boss: {returnHp: 0.5, rageAt: 0.33, rageTimer: 1},   // вернувшийся босс: returnHp от макс. HP
     interstitial: {fromIsland: 3, minSec: 180},
   },
@@ -141,9 +141,9 @@ PS.Field.closableAfterEnemy(F) -> [i...]    // однотонные полные
 B = {
   rng, field: F, turn: 0, combo: 0, comboGrace: 0, lastColor: null, freePours: 0,
   player: {hp, maxHp, shield},
-  enemy: {id, boss: bool, name, hp, maxHp, shield, cycle, ci, intent: {t, v, turns}, timer, frozen: 0, poison: [{tick, turns}], buff: 1, rage: false, first: true, final: bool /*нефинальный босс при 0 HP уходит*/, patched: bool /*вернувшийся босс с пластырем*/},
+  enemy: {id, boss: bool, name, hp, maxHp, shield, cycle, ci, intent: {t, v, turns}, timer, frozen: 0, poison: [{tick, turns}], buff: 1, heals: 0 /*лечения за бой, не больше economy.enemyHeals*/, rage: false, first: true, final: bool /*нефинальный босс при 0 HP уходит*/, patched: bool /*вернувшийся босс с пластырем*/},
   mods, relics, deck: {colorId: boostLevel}, slotsKinds, potions: [ids], // ссылки на данные попытки копируются при старте
-  burn: [{dmg, turns}], twist, stuck: false, history: null /*снимок для Отмены*/, status: 'active'|'won'|'lost'|'fled',
+  burn: [{dmg, turns}], twist, stuck: false, history: null /*снимок для Отмены*/, owedMove: null /*ход, на котором игрок погиб; проходит после воскрешения*/, status: 'active'|'won'|'lost'|'fled',
   stats: {closes: {colorId: n}, maxCombo, potionsUsed, junkCloses},
 }
 PS.Combat.create(runCtx, enemySpec) -> {B, events}   // события старта: Заготовка, Пузырь, замороженная колба мира и т.п.

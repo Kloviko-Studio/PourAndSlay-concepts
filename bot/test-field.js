@@ -275,4 +275,11 @@ test('determinism by seed, plain JSON state', () => {
   assert.deepStrictEqual(JSON.parse(JSON.stringify(F)), F);
 });
 
+test('a sieve swallows thrown stones', () => {
+  const F = mk([{ kind: 'sieve', layers: [] }]);
+  const out = Fd.addStones(F, Rng.make(1), 3);
+  assert.deepStrictEqual(out, [0, 0, 0]);
+  assert.deepStrictEqual(F.tubes[0].layers, []);
+});
+
 console.log(passed + ' tests passed');

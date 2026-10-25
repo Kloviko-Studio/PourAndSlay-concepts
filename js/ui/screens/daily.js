@@ -13,7 +13,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const today = d.canClaim ? d.day : (d.day + days.length - 1) % days.length;
         const cells = days.map((r, i) => {
           const done = i < today || (i === today && !d.canClaim);
-          const v = r.coins ? `${UI.fmt(Math.round(r.coins * P))} 🪙` : `${r.gems} 💎`;
+          // Claimed days show what was actually received; P may have grown since.
+          const got = done && (PS.Meta.profile.daily.got || {})[i];
+          const v = got ? (got.coins ? `${UI.fmt(got.coins)} 🪙` : `${got.gems} 💎`) : r.coins ? `${UI.fmt(Math.round(r.coins * P))} 🪙` : `${r.gems} 💎`;
           return `<div class="day${done ? ' done' : ''}${i === today && d.canClaim ? ' today' : ''}${i === days.length - 1 ? ' big' : ''}">
             <span class="d-n">День ${i + 1}</span><span class="d-ico">${r.gems ? (i === days.length - 1 ? '💎💎' : '💎') : (i >= 4 ? '💰' : '🪙')}</span><span class="d-v ${r.gems ? 'c-gem' : 'c-gold'}">${v}</span></div>`;
         }).join('');

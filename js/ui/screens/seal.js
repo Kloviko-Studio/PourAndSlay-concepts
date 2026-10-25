@@ -5,7 +5,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   UI.screen('seal', {
     chrome: { tab: 'shop', tabs: false },
-    mount(el) {
+    mount(el, params) {
       function render() {
         const now = UI.now(), active = PS.Meta.sealActive(now), days = PS.Meta.sealDaysLeft(now);
         const prod = PS.DATA.shop.products.find(x => x.id === 'seal') || {}, S = PS.DATA.seal || {};
@@ -24,7 +24,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           ${active ? '<p class="center muted small" style="margin:14px 0">Продлить можно после окончания срока.</p><button class="btn btn-block btn-lg" data-a="back2">Отлично</button>'
             : `<div class="gap"></div><button class="btn btn-cta btn-lg btn-block" data-a="buy">Купить · ${esc(prod.price || '')}</button>
                <p class="center tiny dim" style="margin-top:8px">Демо: покупка начисляется сразу</p>`}`;
-        const back = () => { PS.Snd.play('select'); UI.go('main'); };
+        const back = () => { PS.Snd.play('select'); UI.go(['shop', 'battle', 'lab', 'collection'].indexOf(params.back) >= 0 ? params.back : 'main'); };
         el.querySelector('[data-a=back]').onclick = back;
         const b2 = el.querySelector('[data-a=back2]'); if (b2) b2.onclick = back;
         const buy = el.querySelector('[data-a=buy]');

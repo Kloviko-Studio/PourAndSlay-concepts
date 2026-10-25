@@ -38,14 +38,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
             <button class="btn btn-sm btn-cta" data-buy="${g.id}">${esc(g.price)}</button></div>`).join('')}</div>
           <div class="sec-title" data-focus="coins">Монеты за кристаллы</div>
           <div class="shop-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">${D.shop.coinPacks.map(c => `<div class="panel tight prod">
-            <span class="p-ico">${c.icon || '🪙'}</span><span class="p-amt coin">${UI.fmt(PS.Meta.coinPackAmount ? PS.Meta.coinPackAmount(c.id) : c.coins)}</span><span class="p-name">${esc(c.name || '')}</span>
+            <span class="p-ico">${c.icon || '🪙'}</span><span class="p-amt coin">${UI.fmt(PS.Meta.coinPackAmount ? PS.Meta.coinPackAmount(c.id) : c.coins)} 🪙</span><span class="p-name">${esc(c.name || '')}</span>
             <button class="btn btn-sm btn-gem" data-pack="${c.id}">💎${c.gems}</button></div>`).join('')}</div>
           <div class="sec-title">Прочее</div>
           <div class="card"><div class="card-ico">🚫</div><div class="card-body"><div class="card-title">${esc(noAds.name || 'Без рекламы')}</div><div class="card-desc">${esc(noAds.desc || '')}</div></div>
             <div class="card-side">${p.noAds ? '<span class="tag tag-ok">Куплено</span>' : `<button class="btn btn-sm btn-cta" data-buy="no_ads">${esc(noAds.price)}</button>`}</div></div>
           <div class="center tiny dim" style="margin:14px 0 4px">Демо: покупки начисляются сразу, без оплаты</div>`;
 
-        el.querySelector('[data-a=seal]').onclick = () => { PS.Snd.play('select'); UI.go('seal'); };
+        el.querySelector('[data-a=seal]').onclick = () => { PS.Snd.play('select'); UI.go('seal', { back: 'shop' }); };
         const gift = el.querySelector('[data-a=gift]');
         if (gift) gift.onclick = async () => {
           if (PS.Meta.adGiftLeft(UI.now()) <= 0) return;

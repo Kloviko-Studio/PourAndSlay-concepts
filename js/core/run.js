@@ -116,7 +116,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const rest = Rg().shuffle(rng, mods.concat(finds));
     while (out.length < n && rest.length) out.push(rest.shift());
     if (out.length < n) out.push(coinsOption());
-    if (R.island >= cfg.relicInPick.from && Rg().chance(rng, cfg.relicInPick.chance)) {
+    if (R.ctx.maxIsland >= cfg.relicInPick.from && Rg().chance(rng, cfg.relicInPick.chance)) {
       const relics = unlockedPool(R, 'relics');
       if (relics.length) out[Rg().int(rng, out.length)] = { type: 'relic', id: weighted(R, relics, relicWeight) };
     }
@@ -149,7 +149,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function addCoins(R, base, reason, ev) {
-    const v = U().round(Math.round(base * coinMult(R) * 1e6) / 1e6);
+    const v = U().round(base * coinMult(R));
     R.coins += v;
     ev.push({ type: 'coins', v, reason });
   }
@@ -240,10 +240,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function endBattle(R, ev) {
     const B = R.battle, st = R.stages[R.stage], d = D(), i = R.island;
     if (B.status === 'lost') {
-      if (hasRelic(R, 'phoenix_feather') && !R.phoenixUsed) {
+      if (hasRelic(R, 'phoenix_feather') && revivesLeft(R) > 0) {
         R.phoenixUsed = true;
         B.status = 'active';
         B.player.hp = Math.max(1, U().round(B.player.maxHp * d.relics.phoenix_feather.hp));
+        B.history = null;
         ev.push({ type: 'relic', id: 'phoenix_feather' });
         ev.push({ type: 'revived', source: 'phoenix' });
         C().settle(B).forEach(e => ev.push(e));
@@ -315,8 +316,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       + (boosters.indexOf('booster_vitality') >= 0 ? d.boosters.booster_vitality.maxHp : 0);
     R.hp = R.maxHp;
     d.startDeck.forEach(c => { R.deck[c] = 0; });
-    const slots = E.slots.base + labTier(R, 'slot') * d.lab.slot.per.slots
-      + (boosters.indexOf('booster_flask') >= 0 ? d.boosters.booster_flask.slots : 0);
+    const slots = Math.min(E.slots.max, E.slots.base + labTier(R, 'slot') * d.lab.slot.per.slots
+      + (boosters.indexOf('booster_flask') >= 0 ? d.boosters.booster_flask.slots : 0));
     for (let s = 0; s < slots; s++) R.slots.push('plain');
     R.beltSize = E.belt.base + (labTier(R, 'belt') >= 2 ? 1 : 0);
     // Start potions may overflow the belt so a paid booster is never lost; drops/picks respect beltSize.
@@ -413,12 +414,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
     return ev;
   }
 
+  // One revive per attempt from any source (ad, gems or Phoenix Feather), so gems cannot buy a win outright.
+  const revivesLeft = R => D().economy.revive.perRun - R.revives.free - R.revives.gems - (R.phoenixUsed ? 1 : 0);
+
   function reviveOptions(R) {
-    const rv = D().economy.revive;
-    if (R.phase !== 'revive') return { free: false, gemsPrice: null };
-    const free = R.revives.free < (rv.freePerRun || 1);
-    const g = R.revives.gems;
-    return { free, gemsPrice: g < (rv.maxGems || rv.gems.length) ? rv.gems[g] : null };
+    const ok = R.phase === 'revive' && revivesLeft(R) > 0;
+    return { free: ok, gemsPrice: ok ? D().economy.revive.gems : null };
   }
 
   function revive(R, source) {
@@ -430,6 +431,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const B = R.battle;
     B.status = 'active';
     B.player.hp = Math.max(1, U().round(B.player.maxHp * D().economy.revive.hp));
+    // Undo would roll back past the death and hand back the pre-death HP on top of the revive.
+    B.history = null;
     R.phase = 'battle';
     ev.push({ type: 'revived', source, price: source === 'gems' ? o.gemsPrice : 0 });
     C().settle(B).forEach(e => ev.push(e));

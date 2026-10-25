@@ -390,4 +390,17 @@ test('player death sets lost; json round-trip continues identically', () => {
   assert.deepStrictEqual(Y, X);
 });
 
+test('enemy heals at most enemyHeals times per battle', () => {
+  const B = mkB({ es: { hp: 200, cycle: [{ t: 'heal', v: 5, turns: 1 }, { t: 'atk', v: 1, turns: 1 }] } });
+  B.enemy.hp = 100;
+  B.field.minLayers = 99; // drains refill, so the field never runs dry
+  let heals = 0;
+  for (let i = 0; i < 30 && B.status === 'active'; i++) {
+    const ev = Cb.act(B, { type: 'drain', tube: B.field.tubes.findIndex(t => t.layers.length) });
+    heals += ofType(ev, 'enemy_heal').length;
+    B.player.hp = 50;
+  }
+  assert.strictEqual(heals, D.economy.enemyHeals);
+});
+
 console.log(passed + ' combat tests passed');

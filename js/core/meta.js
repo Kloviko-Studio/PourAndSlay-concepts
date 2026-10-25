@@ -25,7 +25,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function defaults(now) {
     return {
       v: 2, coins: 0, gems: D().economy.gems.start, lab: {}, maxIsland: 1, cleared: {}, best: {}, seen: {},
-      daily: { day: 0, last: null }, quests: { date: null, list: [], bonusClaimed: false },
+      daily: { day: 0, last: null, got: {} }, quests: { date: null, list: [], bonusClaimed: false },
       adGift: { date: null, used: 0 }, seal: { until: 0 }, noAds: false, starter: { offeredAt: 0, bought: false },
       lastInterstitial: 0, lastRewardedOrPurchase: 0, sessions: 0,
       settings: { sound: true, music: true, vibro: true }, tutorial: {}, activeRun: null,
@@ -45,6 +45,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function migrate(p, now) {
     if (!p || typeof p !== 'object') return defaults(now);
     p.v = 2;
+    // Runs saved before the returning-boss rework had a shared HP pool and no boss.maxHp; the next encounter would get NaN HP.
+    const R = p.activeRun;
+    if (R && R.boss && R.boss.maxHp == null && D().bosses[R.boss.id] && islandOf(R.island)) {
+      R.boss.maxHp = U.round(D().bosses[R.boss.id].hp * islandOf(R.island).M);
+    }
     return fill(p, defaults(now));
   }
 
@@ -71,7 +76,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     return Meta.profile;
   };
 
-  Meta.P = () => islandOf(P_().maxIsland).M;
+  Meta.P = () => islandOf(P_().maxIsland).P;
 
   Meta.ctx = function (now) {
     const p = P_();
@@ -86,6 +91,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   };
 
   // Lab
+  Meta.labOpen = () => P_().stats.runs > 0;
   Meta.labTier = id => P_().lab[id] || 0;
   Meta.labCost = function (id) {
     const def = D().lab[id], t = Meta.labTier(id);
@@ -95,6 +101,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const def = D().lab[id], p = P_();
     if (!def) return 'unknown';
     if (def.unlock > p.maxIsland) return 'island';
+    if (!Meta.labOpen()) return 'first';
     if (p.activeRun) return 'run';
     if (Meta.labTier(id) >= def.tiers) return 'max';
     return null;
@@ -145,7 +152,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
     p.stats.runs += 1;
 
     const stage = Math.max(R.best || 0, R.phase === 'won' ? R.stages.length : (R.stage || 0) + 1);
-    if (stage > (p.best[n] || 0)) { p.best[n] = stage; res.newBest = true; }
+    const prev = p.best[n] || 0;
+    // A first attempt always sets a best; only beating an earlier one counts as a record.
+    if (stage > prev) { p.best[n] = stage; res.newBest = prev > 0; }
 
     if (R.phase === 'won') {
       p.stats.wins += 1;
@@ -186,6 +195,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (d.reward.coins) { out.coins = d.reward.coins * k; p.coins += out.coins; }
     if (d.reward.gems) { out.gems = d.reward.gems * k; p.gems += out.gems; }
     if (double && !d.autoDouble) p.lastRewardedOrPurchase = now;
+    if (d.day === 0) p.daily.got = {};
+    p.daily.got[d.day] = out;
     p.daily.last = U.dayKey(now);
     p.daily.day = (p.daily.day + 1) % D().daily.length;
     Meta.save();
@@ -199,7 +210,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (!r) return true;
     if (r.color) { const c = D().colors[r.color]; if (c && (c.unlock || 1) > max) return false; }
     if (r.island && r.island > max) return false;
-    if (r.lab && !Object.keys(D().lab).some(id => (D().lab[id].unlock || 1) <= max)) return false;
+    if (r.lab && !Meta.labOpen()) return false;
     return true;
   }
   function unlockedColors() { return Object.keys(D().colors).filter(id => (D().colors[id].unlock || 1) <= P_().maxIsland); }

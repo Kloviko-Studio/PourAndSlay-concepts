@@ -28,7 +28,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const ids = Object.keys(PS.DATA.lab || {});
         ids.sort((a, b) => (PS.DATA.lab[a].unlock || 1) - (PS.DATA.lab[b].unlock || 1));
         el.innerHTML = `<div class="scr-head"><h1>⚗️ Лаборатория</h1></div>
-          ${p.activeRun ? '<div class="lab-lock">Покупки — после попытки</div>' : ''}
+          ${!PS.Meta.labOpen() ? '<div class="lab-lock">Откроется после первой попытки</div>' : p.activeRun ? '<div class="lab-lock">Покупки — после попытки</div>' : ''}
           <div class="cards">${ids.map(id => {
             const def = PS.DATA.lab[id], tier = PS.Meta.labTier(id), cost = PS.Meta.labCost(id);
             const locked = (def.unlock || 1) > p.maxIsland, max = tier >= def.tiers;
@@ -37,7 +37,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
             let side;
             if (locked) side = `<span class="tag">🔒 С острова ${def.unlock}</span>`;
             else if (max) side = '<span class="tag tag-ok">Максимум</span>';
-            else side = `<button class="btn btn-sm lab-btn ${PS.Meta.canBuyLab(id) ? 'btn-cta' : ''}" data-buy="${id}" ${p.activeRun ? 'disabled' : ''}><span class="price">🪙${UI.fmt(cost)}</span></button>`;
+            else side = `<button class="btn btn-sm lab-btn ${PS.Meta.canBuyLab(id) ? 'btn-cta' : ''}" data-buy="${id}" ${p.activeRun || !PS.Meta.labOpen() ? 'disabled' : ''}><span class="price">🪙${UI.fmt(cost)}</span></button>`;
             return `<div class="card${locked ? ' locked' : ''}" data-id="${id}" data-tip="<b>${esc(def.name)}</b><br>${esc(def.desc)}">
               <div class="card-ico">${def.icon}</div>
               <div class="card-body"><div class="row"><span class="card-title grow">${esc(def.name)}</span><span class="stack-n">${tier}/${def.tiers}</span></div>
@@ -49,7 +49,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           const id = b.dataset.buy;
           if (!PS.Meta.canBuyLab(id)) {
             PS.Snd.play('bad'); PS.Fx.animClass(b, 'wiggle', 320);
-            if (!p.activeRun) UI.toast('Не хватает монет');
+            if (!p.activeRun && PS.Meta.labOpen()) UI.toast('Не хватает монет');
             return;
           }
           PS.Meta.buyLab(id, UI.now());

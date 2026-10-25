@@ -3,8 +3,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
   'use strict';
   const clone = o => JSON.parse(JSON.stringify(o));
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  // Half rounds up, as the content spec requires.
-  const round = v => Math.floor(v + 0.5);
+  // Half rounds up, as the content spec requires; float noise is stripped first
+  // so 90 * 0.35 = 31.499999999999996 still rounds to 32.
+  const round = v => Math.floor(Math.round(v * 1e6) / 1e6 + 0.5);
   function plural(n, one, few, many) {
     const a = Math.abs(n) % 100, b = a % 10;
     if (a > 10 && a < 20) return many;

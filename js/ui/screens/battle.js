@@ -104,7 +104,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         </div>
       </div>
       <div class="bt-player">
-        <span class="bt-heart">❤</span>
+        <span class="bt-heart">❤️</span>
         <div class="bar bar-hp"><div class="bar-ghost"></div><div class="bar-fill"></div><span class="bar-label"></span></div>
         <span class="bt-shield" data-tip="<b>Щит</b><br>Поглощает урон от атаки врага и сгорает после неё.">🛡 <b>0</b></span>
         <div class="bt-combo" data-tip="<b>Комбо</b><br>Закрытия подряд усиливают эффект: ×1,5 → ×2 → ×3. Ход без закрытия сбрасывает комбо."><div class="cl">комбо</div><div class="cv">×1</div></div>
@@ -137,8 +137,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
     mon.classList.toggle('gone', m.e && S.R.battle.status !== 'active' && S.R.battle.status !== 'lost');
     if (enter) Fx.animClass(mon, 'enter', 560);
     const encs = S.R.boss ? S.R.boss.encounters : 1;
+    const heals = m.e.cycle.some(c => c.t === 'heal') ? Math.max(0, D().economy.enemyHeals - (m.e.heals || 0)) : null;
     $('.bt-ename').innerHTML = `${m.boss ? '<span class="tag tag-hard">☠ Босс</span>' : ''}<span class="nm" data-tip="<b>${esc(m.def.name || m.e.name)}</b><br>${esc(m.def.desc || '')}">${esc(m.def.name || m.e.name)}</span>
-      ${m.boss && encs > 1 ? `<span class="tag">встреча ${m.enc + 1}/${encs}</span>` : ''}`;
+      ${m.boss && encs > 1 ? `<span class="tag">встреча ${m.enc + 1}/${encs}</span>` : ''}
+      ${heals != null ? `<span class="tag" data-tip="Враг лечится не больше ${D().economy.enemyHeals} раз за бой">💚 ${heals}</span>` : ''}`;
   }
 
   function setBar(bar, v, max, label) {
@@ -467,7 +469,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     shield_burn(ev) { S.vm.pShield = Math.max(0, S.vm.pShield - ev.v); renderPlayer(); return 120; },
     enemy_shield(ev) { S.vm.eShield += ev.v; renderEnemyBars(); hitNum(monEl(), '🛡+' + ev.v, '#a7dcff'); Snd.play('shield'); return 300; },
     enemy_shield_burn(ev) { S.vm.eShield = Math.max(0, S.vm.eShield - ev.v); renderEnemyBars(); return 120; },
-    enemy_heal(ev) { S.vm.eHp += ev.v; renderEnemyBars(); hitNum(monEl(), '+' + ev.v, '#8af0a0'); Snd.play('heal'); return 300; },
+    enemy_heal(ev) { S.vm.eHp += ev.v; renderEnemyBars(); renderMonster(false); hitNum(monEl(), '+' + ev.v, '#8af0a0'); Snd.play('heal'); return 300; },
     poison_tick() { Snd.play('poison'); return 120; },
     burn_tick() { hitNum($('.bt-player .bar'), '🔥', '#ff9a5a'); return 150; },
     refill: async ev => {
@@ -671,9 +673,25 @@ var PS = globalThis.PS || (globalThis.PS = {});
     else if (R.phase === 'won' || R.phase === 'lost') finish();
   }
 
+  function questSnap() {
+    const q = PS.Meta.profile.quests;
+    return q && q.list ? { date: q.date, list: q.list.map(x => ({ progress: x.progress, done: x.done })) } : null;
+  }
+  function restoreQuests(snap) {
+    const q = PS.Meta.profile.quests;
+    if (!snap || !q || q.date !== snap.date) return;
+    q.list.forEach((x, i) => { if (!x.claimed && snap.list[i]) { x.progress = snap.list[i].progress; x.done = snap.list[i].done; } });
+  }
+
   function doAct(a) {
     if (S.busy || !PS.Run.canAct(S.R, a)) return false;
+    const B0 = S.R.battle;
+    const undo = a.type === 'potion' && B0 && B0.potions[a.idx] === 'undo';
+    const snap = a.type === 'pour' || a.type === 'drain' ? questSnap() : null;
     const evs = PS.Run.act(S.R, a);
+    // Quest progress is counted from events, so whatever the undone move counted is rolled back with it.
+    if (undo && evs.some(e => e.type === 'potion' && e.id === 'undo')) restoreQuests(S.qSnap);
+    S.qSnap = snap;
     save();
     track(evs);
     S.sel = null; S.mode = null;
@@ -818,7 +836,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const price = PS.Run.rerollPrice(R);
     const skipV = sub ? 0 : PS.U.round(PS.U.lin(D().economy.skip, R.island) * PS.Run.coinMult(R));
     const html = `<h2 class="ov-title">${title}</h2><p class="ov-text">${subt}</p>
-      ${sub ? '' : `<div class="bt-ov-hp"><span>❤</span><div class="bar bar-hp"><div class="bar-fill" style="width:${R.hp / R.maxHp * 100}%"></div><span class="bar-label">${R.hp} / ${R.maxHp}</span></div></div>`}
+      ${sub ? '' : `<div class="bt-ov-hp"><span>❤️</span><div class="bar bar-hp"><div class="bar-fill" style="width:${R.hp / R.maxHp * 100}%"></div><span class="bar-label">${R.hp} / ${R.maxHp}</span></div></div>`}
       <div class="cards">${off.options.map((o, i) => cardHtml(o, i, off)).join('')}</div>
       <div class="ov-actions">${sub ? '' : `<button class="btn btn-gem" data-a="reroll">Переброс 💎${price}</button>`}
         <button class="btn btn-ghost" data-a="skip">${sub ? 'Отмена' : `Пропустить +${skipV} 🪙`}</button></div>`;
@@ -868,11 +886,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
       ? '<button class="btn btn-cta" data-a="free">🔱 Воскреснуть бесплатно</button>'
       : `<button class="btn btn-green btn-ad" data-a="free" ${UI.ads.online ? '' : 'disabled'}>${UI.ads.online ? 'Воскреснуть за рекламу' : 'Реклама недоступна'}</button>`;
     const html = `<div class="ov-hero">💀</div><h2 class="ov-title">Ты пал!</h2>
-      <p class="ov-text">Воскресни с ${Math.round(D().economy.revive.hp * 100)}% HP — поле останется как было.</p>
+      <p class="ov-text">${o.free ? `Воскресни с ${Math.round(D().economy.revive.hp * 100)}% HP — поле останется как было. Воскрешение — одно за попытку.` : 'Воскрешение в этой попытке уже использовано.'}</p>
       <div class="ov-actions col">${freeBtn}
         ${o.gemsPrice != null ? `<button class="btn btn-gem${gems < o.gemsPrice ? ' disabled' : ''}" data-a="gems">Воскреснуть 💎${o.gemsPrice}</button>` : ''}
-        <button class="btn btn-ghost" data-a="giveup">Сдаться</button></div>
-      ${seal ? '' : '<button class="bt-seal-link" data-a="seal">🔱 С Печатью алхимика — без рекламы</button>'}`;
+        <button class="btn ${o.free ? 'btn-ghost' : 'btn-cta'}" data-a="giveup">${o.free ? 'Сдаться' : 'К итогам'}</button></div>
+      ${seal || !o.free ? '' : '<button class="bt-seal-link" data-a="seal">🔱 С Печатью алхимика — без рекламы</button>'}`;
     const close = UI.overlay(html, { cls: 'bt-ov', dismiss: false });
     S.ov = close;
     const card = close.card, token = S;
@@ -909,9 +927,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
       finish();
     };
     const sl = card.querySelector('[data-a=seal]');
-    if (sl) sl.onclick = () => { if (done) return; done = true; close(); S.ov = null; save(); UI.go('seal'); };
+    if (sl) sl.onclick = () => { if (done) return; done = true; close(); S.ov = null; save(); UI.go('seal', { back: 'battle' }); };
     const T = Tut();
-    if (T) T.once('revive', { target: card, title: 'Воскрешение', text: 'Можно вернуться в бой: один раз за попытку за рекламу и до двух раз за кристаллы. Или сдаться — монеты за попытку останутся.', hand: false });
+    if (T) T.once('revive', { target: card, title: 'Воскрешение', text: 'Можно вернуться в бой один раз за попытку — за рекламу или за кристаллы. Или сдаться — монеты за попытку останутся.', hand: false });
   }
 
   const RULES = [

@@ -21,8 +21,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const junkCount = (B, v) => (B.filter ? Math.floor(v / 2) : v);
   const queueOf = F => F.queue.map(p => p.slice());
   const relicEv = (ev, id) => ev.push({ type: 'relic', id });
-  // Strip float noise (6 * 1.05 = 6.300000000000001) before the half-up rounding.
-  const rnd = v => U().round(Math.round(v * 1e6) / 1e6);
+  const rnd = v => U().round(v);
 
   function kOf(B, step) {
     const c = D().combo;
@@ -249,7 +248,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   // ---- enemy ----
   function setIntent(B, ev) {
-    const e = B.enemy, it = e.cycle[e.ci % e.cycle.length];
+    const e = B.enemy;
+    let it = e.cycle[e.ci % e.cycle.length];
+    // Heals are capped per battle: a healer that out-heals the player stalls the fight forever.
+    if (it.t === 'heal' && e.heals >= D().economy.enemyHeals) it = e.cycle[++e.ci % e.cycle.length];
     e.ci++;
     let timer = it.turns;
     if (e.rage) timer -= D().economy.boss.rageTimer;
@@ -335,6 +337,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       case 'heal': {
         const real = Math.min(it.v, e.maxHp - e.hp);
         e.hp += real;
+        e.heals = (e.heals || 0) + 1;
         ev.push({ type: 'enemy_act', t: 'heal', v: it.v });
         ev.push({ type: 'enemy_heal', v: real });
         break;
@@ -445,7 +448,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       closed = true;
       if (kind === 'catalyst') free = 'catalyst';
     }
-    if (!alive(B)) return;
+    if (!alive(B)) { if (B.status === 'lost') B.owedMove = { free }; return; }
     // A swallow is a free tidy-up, not a move, so it doesn't break the chain.
     if (closed) B.comboGrace = 0;
     else if (!r.swallowed) comboMiss(B);
@@ -462,7 +465,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     B.stuck = false;
     ev.push({ type: 'drain', tube: a.tube, free, refilled: r.refilled, tubes: tubesOf(F) });
     if (!free) hurtPlayer(B, D().economy.drain.hp, 'drain', ev, true);
-    if (!alive(B)) return;
+    if (!alive(B)) { if (B.status === 'lost') B.owedMove = { drain: true }; return; }
     if (r.refilled && Fd().isClosed(F, a.tube)) closeTube(B, a.tube, {}, ev, 0);
     if (!alive(B)) return;
     if (free) ev.push({ type: 'turn', free: true, reason: 'dead_end', n: B.turn });
@@ -524,6 +527,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function settle(B) {
     const ev = [];
     settleClosed(B, ev);
+    // The move that killed the player never passed its turn; a revive must not make it free.
+    const owed = B.owedMove;
+    B.owedMove = null;
+    if (owed && alive(B)) { if (owed.drain) passTurn(B, ev); else endMove(B, owed.free, ev); }
     return afterAction(B, ev);
   }
 
@@ -549,7 +556,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       enemy: {
         id: es.id, boss: !!es.boss, name: es.name || es.id, hp: es.hp, maxHp: es.maxHp || es.hp, shield: 0,
         cycle: es.cycle.map(c => ({ t: c.t, v: c.v, turns: c.turns })), ci: 0, intent: null, timer: 0,
-        frozen: 0, poison: [], buff: 1, rage: false, first: true, final: es.final !== false, patched: !!es.patched,
+        frozen: 0, poison: [], buff: 1, heals: 0, rage: false, first: true, final: es.final !== false, patched: !!es.patched,
       },
       mods: U().clone(rc.mods || {}), relics: (rc.relics || []).slice(), deck: U().clone(rc.deck), labFlat: U().clone(rc.labFlat || {}),
       masteryPct: rc.masteryPct || 0, firstStrike: rc.firstStrike || 1, filter: !!rc.filter,

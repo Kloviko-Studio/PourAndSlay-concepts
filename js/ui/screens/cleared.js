@@ -15,18 +15,20 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const unlocked = (res.unlocked || []).filter(u => !quiet(u)).sort((a, b) => rank(a) - rank(b)).map(UI.unlockLabel).filter(Boolean);
       const also = res.firstClear ? (res.unlocked || []).filter(quiet).map(UI.unlockLabel).filter(Boolean) : [];
       const labNew = also.filter(u => u.kind === 'lab'), restNew = also.filter(u => u.kind !== 'lab');
-      const alsoText = [labNew.length ? `🧪 Лаборатория: ${labNew.map(u => esc(u.name)).join(', ')}` : '']
+      const alsoText = [labNew.length ? `⚗️ Лаборатория: ${labNew.map(u => esc(u.name)).join(', ')}` : '']
         .concat(restNew.map(u => `${u.icon} ${esc(u.name)}`)).filter(Boolean).join(' · ');
       const hasNext = res.firstClear && n < UI.islandCount();
       let doubled = false, step = 0;
 
       function finish() {
         if (hasNext) UI.go('main', { n: n + 1, opened: true });
-        else UI.go('main', { n });
+        // After the last island the main screen lands on the "coming soon" card.
+        else UI.go('main', { n: res.firstClear ? n + 1 : n });
       }
 
       function victory() {
-        UI.setTheme('day', (UI.world(n) || {}).palette);
+        const w = UI.world(n) || {};
+        UI.setTheme(w.theme === 'night' ? 'night' : 'day', w.palette);
         el.innerHTML = `
           <div class="res-head"><h1 class="res-title">Победа!</h1>
             <div class="res-sub">Мир ${isl.world} · Остров ${n} · ${esc(isl.name)} — пройден</div></div>

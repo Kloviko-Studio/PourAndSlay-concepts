@@ -15,6 +15,13 @@ for (let i = 0; i < argv.length; i++) {
   else if (a.startsWith('--')) { const k = a.slice(2).replace(/-([a-z])/g, (_, c) => c.toUpperCase()); const v = argv[++i]; opt[k] = isNaN(+v) ? v : +v; }
 }
 if (opt.island && !argv.includes('--attempts')) opt.attempts = 30;
+// Try data tweaks without editing data.js: --set "islands.8.M=2.6;enemies.imp.hp=22;bosses.slime_king.cycle.0.v=6"
+String(opt.set || '').split(';').filter(Boolean).forEach(kv => {
+  const [path, v] = kv.split('='), keys = path.split('.');
+  let o = D;
+  for (const k of keys.slice(0, -1)) o = o[k];
+  o[keys[keys.length - 1]] = /^[[{]/.test(v) ? JSON.parse(v) : isNaN(+v) ? v : +v;
+});
 
 // ---------- anomalies ----------
 const anomalies = { exception: [], stuck: [], nan: [], guard: [] };
@@ -298,7 +305,7 @@ function spendLab() {
 }
 
 // ---------- aggregation ----------
-const newIsland = () => ({ campaigns: 0, attempts: 0, firstTry: 0, within3: 0, cleared: 0, forced: 0, att2clear: [], failStage: [], failCoins: [], winCoins: [], failTurns: [], winTurns: [], deaths: {}, ms: 0, stageN: 0 });
+const newIsland = () => ({ campaigns: 0, attempts: 0, firstTry: 0, within3: 0, cleared: 0, forced: 0, att2clear: [], failStage: [], failCoins: [], winCoins: [], failTurns: [], winTurns: [], deaths: {}, ms: 0, stageN: 0, labSpent: [], lab: {} });
 const newAgg = () => ({ dmg: {}, picks: {}, potions: {}, drains: 0, closes: 0, turns: 0, combo: {} });
 const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0;
 const median = a => { if (!a.length) return 0; const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
@@ -329,6 +336,10 @@ function runRange(from, to) {
       const St = S[n];
       St.campaigns++;
       let cleared = false, tries = 0;
+      const lp = Meta.profile.lab || {};
+      let spent = 0;
+      for (const id of Object.keys(lp)) { for (let t = 0; t < lp[id]; t++) spent += D.lab[id].costs[t]; St.lab[id] = (St.lab[id] || 0) + lp[id]; }
+      St.labSpent.push(spent);
       while (!cleared && tries < opt.cap) {
         tries++;
         const ctx = Meta.ctx(0);
@@ -418,6 +429,15 @@ function printTable(S, campaigns, campaign) {
       (Math.round(mean(s.winTurns)) + '/' + Math.round(mean(s.failTurns))).padEnd(14), String(Math.round(s.ms / s.attempts)).padEnd(7), s.forced,
     ].join(' '));
   }
+  if (campaign) {
+    console.log('\nLab at island entry (mean coins spent; mean tiers):');
+    for (let n = 1; n < S.length; n++) {
+      const s = S[n];
+      if (!s.labSpent.length) continue;
+      console.log(`  isl ${n}: ${Math.round(mean(s.labSpent))} | ` + Object.keys(s.lab).map(k => `${k}:${f1(s.lab[k] / s.labSpent.length)}`).join(','));
+    }
+  }
+  console.log('\nTurns per stage (wins): ' + S.slice(1).map((s, i) => s.winTurns.length ? `${i + 1}:${Math.round(mean(s.winTurns) / D.islands[i].stages)}` : `${i + 1}:-`).join(' '));
   console.log('\nDeaths by enemy@stage:');
   for (let n = 1; n < S.length; n++) {
     const s = S[n], ks = Object.keys(s.deaths).sort((a, b) => s.deaths[b] - s.deaths[a]).slice(0, 5);

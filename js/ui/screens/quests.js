@@ -7,7 +7,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const t = (PS.DATA.quests || []).find(x => x.id === q.id);
     if (!t) return q.id;
     const c = q.color && PS.DATA.colors[q.color];
-    return t.text.replace('{n}', q.target).replace('{color}', c ? (c.gen || c.name) : 'любого цвета');
+    // Templates are written for "many" ("{n} зелий"); agree the noun with the actual number.
+    const forms = { 'колб': ['колбу', 'колбы', 'колб'], 'зелий': ['зелье', 'зелья', 'зелий'], 'этапов': ['этап', 'этапа', 'этапов'], 'монет': ['монету', 'монеты', 'монет'], 'врагов': ['врага', 'врагов', 'врагов'] };
+    return t.text.replace(/\{n\} (\S+)/, (m, w) => q.target + ' ' + (forms[w] ? PS.U.plural(q.target, forms[w][0], forms[w][1], forms[w][2]) : w))
+      .replace('{n}', q.target).replace('{color}', c ? (c.gen || c.name) : 'любого цвета');
   }
 
   UI.screen('quests', {

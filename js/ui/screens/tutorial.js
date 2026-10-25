@@ -46,12 +46,16 @@ var PS = globalThis.PS || (globalThis.PS = {});
       if (r) {
         const pad = 6;
         html += `<div class="tut-ring${opts.soft || !block ? ' soft' : ''}" style="left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px"></div>`;
-        if (opts.hand !== false) html += `<div class="tut-hand" style="left:${r.left + r.width * .62}px;top:${r.bottom - Math.min(26, r.height * .35)}px">👆</div>`;
+        // Clamped so the hand stays on screen for targets at the edges (combo chip, drain button).
+        if (opts.hand !== false) html += `<div class="tut-hand" style="left:${Math.min(window.innerWidth - 44, r.left + r.width * .62)}px;top:${Math.min(window.innerHeight - 46, r.bottom - Math.min(26, r.height * .35))}px">👆</div>`;
       }
       const H = window.innerHeight, up = r ? r.top : 0, down = r ? H - r.bottom : 0;
       // Untargeted hints sit at the bottom so they never cover a window's title and cards.
       let pos = opts.pos || 'bottom:12px';
-      if (r && Math.max(up, down) < 190) pos = 'bottom:12px';
+      // Field targets get the bubble above the field so it never hides the other row of tubes.
+      const field = r && opts.target && opts.target.closest ? opts.target.closest('.bt-field') : null;
+      if (field) pos = `bottom:${Math.max(12, H - field.getBoundingClientRect().top + 8)}px`;
+      else if (r && Math.max(up, down) < 190) pos = 'bottom:12px';
       else if (r) pos = down > up ? `top:${Math.min(H - 190, r.bottom + 46)}px` : `bottom:${Math.max(12, H - r.top + 14)}px`;
       html += `<div class="tut-bubble" style="${pos}">${opts.title ? `<div class="tt">${opts.title}</div>` : ''}<div class="tx">${opts.text}</div>
         ${block ? `<button class="btn btn-cta btn-sm" data-ok>${opts.button || 'Понятно'}</button>` : ''}</div>`;
@@ -213,10 +217,13 @@ var PS = globalThis.PS || (globalThis.PS = {});
         }, 450);
       }
       if (name === 'results' && !seen('lab') && P().stats.runs >= 1) {
-        setTimeout(() => {
+        const labHint = () => {
           if (UI.current() !== 'results' || seen('lab')) return;
+          // The results screen may open an interstitial; the hint would sit above the ad, so wait for it to close.
+          if (document.querySelector('#overlays .ov')) { setTimeout(labHint, 400); return; }
           T.once('lab', { target: '.scr-results [data-a=lab]', title: 'Лаборатория', text: 'Монеты остаются после попытки. Трать их в Лаборатории на вечные улучшения — и попробуй снова.' });
-        }, 700);
+        };
+        setTimeout(labHint, 1100);
       }
     } catch (e) { console.warn(e); }
   };

@@ -144,6 +144,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const host = $('screen');
     const prev = cur;
     if (prev && prev.impl.unmount) { try { prev.impl.unmount(prev.el); } catch (e) { console.error(e); } }
+    const prevRect = prev ? prev.el.getBoundingClientRect() : null;
     const el = h('div', 'scr scr-' + name);
     cur = { name, impl, el, params: params || {} };
     document.body.dataset.screen = name;
@@ -152,6 +153,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
     $('tabs').hidden = !chrome.tabs;
     UI.setTheme(chrome.theme);
     UI.tabs.render(chrome.tab);
+    if (prev) {
+      // Pin the outgoing screen: showing/hiding the topbar and tabs resizes #screen and would make it jump during the fade.
+      Object.assign(prev.el.style, { top: prevRect.top - host.getBoundingClientRect().top + 'px', bottom: 'auto', height: prevRect.height + 'px', pointerEvents: 'none' });
+    }
     host.appendChild(el);
     try { impl.mount(el, cur.params); } catch (e) { console.error(e); el.innerHTML = `<div class="scr-error">Ошибка экрана: ${esc(e.message)}</div>`; }
     UI.topbar();
@@ -186,7 +191,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         <button class="pill pill-gem" data-act="gems"><span class="pill-ico">💎</span><b data-cur="gems">${fmt(p.gems)}</b><span class="pill-plus">+</span></button>
       </div>
       <button class="btn-icon tb-gear" data-act="settings" aria-label="Настройки">⚙</button>`;
-    bar.querySelector('[data-act=seal]').onclick = () => { PS.Snd.play('select'); UI.go('seal'); };
+    bar.querySelector('[data-act=seal]').onclick = () => { PS.Snd.play('select'); UI.go('seal', { back: UI.current() }); };
     bar.querySelector('[data-act=coins]').onclick = () => { PS.Snd.play('select'); UI.go('shop', { focus: 'coins' }); };
     bar.querySelector('[data-act=gems]').onclick = () => { PS.Snd.play('select'); UI.go('shop', { focus: 'gems' }); };
     bar.querySelector('[data-act=settings]').onclick = () => { PS.Snd.play('select'); UI.go('settings', { back: UI.current() }); };
@@ -405,7 +410,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (!p || !p.activeRun) return null;
     const R = p.activeRun;
     try { if (PS.Run && PS.Run.giveUp) PS.Run.giveUp(R); } catch (e) { console.warn(e); }
-    if (R.phase !== 'lost') R.phase = 'lost';
+    if (R.phase !== 'lost' && R.phase !== 'won') R.phase = 'lost';
     const res = PS.Meta.finishRun(R, UI.now());
     p.activeRun = null;
     UI.save();

@@ -57,6 +57,8 @@ const id1 = ids.find(i => D.lab[i].unlock === 1), idLocked = ids.find(i => D.lab
 assert.strictEqual(M.labCost(id1), D.lab[id1].costs[0]);
 assert.strictEqual(M.canBuyLab(id1), false, 'no coins');
 M.addCoins(1e6);
+assert.strictEqual(M.labLockReason(id1), 'first', 'lab opens after the first attempt');
+M.profile.stats.runs = 1;
 assert.strictEqual(M.canBuyLab(id1), true);
 assert.strictEqual(M.canBuyLab(idLocked), false, 'island lock');
 assert.ok(M.buyLab(id1, T0));
@@ -78,7 +80,7 @@ assert.strictEqual(res.coins, 30 + 20 * 1);
 assert.strictEqual(res.gems, D.economy.gems.first);
 assert.strictEqual(M.profile.maxIsland, 2);
 assert.ok(res.unlocked.some(u => u.id === 'poison'));
-assert.strictEqual(res.newBest, true);
+assert.strictEqual(res.newBest, false, 'a first attempt is not a record');
 assert.strictEqual(M.profile.coins, 50);
 res = M.finishRun(winRun(1, 30), T0);
 assert.strictEqual(res.firstClear, false);
@@ -89,6 +91,9 @@ assert.strictEqual(M.profile.maxIsland, 2);
 res = M.finishRun({ island: 2, phase: 'lost', coins: 12, stages: [1, 2, 3, 4], stage: 1, best: 0 }, T0);
 assert.strictEqual(res.coins, 12);
 assert.strictEqual(M.profile.best[2], 2);
+assert.strictEqual(res.newBest, false);
+res = M.finishRun({ island: 2, phase: 'lost', coins: 0, stages: [1, 2, 3, 4], stage: 2, best: 0 }, T0);
+assert.strictEqual(res.newBest, true, 'beating an earlier best is a record');
 assert.strictEqual(M.profile.cleared[2], undefined);
 assert.strictEqual(M.profile.maxIsland, 2);
 assert.strictEqual(M.profile.activeRun, null);
@@ -127,13 +132,14 @@ d = M.daily(T0 + 5 * DAY); // skipped days
 assert.strictEqual(d.day, 1, 'skipping does not reset or advance');
 assert.deepStrictEqual(M.claimDaily(T0 + 5 * DAY, true), { coins: 100 }, 'ad double');
 assert.deepStrictEqual(M.claimDaily(T0 + 6 * DAY), { gems: 5 });
+assert.deepStrictEqual(M.profile.daily.got[1], { coins: 100 }, 'claimed amount is stored for display');
 for (let i = 0; i < 4; i++) M.claimDaily(T0 + (7 + i) * DAY);
 assert.strictEqual(M.profile.daily.day, (3 + 4) % 7);
 assert.strictEqual(M.daily(T0 + 30 * DAY).day, 0);
 M.profile.maxIsland = 3;
-assert.strictEqual(M.daily(T0 + 40 * DAY).reward.coins, 30 * D.islands[2].M, 'coins scale by P');
+assert.strictEqual(M.daily(T0 + 40 * DAY).reward.coins, 30 * D.islands[2].P, 'coins scale by P');
 M.profile.seal.until = T0 + 100 * DAY;
-assert.deepStrictEqual(M.claimDaily(T0 + 40 * DAY), { coins: 60 * D.islands[2].M }, 'seal doubles automatically');
+assert.deepStrictEqual(M.claimDaily(T0 + 40 * DAY), { coins: 60 * D.islands[2].P }, 'seal doubles automatically');
 
 // quests
 p = fresh(T0);
@@ -153,7 +159,7 @@ const now = T0 + 20 * DAY;
 ql = M.quests(now);
 ql.forEach(q => {
   const tpl = D.quests.find(x => x.id === q.id);
-  const data = tpl.event === 'lab_spend' ? { coins: q.target } : Object.assign({}, tpl.filter);
+  const data = tpl.event === 'lab_spend' ? { coins: q.target } : Object.assign({}, tpl.filter, q.color ? { color: q.color } : {});
   const reps = tpl.event === 'lab_spend' ? 1 : q.target;
   for (let i = 0; i < reps; i++) M.track(tpl.event, data, now);
   assert.ok(q.done, q.id);
@@ -243,5 +249,14 @@ M.debug.toggleNoAds(); assert.strictEqual(M.profile.noAds, true);
 M.reset(T0);
 assert.strictEqual(M.profile.maxIsland, 1);
 assert.strictEqual(M.profile.coins, 0);
+
+// An active run saved with the old boss HP pool (no boss.maxHp) gets maxHp back on load.
+{
+  const p = fresh(T0);
+  p.activeRun = { island: 4, boss: { id: 'ancient_golem', pool: 120, poolMax: 120, encounters: 3, done: 1 } };
+  M.save();
+  M.load(T0);
+  assert.strictEqual(M.profile.activeRun.boss.maxHp, U.round(D.bosses.ancient_golem.hp * D.islands[3].M));
+}
 
 console.log('test-meta: all passed');

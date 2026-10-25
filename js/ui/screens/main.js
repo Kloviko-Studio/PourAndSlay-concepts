@@ -211,6 +211,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
             PS.Snd.play('unlock');
             PS.Fx.confetti(50);
             PS.Fx.bigPop('Открыт остров ' + (idx + 1) + '!');
+            setTimeout(() => { if (root === el && !document.querySelector('.ov')) maybeStarterOffer(UI.now()); }, 1400);
           }, 450);
         }, 350);
       } else maybeStarterOffer(UI.now());

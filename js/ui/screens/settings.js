@@ -49,6 +49,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
               <button class="btn btn-sm btn-purple" data-d="noads">Без рекламы: ${p.noAds ? 'вкл' : 'выкл'}</button>
               <button class="btn btn-sm" data-d="day">+1 день</button>
               <button class="btn btn-sm" data-d="ads">Сеть: ${UI.ads.online ? 'есть' : 'нет'}</button>
+              <button class="btn btn-sm" data-d="catalog">Каталог контента</button>
               <button class="btn btn-sm btn-danger" data-d="reset">Сбросить прогресс</button>
             </div>
             <div class="tiny dim" style="margin-top:8px">Сдвиг времени: ${Math.round(UI.timeShift / 86400000)} дн. · сессий: ${p.sessions || 0}</div>
@@ -79,6 +80,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         };
         on('[data-a=reset]', reset);
         on('[data-d=reset]', reset);
+        on('[data-d=catalog]', () => UI.go('catalog', { back: params.back }));
         const dbg = PS.Meta.debug || {};
         on('[data-d=coins]', () => { dbg.addCoins ? dbg.addCoins(500) : PS.Meta.addCoins(500); UI.topbar(); UI.toast('+500 🪙'); });
         on('[data-d=gems]', () => { dbg.addGems ? dbg.addGems(100) : PS.Meta.addGems(100); UI.topbar(); UI.toast('+100 💎'); });

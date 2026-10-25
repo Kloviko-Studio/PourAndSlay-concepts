@@ -57,7 +57,7 @@ test('start: hp, deck, slots, belt, potions with lab and boosters', () => {
   assert.strictEqual(B.player.shield, 3);
   assert.strictEqual(B.firstStrike, 2);
   assert.ok(Math.abs(B.masteryPct - 0.1) < 1e-9);
-  assert.strictEqual(B.enemy.hp, Math.round(D.enemies[R.stages[0].enemy].hp * 1.5));
+  assert.strictEqual(B.enemy.hp, Math.round(D.enemies[R.stages[0].enemy].hp * D.islands[2].M));
   // fire (6+3) * 1.1 * 2 = 19.8 -> 20
   assert.strictEqual(Cb.effectValue(B, 'fire', 1), 20);
   assert.deepStrictEqual(Run.create(ctxOf(), 1, ['booster_potion'], { potion: 'sleep' }).R.potions, ['undo', 'heal', 'sleep']);
@@ -66,8 +66,8 @@ test('start: hp, deck, slots, belt, potions with lab and boosters', () => {
 test('enemy scaling: hp x M, atk + A only', () => {
   const { R } = Run.create(ctxOf(), 5, []);
   const st = R.stages[0], d = D.enemies[st.enemy], B = R.battle;
-  assert.strictEqual(B.enemy.hp, Math.round(d.hp * 2.0));
-  d.cycle.forEach((c, i) => assert.strictEqual(B.enemy.cycle[i].v, c.t === 'atk' ? c.v + 2 : c.v));
+  assert.strictEqual(B.enemy.hp, Math.round(d.hp * D.islands[4].M));
+  d.cycle.forEach((c, i) => assert.strictEqual(B.enemy.cycle[i].v, c.t === 'atk' ? c.v + D.islands[4].A : c.v));
 });
 
 test('regular win: coins, heal 10%, offer; skip pays 5+i', () => {
@@ -76,7 +76,7 @@ test('regular win: coins, heal 10%, offer; skip pays 5+i', () => {
   R.battle.player.hp = 20;
   const ev = finishBattle(R);
   assert.strictEqual(R.phase, 'reward');
-  assert.deepStrictEqual(ofType(ev, 'coins')[0], { type: 'coins', v: 5, reason: 'kill' });
+  assert.deepStrictEqual(ofType(ev, 'coins')[0], { type: 'coins', v: 8, reason: 'kill' });
   assert.strictEqual(ofType(ev, 'heal_after')[0].v, 5);
   assert.strictEqual(R.hp, 25);
   assert.strictEqual(R.offer.kind, 'pick');
@@ -91,15 +91,15 @@ test('coin multipliers: hard tier, thrift, seal, golden stopper', () => {
   const { R } = Run.create(ctxOf({ lab: { thrift: 2 }, sealActive: true }), 4, []);
   R.relics.push('golden_stopper');
   const ev = finishBattle(R);
-  // (3+4) * 1.25 * 1.2 * 1.5 * 1.25 = 19.6875 -> 20
-  assert.strictEqual(ofType(ev, 'coins')[0].v, 20);
+  // (4+2*4) * 1.25 * 1.2 * 1.5 * 1.25 = 33.75 -> 34
+  assert.strictEqual(ofType(ev, 'coins')[0].v, 34);
   const plain = Run.create(ctxOf(), 3, []).R;
-  assert.strictEqual(ofType(finishBattle(plain), 'coins')[0].v, 6);
+  assert.strictEqual(ofType(finishBattle(plain), 'coins')[0].v, 10);
 });
 
 test('recurring boss: full HP, then returns patched with half HP; extra action; rage only in final', () => {
   const { R } = Run.create(ctxOf(), 4, []);
-  const max = Math.round(48 * 1.9);
+  const max = Math.round(48 * D.islands[3].M);
   assert.strictEqual(R.boss.maxHp, max);
   const seen = [];
   let guard = 0;
@@ -146,7 +146,7 @@ test('island 1: single final boss encounter, killing it wins the island', () => 
   assert.ok(ofType(ev, 'island_won').length === 1);
   assert.strictEqual(R.stats.kills, 4);
   assert.strictEqual(R.stats.bossReached, 1);
-  assert.strictEqual(R.coins, 4 * 3 + 20 + 3 * 6);
+  assert.strictEqual(R.coins, 6 * 3 + 20 + 3 * 6);
 });
 
 function kill(R) {
@@ -155,8 +155,8 @@ function kill(R) {
   return Run.act(R, { type: 'drain', tube: B.field.tubes.findIndex(t => t.layers.length) });
 }
 
-test('revive: 1 free + 2 paid (20, 40), resumes the same battle; give up loses', () => {
-  const { R } = Run.create(ctxOf(), 3, []);
+test('revive: one per attempt from any source; give up loses', () => {
+  let { R } = Run.create(ctxOf(), 3, []);
   let ev = kill(R);
   assert.strictEqual(R.phase, 'revive');
   assert.ok(ofType(ev, 'revive_prompt').length === 1);
@@ -167,21 +167,21 @@ test('revive: 1 free + 2 paid (20, 40), resumes the same battle; give up loses',
   assert.strictEqual(R.battle.player.hp, 25);
   assert.strictEqual(R.battle.enemy.hp, enemyHp);
   kill(R);
-  assert.deepStrictEqual(Run.reviveOptions(R), { free: false, gemsPrice: 20 });
-  assert.deepStrictEqual(Run.revive(R, 'free'), []);
-  Run.revive(R, 'gems');
-  kill(R);
-  assert.deepStrictEqual(Run.reviveOptions(R), { free: false, gemsPrice: 40 });
-  Run.revive(R, 'gems');
-  kill(R);
   assert.deepStrictEqual(Run.reviveOptions(R), { free: false, gemsPrice: null });
-  assert.strictEqual(R.gemsSpent, 60);
+  assert.deepStrictEqual(Run.revive(R, 'gems'), []);
   ev = Run.giveUp(R);
   assert.strictEqual(R.phase, 'lost');
   assert.ok(ofType(ev, 'island_lost').length === 1);
+
+  ({ R } = Run.create(ctxOf(), 3, []));
+  kill(R);
+  Run.revive(R, 'gems');
+  assert.strictEqual(R.gemsSpent, 20);
+  kill(R);
+  assert.deepStrictEqual(Run.reviveOptions(R), { free: false, gemsPrice: null }, 'a gem revive also uses the one revive');
 });
 
-test('phoenix feather revives once at 30% before the prompt', () => {
+test('phoenix feather uses the one revive', () => {
   const { R } = Run.create(ctxOf(), 3, []);
   R.relics.push('phoenix_feather');
   R.battle.relics.push('phoenix_feather');
@@ -191,6 +191,17 @@ test('phoenix feather revives once at 30% before the prompt', () => {
   assert.ok(ofType(ev, 'revived').some(e => e.source === 'phoenix'));
   kill(R);
   assert.strictEqual(R.phase, 'revive');
+  assert.deepStrictEqual(Run.reviveOptions(R), { free: false, gemsPrice: null });
+});
+
+test('a move that killed the player still passes its turn after the revive', () => {
+  const { R } = Run.create(ctxOf(), 3, []);
+  const turn = R.battle.turn;
+  kill(R);
+  assert.strictEqual(R.battle.turn, turn);
+  const ev = Run.revive(R, 'free');
+  assert.strictEqual(R.battle.turn, turn + 1);
+  assert.ok(ofType(ev, 'turn').some(e => !e.free));
 });
 
 function pickOffer(R) {
@@ -412,6 +423,48 @@ test('determinism by seed and JSON round-trip mid-run', () => {
   }
   assert.ok(copy);
   assert.deepStrictEqual(JSON.parse(JSON.stringify(copy)), JSON.parse(JSON.stringify(R)));
+});
+
+test('half-up rounding survives float noise: 90 HP x 35% boss heal = 32', () => {
+  assert.strictEqual(PS.U.round(90 * (0.25 + 2 * 0.05)), 32);
+  const { R } = Run.create(ctxOf({ lab: { vitality: 8, second_wind: 2 } }), 3, []);
+  assert.strictEqual(R.maxHp, 90);
+  while (!(R.phase === 'battle' && R.battle.enemy.boss)) advance(R);
+  R.battle.player.hp = 10;
+  const ev = finishBattle(R);
+  assert.strictEqual(ofType(ev, 'heal_after')[0].v, 32);
+});
+
+test('revive and phoenix clear the undo snapshot so undo cannot roll back past the death', () => {
+  let { R } = Run.create(ctxOf(), 3, []);
+  kill(R);
+  Run.revive(R, 'free');
+  assert.strictEqual(R.battle.history, null);
+  assert.ok(!Run.canAct(R, { type: 'potion', idx: R.battle.potions.indexOf('undo') }));
+  ({ R } = Run.create(ctxOf(), 3, []));
+  R.relics.push('phoenix_feather');
+  R.battle.relics.push('phoenix_feather');
+  kill(R);
+  assert.strictEqual(R.phase, 'battle');
+  assert.strictEqual(R.battle.history, null);
+});
+
+test('empty slots are capped at 5 from all sources', () => {
+  const { R } = Run.create(ctxOf({ lab: { slot: 2 } }), 5, ['booster_flask']);
+  assert.strictEqual(R.slots.length, D.economy.slots.max);
+});
+
+test('relic in the after-stage pick follows the max open island, not the current one', () => {
+  const seen = { low: 0, high: 0 };
+  for (let seed = 1; seed < 200; seed++) {
+    for (const [k, max] of [['low', 3], ['high', 4]]) {
+      const { R } = Run.create(ctxOf({ maxIsland: max, seed }), 1, []);
+      finishBattle(R);
+      if (R.offer && R.offer.options.some(o => o.type === 'relic')) seen[k]++;
+    }
+  }
+  assert.strictEqual(seen.low, 0);
+  assert.ok(seen.high > 0);
 });
 
 console.log(passed + ' run tests passed');
