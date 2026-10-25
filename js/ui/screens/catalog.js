@@ -188,7 +188,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     chrome: { tabs: false },
     mount(el, params) {
       const back = params.back;
-      el.innerHTML = `<div class="scr-head"><button class="btn-icon" data-a="back">‹</button><h1>🗂 Каталог</h1><span class="tag" data-r="total"></span></div>
+      el.innerHTML = `<div class="scr-head"><button class="btn-icon" data-a="back" aria-label="Назад">${UI.ico.left}</button><h1>🗂 Каталог</h1><span class="tag" data-r="total"></span></div>
         <div class="seg" data-r="tabs"></div>
         <div class="row cat-tools">
           <input class="cat-search" type="search" placeholder="Поиск: id, имя, поле…" value="${esc(query)}" data-a="q">

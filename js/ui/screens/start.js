@@ -18,7 +18,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const capped = id => id === 'booster_flask' && slotsFull;
 
       el.innerHTML = `
-        <div class="scr-head"><button class="btn-icon" data-a="back" aria-label="Назад">‹</button><h1>Старт острова</h1></div>
+        <div class="scr-head"><button class="btn-icon" data-a="back" aria-label="Назад">${UI.ico.left}</button><h1>Старт острова</h1></div>
         <div class="panel">
           <div class="start-hero">
             <div class="start-boss">${boss ? UI.enemyArt(bossId) : ''}<span class="tag tag-hard">Босс</span></div>

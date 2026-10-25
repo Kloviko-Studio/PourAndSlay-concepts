@@ -21,7 +21,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         }).join('');
         const rw = d.reward, rwText = rw.coins ? `${UI.fmt(rw.coins)} 🪙` : `${rw.gems} 💎`;
         el.innerHTML = `
-          <div class="scr-head"><button class="btn-icon" data-a="back">‹</button><h1>🎁 Подарок дня</h1></div>
+          <div class="scr-head"><button class="btn-icon" data-a="back" aria-label="Назад">${UI.ico.left}</button><h1>🎁 Подарок дня</h1></div>
           <div class="panel"><div class="daily-grid">${cells}</div>
             <p class="small dim center" style="margin-top:10px">Цикл 7 дней. Пропуск дня не сбрасывает цикл.</p></div>
           <div class="spacer"></div>

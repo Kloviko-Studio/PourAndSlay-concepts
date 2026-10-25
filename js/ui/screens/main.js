@@ -3,6 +3,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
   'use strict';
   const UI = PS.UI, esc = UI.esc;
   const TIER = { easy: 'Лёгкий', medium: 'Средний', hard: 'Сложный' };
+  // Hand-drawn key art (full-screen sky + floating island); islands without one use the generated SVG.
+  const ISLAND_IMG = { 1: 'img/island-1.png' };
   let idx = 0, root = null;
 
   const total = () => UI.islandCount();
@@ -33,19 +35,19 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function stagesWord(n) { return n + ' ' + PS.U.plural(n, 'этап', 'этапа', 'этапов'); }
 
   function renderInfo() {
-    const n = idx + 1, card = root.querySelector('.isl-card'), act = root.querySelector('.main-actions');
+    const n = idx + 1, card = root.querySelector('.isl-card'), act = root.querySelector('.main-actions'), head = root.querySelector('.isl-head'), side = root.querySelector('.side-wrap');
     const soon = n > total();
     const p = P();
     if (soon) {
       UI.setTheme('night');
-      card.innerHTML = `<div class="isl-label">Скоро</div><h2 class="isl-name">Новые острова</h2>
-        <div class="isl-meta">Готовим следующие миры. Пока прокачай Лабораторию и побей свои рекорды!</div><div class="gap"></div>`;
-      act.innerHTML = sideBtns(`<div class="main-locked">Скоро новые острова</div>`);
+      head.innerHTML = `<div class="isl-label">Скоро</div><h2 class="isl-name">Новые острова</h2>`;
+      card.innerHTML = `<div class="isl-meta" style="text-shadow:none;padding:4px 0 8px">Готовим следующие миры. Пока прокачай Лабораторию и побей свои рекорды!</div>`;
+      side.innerHTML = sideBtns();
+      act.innerHTML = `<div class="main-locked">Скоро новые острова</div>`;
     } else {
       const isl = UI.island(n), w = UI.world(n) || {}, st = islandState(n);
       UI.setTheme(w.theme === 'night' ? 'night' : 'day', w.palette);
       const tags = [];
-      if (isl.tier === 'hard') tags.push(`<span class="tag tag-hard">☠ ${TIER.hard}</span>`);
       if (st.cleared) tags.push('<span class="tag tag-ok">✓ Пройден</span>');
       if (!st.cleared && !st.locked && n < total()) {
         const t = nextUnlockText(n);
@@ -54,35 +56,39 @@ var PS = globalThis.PS || (globalThis.PS = {});
       if (isl.final) tags.push('<span class="tag tag-hard">👑 Финал</span>');
       const R = p.activeRun;
       const cur = st.runHere ? (R.stage || 0) + 1 : 0;
-      card.innerHTML = `
-        <div class="isl-label">Мир ${isl.world} · Остров ${n}</div>
+      head.innerHTML = `
+        <div class="isl-label"><span class="st" aria-hidden="true">★</span>Мир ${isl.world} · Остров ${n}<span class="st" aria-hidden="true">★</span></div>
         <h2 class="isl-name">${st.locked ? 'Остров закрыт' : esc(isl.name)}</h2>
-        <div class="isl-meta">${stagesWord(isl.stages)}${st.best ? ' · рекорд: ' + (st.best >= isl.stages ? 'пройден' : 'этап ' + st.best) : ''}</div>
-        <div class="isl-tags">${st.locked ? '' : tags.join('')}</div>
-        ${UI.stageBar({ n, best: st.locked ? 0 : st.best, current: cur })}`;
+        <div class="isl-meta">${esc(w.name || '')}</div>`;
+      const tier = isl.tier === 'hard' ? 'hard' : isl.tier === 'medium' ? 'gold' : 'ok';
+      card.innerHTML = `
+        <div class="isl-row"><span class="lft"><span class="tag tag-${tier}">${TIER[isl.tier] || TIER.easy}</span>${stagesWord(isl.stages)}</span>
+          <span class="rec">${st.best ? 'Рекорд: ' + (st.best >= isl.stages ? 'пройден' : 'этап ' + st.best) : ''}</span></div>
+        ${UI.stageBar({ n, best: st.locked ? 0 : st.best, current: cur })}
+        <div class="isl-tags">${st.locked ? '' : tags.join('')}</div>`;
 
       let main;
       if (st.locked) main = `<div class="main-locked">🔒 Пройди остров ${n - 1}</div>`;
       else if (st.runHere) main = `<button class="btn btn-cta main-cta" data-a="continue"><span class="stack">Продолжить<span class="sub">этап ${cur} из ${isl.stages}</span></span></button>`;
       else main = `<button class="btn btn-cta main-cta" data-a="play">${st.cleared ? 'Перепройти' : 'Играть'}</button>`;
-      act.innerHTML = sideBtns(main);
+      side.innerHTML = sideBtns();
+      act.innerHTML = main;
     }
     bindActions();
-    root.querySelectorAll('.dots i').forEach((d, i) => d.classList.toggle('on', i === idx));
     const [l, r] = root.querySelectorAll('.isl-arrow');
     l.disabled = idx <= 0;
     r.disabled = idx >= total();
   }
 
-  function sideBtns(mainHtml) {
+  function sideBtns() {
     const now = UI.now();
     const d = PS.Meta.daily(now);
     const qs = PS.Meta.quests(now);
     const left = qs.filter(q => !q.done).length;
     const claimable = qs.filter(q => q.done && !q.claimed).length;
-    return `<button class="side-btn" data-a="daily"><span class="si">🎁</span><span class="sl">Подарок</span>${d.canClaim ? '<span class="badge">1</span>' : ''}</button>
-      ${mainHtml}
-      <button class="side-btn" data-a="quests"><span class="si">📜</span><span class="sl">Задания</span>${claimable ? `<span class="badge">!</span>` : left ? `<span class="badge">${left}</span>` : ''}</button>`;
+    const total = qs.length;
+    return `<button class="side-btn gift" data-a="daily" aria-label="Подарок дня${d.canClaim ? ', есть награда' : ''}">${UI.ico.gift}<span class="sl">Подарок</span>${d.canClaim ? '<span class="badge"></span>' : ''}</button>
+      <button class="side-btn quest" data-a="quests" aria-label="Задания, выполнено ${total - left} из ${total}">${UI.ico.quests}<span class="sl">${total - left} / ${total}</span>${claimable ? '<span class="badge"></span>' : ''}</button>`;
   }
 
   function bindActions() {
@@ -179,21 +185,21 @@ var PS = globalThis.PS || (globalThis.PS = {});
       let slides = '';
       for (let n = 1; n <= N; n++) {
         const locked = n > p.maxIsland;
-        slides += `<div class="isl-slide${locked ? ' locked' : ''}"><div class="isl-art">${UI.islandArt(n)}</div></div>`;
+        const img = ISLAND_IMG[n];
+        slides += `<div class="isl-slide${locked ? ' locked' : ''}">${img ? `<img class="isl-img" src="${img}" alt="${esc(UI.island(n).name)}" draggable="false">` : `<div class="isl-art">${UI.islandArt(n)}</div>`}</div>`;
       }
       slides += '<div class="isl-slide soon"><div class="isl-art">☁️</div></div>';
-      let dots = '';
-      for (let n = 1; n <= N; n++) dots += `<i class="${n > p.maxIsland ? 'locked' : ''}"></i>`;
       el.innerHTML = `
         <div class="isl-view"><div class="isl-track">${slides}</div>
-          <button class="isl-arrow l" aria-label="Назад">‹</button><button class="isl-arrow r" aria-label="Вперёд">›</button></div>
-        <div class="panel isl-card"></div>
-        <div class="dots">${dots}<i class="locked"></i></div>
+          <button class="isl-arrow l" aria-label="Предыдущий остров">${UI.ico.left}</button><button class="isl-arrow r" aria-label="Следующий остров">${UI.ico.right}</button></div>
+        <div class="isl-head"></div>
+        <div class="side-wrap"></div>
+        <div class="spacer"></div>
+        <div class="isl-card"></div>
         <div class="main-actions"></div>`;
       const [l, r] = el.querySelectorAll('.isl-arrow');
       l.onclick = () => setIdx(idx - 1, true);
       r.onclick = () => setIdx(idx + 1, true);
-      el.querySelectorAll('.dots i').forEach((d, i) => d.onclick = () => setIdx(i, true));
       bindSwipe(el.querySelector('.isl-view'));
       document.addEventListener('keydown', onKey);
       setIdx(idx, false);
@@ -207,7 +213,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           slide.classList.add('locked');
           setTimeout(() => {
             slide.classList.remove('locked');
-            slide.querySelector('.isl-art').animate([{ filter: 'brightness(3)' }, { filter: 'none' }], { duration: 700 });
+            slide.querySelector('.isl-art, .isl-img').animate([{ filter: 'brightness(3)' }, { filter: 'none' }], { duration: 700 });
             PS.Snd.play('unlock');
             PS.Fx.confetti(50);
             PS.Fx.bigPop('Открыт остров ' + (idx + 1) + '!');

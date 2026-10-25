@@ -21,7 +21,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const reward = Math.round(PS.DATA.questReward.coins * PS.Meta.P());
         const allDone = list.every(q => q.claimed), bonus = PS.DATA.economy.gems.questsAll;
         el.innerHTML = `
-          <div class="scr-head"><button class="btn-icon" data-a="back">‹</button><h1>📜 Задания</h1><span class="tag">⏳ <span data-t>${UI.hhmm(UI.msToMidnight())}</span></span></div>
+          <div class="scr-head"><button class="btn-icon" data-a="back" aria-label="Назад">${UI.ico.left}</button><h1>📜 Задания</h1><span class="tag">⏳ <span data-t>${UI.hhmm(UI.msToMidnight())}</span></span></div>
           <div class="cards">${list.map((q, i) => {
             const pct = Math.min(100, q.progress / q.target * 100);
             const side = q.claimed ? `<span class="tag tag-ok">✓ +${reward} 🪙</span>`

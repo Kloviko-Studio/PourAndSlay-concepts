@@ -14,27 +14,27 @@ var PS = globalThis.PS || (globalThis.PS = {});
   D.colors = {
     fire: {
       id: 'fire', name: 'Огонь', gen: 'огня', icon: '🔥', sym: '🔥', role: 'damage', unlock: 1,
-      base: { dmg: 6 }, boost: { dmg: 3 }, boostMax: 3, css: '#d4502e', dark: '#9c3418',
+      base: { dmg: 6 }, boost: { dmg: 3 }, boostMax: 3, css: '#f07a52', dark: '#c85a36',
       desc: 'Прямой урон: 6. Усиление: +3 урона за шаг.'
     },
     water: {
       id: 'water', name: 'Вода', gen: 'воды', icon: '💧', sym: '💧', role: 'defense', unlock: 1,
-      base: { shield: 6 }, boost: { shield: 3 }, boostMax: 3, css: '#2a5fa8', dark: '#1d4478',
+      base: { shield: 6 }, boost: { shield: 3 }, boostMax: 3, css: '#5aa2ea', dark: '#3a7cc4',
       desc: 'Щит: 6. Поглощает урон и сгорает после атаки врага. Усиление: +3 щита.'
     },
     life: {
       id: 'life', name: 'Жизнь', gen: 'жизни', icon: '🌿', sym: '🌿', role: 'heal', unlock: 1,
-      base: { heal: 4 }, boost: { heal: 2 }, boostMax: 3, css: '#74be5c', dark: '#4a8c3a',
+      base: { heal: 4 }, boost: { heal: 2 }, boostMax: 3, css: '#7cc463', dark: '#4f9a44',
       desc: 'Лечение: 4 HP. Усиление: +2 HP.'
     },
     poison: {
       id: 'poison', name: 'Яд', gen: 'яда', icon: '☠️', sym: '☠️', role: 'dot', unlock: 2,
-      base: { tick: 2, turns: 4 }, boost: { tick: 1 }, boostMax: 3, css: '#a46ad2', dark: '#76459b',
+      base: { tick: 2, turns: 4 }, boost: { tick: 1 }, boostMax: 3, css: '#b58ae0', dark: '#8a5bb8',
       desc: 'Заряд: 2 урона за ход, 4 хода. Идёт сквозь щит врага. Усиление: +1 урон за ход.'
     },
     lightning: {
       id: 'lightning', name: 'Молния', gen: 'молнии', icon: '⚡', sym: '⚡', role: 'tempo', unlock: 4,
-      base: { dmg: 4, delay: 1, delayK2: 2 }, boost: { dmg: 2 }, boostMax: 3, css: '#e6b72e', dark: '#b08818',
+      base: { dmg: 4, delay: 1, delayK2: 2 }, boost: { dmg: 2 }, boostMax: 3, css: '#f2c441', dark: '#c99a1c',
       desc: 'Урон: 4 и враг действует на 1 ход позже (на 2 при комбо ×2 и выше). Усиление: +2 урона.'
     },
     ice: {
@@ -44,23 +44,23 @@ var PS = globalThis.PS || (globalThis.PS = {});
     },
     dark: {
       id: 'dark', name: 'Тьма', gen: 'тьмы', icon: '🌑', sym: '🌑', role: 'risk', unlock: 8,
-      base: { dmg: 12, self: 3 }, boost: { dmg: 4 }, boostMax: 3, css: '#5b4a82', dark: '#2f2350',
+      base: { dmg: 12, self: 3 }, boost: { dmg: 4 }, boostMax: 3, css: '#8a78b8', dark: '#5b4a82',
       desc: 'Урон: 12, себе 3 урона мимо щита. Усиление: +4 урона.'
     },
     mirror: {
       id: 'mirror', name: 'Зеркало', gen: 'зеркала', icon: '🪞', sym: '🪞', role: 'flex', unlock: 9,
-      base: { fallbackShield: 4 }, boost: null, boostMax: 0, css: '#d9759f', dark: '#a84e78',
+      base: { fallbackShield: 4 }, boost: null, boostMax: 0, css: '#e88fb2', dark: '#c0628a',
       desc: 'Повторяет эффект последнего закрытого цвета с текущим комбо. Если закрытий не было — 4 щита.'
     }
   };
 
   D.junk = {
     stone: {
-      id: 'stone', name: 'Камень', icon: '🪨', sym: '🪨', css: '#8a8076', dark: '#5e564e',
+      id: 'stone', name: 'Камень', icon: '🪨', sym: '🪨', css: '#b8afa5', dark: '#8a8076',
       desc: 'Кладётся только на камень или в пустую колбу. Закрытие соседней колбы разбивает камни в ней. Эффекта нет, но комбо растёт.'
     },
     slime: {
-      id: 'slime', name: 'Слизь', icon: '🫧', sym: '🫧', css: '#6e6a26', dark: '#4a4618', shield: 3,
+      id: 'slime', name: 'Слизь', icon: '🫧', sym: '🫧', css: '#b7c46a', dark: '#8e9a45', shield: 3,
       desc: 'Кладётся только на слизь или в пустую колбу. Закрытие: 3 щита (не растёт от комбо).'
     }
   };

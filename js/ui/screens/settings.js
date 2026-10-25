@@ -25,7 +25,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const now = UI.now(), seal = PS.Meta.sealActive(now);
         const sw = (k, label, ico) => `<div class="set-row"><span>${ico}</span><span class="grow">${label}</span><button class="switch${p.settings[k] !== false ? ' on' : ''}" data-sw="${k}" aria-label="${label}"></button></div>`;
         el.innerHTML = `
-          <div class="scr-head"><button class="btn-icon" data-a="back">‹</button><h1>⚙ Настройки</h1></div>
+          <div class="scr-head"><button class="btn-icon" data-a="back" aria-label="Назад">${UI.ico.left}</button><h1>⚙ Настройки</h1></div>
           <div class="panel">
             ${sw('sound', 'Звук', '🔊')}${sw('music', 'Музыка', '🎵')}${sw('vibro', 'Вибрация', '📳')}
             <div class="set-row"><span>🌐</span><span class="grow">Язык</span><select class="inp" data-a="lang"><option>Русский</option><option disabled>English — скоро</option><option disabled>Українська — скоро</option><option disabled>Español — скоро</option></select></div>

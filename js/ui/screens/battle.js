@@ -14,11 +14,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   // ---------- content helpers ----------
   const colorDef = c => D().colors[c] || D().junk[c] || { css: '#888888', icon: '?', name: c };
-  const iconOf = c => colorDef(c).sym || colorDef(c).icon;
+  const iconOf = c => UI.ico.mark[c] || colorDef(c).sym || colorDef(c).icon;
   function layerBg(c) {
     const k = colorDef(c).css, sh = Fx.shade;
-    const dots = c === 'slime' ? 'radial-gradient(circle at 22% 70%, #ffffff30 0 2.5px, #0000 3px), radial-gradient(circle at 68% 35%, #ffffff28 0 3px, #0000 3.5px), ' : '';
-    return `${dots}linear-gradient(180deg, #ffffff22, #0000 35%, #0000003a), linear-gradient(90deg, ${sh(k, -28)} 0%, ${k} 26%, ${sh(k, 32)} 46%, ${k} 68%, ${sh(k, -24)} 100%)`;
+    const dots = c === 'slime' ? 'radial-gradient(circle at 22% 70%, #ffffff40 0 2.5px, #0000 3px), radial-gradient(circle at 68% 35%, #ffffff38 0 3px, #0000 3.5px), ' : '';
+    return `${dots}linear-gradient(180deg, ${sh(k, 22)}, ${k})`;
   }
   const turnsTxt = n => n + ' ' + plural(n, 'ход', 'хода', 'ходов');
 
@@ -84,17 +84,20 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const tubeEl = i => S && S.el.querySelector(`.bt-tw[data-i="${i}"]`);
   const monEl = () => $('.bt-mon');
 
+  // Grass islet under the enemy (approved battle mockup)
+  const ISLET = '<svg class="bt-islet" viewBox="22 134 146 50" aria-hidden="true"><defs><linearGradient id="isTuft" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a7cf7a"/><stop offset="1" stop-color="#6aa452"/></linearGradient><linearGradient id="isDirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c98a62"/><stop offset="1" stop-color="#8f5a44"/></linearGradient></defs><path d="M30 150q65 50 130 0z" fill="url(#isDirt)"/><path d="M70 168l-6 12 12-6zM118 172l4 10 6-12z" fill="#8f5a44"/><ellipse cx="95" cy="150" rx="68" ry="14" fill="url(#isTuft)"/><path d="M32 148l4-9 4 9M150 148l4-10 4 10M60 156l3-7 3 7M128 157l3-7 3 7" fill="#86c46a" stroke="#6aa452" stroke-width="1" stroke-linejoin="round"/><ellipse cx="95" cy="148" rx="54" ry="7" fill="rgba(60,40,60,.25)"/></svg>';
+
   function skeleton() {
     S.el.innerHTML = `
       <div class="bt-top">
-        <button class="btn-icon" data-a="pause" aria-label="Пауза">⏸</button>
+        <button class="btn-icon" data-a="pause" aria-label="Пауза">${UI.ico.pause}</button>
         <div class="bt-sbar"></div>
-        <button class="btn-icon" data-a="build" aria-label="Сборка">🎒</button>
+        <button class="btn-icon" data-a="build" aria-label="Сборка">${UI.ico.bag}</button>
       </div>
       <div class="bt-enemy">
         <div class="bt-arena">
           <div class="bt-chips"></div>
-          <div class="bt-mon"><div class="bt-mon-body"></div><div class="bt-mon-shadow"></div><div class="bt-bubble"></div></div>
+          <div class="bt-mon">${ISLET}<div class="bt-mon-body"></div><div class="bt-mon-shadow"></div><div class="bt-bubble"></div></div>
           <div class="bt-intent"></div>
         </div>
         <div class="bt-einfo">
@@ -104,14 +107,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
         </div>
       </div>
       <div class="bt-player">
-        <span class="bt-heart">❤️</span>
+        <span class="bt-heart">${UI.ico.heart(28)}</span>
         <div class="bar bar-hp"><div class="bar-ghost"></div><div class="bar-fill"></div><span class="bar-label"></span></div>
-        <span class="bt-shield" data-tip="<b>Щит</b><br>Поглощает урон от атаки врага и сгорает после неё.">🛡 <b>0</b></span>
+        <span class="bt-shield" data-tip="<b>Щит</b><br>Поглощает урон от атаки врага и сгорает после неё.">${UI.ico.shield(13)}<b>0</b></span>
         <div class="bt-combo" data-tip="<b>Комбо</b><br>Закрытия подряд усиливают эффект: ×1,5 → ×2 → ×3. Ход без закрытия сбрасывает комбо."><div class="cl">комбо</div><div class="cv">×1</div></div>
       </div>
       <div class="bt-field"><div class="bt-row" data-row="0"></div><div class="bt-row" data-row="1"></div></div>
       <div class="bt-queue"></div>
-      <div class="bt-bottom"><div class="bt-belt"></div><button class="btn bt-drain" data-a="drain"></button></div>`;
+      <div class="bt-bottom"><div class="bt-belt"></div><button class="btn btn-blue bt-drain" data-a="drain"></button></div>`;
   }
 
   function renderTop() {
@@ -287,15 +290,15 @@ var PS = globalThis.PS || (globalThis.PS = {});
     // Same potions stack into one icon; a tap uses the first copy in the belt.
     beltStacks(list).forEach(g => {
       const p = UI.item('potions', g.id);
-      html += `<button class="bt-pot${g.id === armedId ? ' armed' : ''}" data-pot="${g.idx}" data-tip="<b>${esc(p.icon + ' ' + p.name)}${g.n > 1 ? ' ×' + g.n : ''}</b><br>${esc(p.desc)}">${p.icon}${g.n > 1 ? `<span class="bt-pot-n">${g.n}</span>` : ''}</button>`;
+      html += `<button class="bt-pot pt-${g.id}${g.id === armedId ? ' armed' : ''}" data-pot="${g.idx}" data-tip="<b>${esc(p.icon + ' ' + p.name)}${g.n > 1 ? ' ×' + g.n : ''}</b><br>${esc(p.desc)}" aria-label="${esc(p.name)}">${UI.ico[g.id] && (g.id === 'undo' || g.id === 'heal') ? UI.ico[g.id] : p.icon}${g.n > 1 ? `<span class="bt-pot-n">${g.n}</span>` : ''}</button>`;
     });
-    for (let i = list.length; i < (R.beltSize || 3); i++) html += '<div class="bt-pot empty">·</div>';
+    for (let i = list.length; i < (R.beltSize || 3); i++) html += '<div class="bt-pot empty" aria-label="Пустой слот пояса">+</div>';
     $('.bt-belt').innerHTML = html;
     const dr = $('.bt-drain'), B = R.battle;
     const stuck = inBattle() && B.stuck;
     const armed = S.mode && S.mode.type === 'drain';
-    dr.className = 'btn bt-drain' + (stuck ? ' btn-cta stuck' : '') + (armed ? ' armed' : '');
-    dr.innerHTML = armed ? '👇 Выбери колбу' : stuck ? '🚰 Тупик — слей даром' : '🚰 Слить';
+    dr.className = 'btn bt-drain ' + (stuck ? 'btn-cta stuck' : 'btn-blue') + (armed ? ' armed' : '');
+    dr.innerHTML = armed ? 'Выбери колбу' : stuck ? `${UI.ico.drop}Тупик — слей даром` : `${UI.ico.drop}Слить`;
     dr.dataset.tip = `<b>Слить колбу</b><br>Нажми, затем колбу — она опустеет. ${D().economy.drain.hp} HP и ход. В тупике — даром.`;
   }
 

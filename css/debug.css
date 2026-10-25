@@ -1,11 +1,11 @@
 .scr-catalog { overflow-x: hidden; }
 .cat-tools { margin: 8px 0 0; }
-.cat-search { flex: 1; min-width: 0; font: inherit; color: var(--ink); background: rgba(5, 9, 28, .6); border: 0; border-radius: 10px; padding: 9px 12px; box-shadow: inset 0 0 0 1.5px var(--panel-line); }
+.cat-search { flex: 1; min-width: 0; font: inherit; color: var(--ink); background: #fff; border: 3px solid #fff; border-radius: 18px; padding: 8px 14px; box-shadow: var(--sh); }
 .cat-card { margin-top: 8px; }
 .cat-card.later { opacity: .72; }
 .cat-head { display: flex; align-items: flex-start; gap: 10px; }
 .cat-ico { flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 26px; line-height: 1; }
-.cat-sw { width: 14px; height: 26px; border-radius: 5px; box-shadow: inset 0 0 0 1.5px #0006; }
+.cat-sw { width: 14px; height: 26px; border-radius: 5px; box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, .15); }
 .cat-art { flex: none; display: block; width: 52px; height: 52px; }
 .cat-art svg, .cat-art .art-fallback { width: 100%; height: 100%; }
 .cat-title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -14,6 +14,6 @@
 .cat-tags { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .cat-desc { margin: 6px 0 0; font-size: 13px; color: var(--ink2); }
 .cat-kvs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
-.cat-kv { display: inline-flex; gap: 6px; max-width: 100%; padding: 3px 8px; border-radius: 8px; font-size: 12px; background: rgba(255, 255, 255, .06); overflow-wrap: anywhere; }
+.cat-kv { display: inline-flex; gap: 6px; max-width: 100%; padding: 3px 8px; border-radius: 8px; font-size: 12px; background: var(--skyp); overflow-wrap: anywhere; }
 .cat-kv b { color: var(--ink3); font-weight: 800; }
 .cat-counts { flex: 1 0 100%; }

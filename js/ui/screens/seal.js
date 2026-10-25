@@ -16,7 +16,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           ['🚫', 'Нет рекламы между забегами'],
         ];
         el.innerHTML = `
-          <div class="scr-head"><button class="btn-icon" data-a="back">‹</button><h1>Печать алхимика</h1></div>
+          <div class="scr-head"><button class="btn-icon" data-a="back" aria-label="Назад">${UI.ico.left}</button><h1>Печать алхимика</h1></div>
           <div class="seal-hero"><div class="s-ico">🔱</div>
             ${active ? `<span class="tag tag-gold">Активна · осталось ${days} ${PS.U.plural(days, 'день', 'дня', 'дней')}</span>` : `<div class="muted">${S.days || 30} дней привилегий</div>`}</div>
           <div class="panel gold">${perks.map(p => `<div class="perk"><span class="p-i">${p[0]}</span><span>${p[1]}</span></div>`).join('')}</div>

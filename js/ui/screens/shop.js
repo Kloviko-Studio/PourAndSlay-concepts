@@ -26,7 +26,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
             <span class="card-desc">${seal ? `Активна: осталось ${days} дн.` : '+50% монет, награда ×2, без рекламы'}</span></span>
             <span class="btn btn-sm btn-cta">${seal ? 'Открыть' : esc(prod('seal').price)}</span></button>
           ${starter ? `<div class="gap"></div><div class="panel shop-banner starter"><span class="sb-ico">🎁</span><span class="grow">
-            <span class="card-title">Стартовый набор</span><br><span class="card-desc" style="color:#ffe3c4">${starter.gems} 💎 + ${starter.coins} 🪙 · ⏳ <span data-timer>${hhmm(PS.Meta.starterLeftMs ? PS.Meta.starterLeftMs(now) : 0)}</span></span></span>
+            <span class="card-title">Стартовый набор</span><br><span class="card-desc">${starter.gems} 💎 + ${starter.coins} 🪙 · ⏳ <span data-timer>${hhmm(PS.Meta.starterLeftMs ? PS.Meta.starterLeftMs(now) : 0)}</span></span></span>
             <button class="btn btn-sm btn-cta" data-buy="starter">${esc(starter.price)}</button></div>` : ''}
           <div class="sec-title">Бесплатно</div>
           <div class="card"><div class="card-ico">🎬</div><div class="card-body"><div class="card-title">${D.economy.gems.adGift} 💎 за рекламу</div>
