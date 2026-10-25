@@ -298,13 +298,13 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
 .scr-main { padding: 0 16px calc(96px + var(--safe-b)); overflow: hidden; }
 .isl-view { position: absolute; inset: 0; touch-action: pan-y; }
 .isl-track { position: absolute; inset: 0; display: flex; will-change: transform; }
-.isl-slide { position: relative; flex: 0 0 100%; height: 100%; display: grid; place-items: center; padding: 140px 48px 0; overflow: hidden; }
+.isl-slide { position: relative; flex: 0 0 100%; height: 100%; display: grid; place-items: center; padding: 140px 48px 230px; overflow: hidden; }
 .isl-img { position: absolute; left: 50%; top: 0; height: 100%; min-width: 100%; object-fit: cover; object-position: 50% 0; transform: translateX(-50%); }
 .isl-art { position: relative; width: 100%; max-width: 300px; height: 100%; max-height: 260px; display: grid; place-items: center; animation: float 5s ease-in-out infinite; filter: drop-shadow(0 18px 18px rgba(60, 120, 140, .25)); }
 .isl-art svg { width: 100%; height: 100%; overflow: visible; }
 .isl-slide.locked .isl-art, .isl-slide.locked .isl-img { filter: brightness(.6) saturate(.4); }
 .isl-slide.soon .isl-art { font-size: 90px; filter: none; }
-.isl-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 44px; height: 44px; border-radius: 22px; border: 3px solid #fff; display: grid; place-items: center;
+.isl-arrow { position: absolute; top: 58%; transform: translateY(-50%); z-index: 2; width: 44px; height: 44px; border-radius: 22px; border: 3px solid #fff; display: grid; place-items: center;
   background: rgba(255, 250, 243, .75); box-shadow: 0 3px 8px rgba(60, 120, 140, .18); }
 .isl-arrow svg { display: block; }
 .isl-arrow:disabled { opacity: 0; pointer-events: none; }
@@ -327,7 +327,7 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
 .dots { display: none; }
 .main-actions { position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 0 24px; margin-top: 16px; flex: none; }
 .scr-main > .spacer { flex: 1; }
-.side-wrap { position: absolute; left: 16px; top: calc(192px + var(--safe-t)); z-index: 3; display: flex; flex-direction: column; gap: 40px; }
+.side-wrap { position: absolute; left: 16px; top: calc(156px + var(--safe-t)); z-index: 3; display: flex; flex-direction: column; gap: 32px; }
 .side-btn { position: relative; flex: none; width: 56px; height: 56px; border-radius: 28px; border: 3px solid #fff; display: flex; align-items: center; justify-content: center;
   box-shadow: 0 5px 12px rgba(60, 120, 140, .25), inset 0 -4px 0 rgba(0, 0, 0, .06), inset 0 8px 10px rgba(255, 255, 255, .55); }
 .side-btn.gift { background: linear-gradient(180deg, #ffe4d6, #ffc6ad); }
@@ -473,7 +473,7 @@ select.inp { font: inherit; color: var(--ink); background: #fff; border: 3px sol
 @media (max-height: 700px) {
   .isl-name { font-size: 32px; line-height: 36px; }
   .main-cta { min-height: 56px; font-size: 26px; }
-  .side-wrap { gap: 32px; }
+  .side-wrap { gap: 28px; top: calc(140px + var(--safe-t)); }
 }
 /* 360px phones: four-digit balances must stay inside the pills */
 @media (max-width: 370px) {

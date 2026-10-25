@@ -141,7 +141,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (enter) Fx.animClass(mon, 'enter', 560);
     const encs = S.R.boss ? S.R.boss.encounters : 1;
     const heals = m.e.cycle.some(c => c.t === 'heal') ? Math.max(0, D().economy.enemyHeals - (m.e.heals || 0)) : null;
-    $('.bt-ename').innerHTML = `${m.boss ? '<span class="tag tag-hard">☠ Босс</span>' : ''}<span class="nm" data-tip="<b>${esc(m.def.name || m.e.name)}</b><br>${esc(m.def.desc || '')}">${esc(m.def.name || m.e.name)}</span>
+    $('.bt-ename').innerHTML = `${m.boss ? `<span class="tag tag-hard" data-tip="<b>${esc(m.def.name || m.e.name)}</b><br>${esc(m.def.desc || '')}">${UI.ico.crown(16)} Босс</span>` : ''}
       ${m.boss && encs > 1 ? `<span class="tag">встреча ${m.enc + 1}/${encs}</span>` : ''}
       ${heals != null ? `<span class="tag" data-tip="Враг лечится не больше ${D().economy.enemyHeals} раз за бой">💚 ${heals}</span>` : ''}`;
   }
@@ -269,12 +269,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function renderQueue(queue) {
-    const B = S.R.battle;
-    if (!B) { $('.bt-queue').innerHTML = ''; return; }
-    queue = queue || B.field.queue;
-    $('.bt-queue').innerHTML = `<span class="bt-q-lbl">Дальше:</span>` + queue.map((p, i) =>
-      `<div class="bt-qv${i === 0 ? ' next' : ''}">${p.map(c => `<i style="background:${colorDef(c).css}"></i>`).join('')}</div>`).join('');
-    $('.bt-queue').dataset.tip = '<b>Очередь</b><br>Слои, которые придут в закрытую колбу. Первая порция подсвечена.';
+    // Not shown any more; the empty element stays as the target of spore flights.
+    $('.bt-queue').innerHTML = '';
   }
 
   function beltList() { const R = S.R; return (R.phase === 'battle' && R.battle ? R.battle.potions : R.potions) || []; }
@@ -298,7 +294,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const stuck = inBattle() && B.stuck;
     const armed = S.mode && S.mode.type === 'drain';
     dr.className = 'btn bt-drain ' + (stuck ? 'btn-cta stuck' : 'btn-blue') + (armed ? ' armed' : '');
-    dr.innerHTML = armed ? 'Выбери колбу' : stuck ? `${UI.ico.drop}Тупик — слей даром` : `${UI.ico.drop}Слить`;
+    dr.innerHTML = UI.ico.drop;
+    dr.setAttribute('aria-label', 'Слить колбу');
     dr.dataset.tip = `<b>Слить колбу</b><br>Нажми, затем колбу — она опустеет. ${D().economy.drain.hp} HP и ход. В тупике — даром.`;
   }
 

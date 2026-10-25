@@ -21,19 +21,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
     };
   }
 
-  function nextUnlockText(n) {
-    const list = UI.unlockList(n + 1).filter(u => u.kind !== 'lab');
-    if (!list.length) {
-      const u = (PS.DATA.unlocks || {})[n + 1];
-      return u && u.note ? esc(u.note) : '';
-    }
-    const order = ['colors', 'tubes', 'relicRarity', 'potions', 'finds', 'mods'];
-    list.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
-    return list.slice(0, 2).map(u => { const l = UI.unlockLabel(u); return `${l.icon} ${esc(l.name)}`; }).join(', ') + (list.length > 2 ? ' и др.' : '');
-  }
-
-  function stagesWord(n) { return n + ' ' + PS.U.plural(n, 'этап', 'этапа', 'этапов'); }
-
   function renderInfo() {
     const n = idx + 1, card = root.querySelector('.isl-card'), act = root.querySelector('.main-actions'), head = root.querySelector('.isl-head'), side = root.querySelector('.side-wrap');
     const soon = n > total();
@@ -49,21 +36,15 @@ var PS = globalThis.PS || (globalThis.PS = {});
       UI.setTheme(w.theme === 'night' ? 'night' : 'day', w.palette);
       const tags = [];
       if (st.cleared) tags.push('<span class="tag tag-ok">✓ Пройден</span>');
-      if (!st.cleared && !st.locked && n < total()) {
-        const t = nextUnlockText(n);
-        if (t) tags.push(`<span class="tag tag-gold">Откроется: ${t}</span>`);
-      }
       if (isl.final) tags.push('<span class="tag tag-hard">👑 Финал</span>');
       const R = p.activeRun;
       const cur = st.runHere ? (R.stage || 0) + 1 : 0;
       head.innerHTML = `
-        <div class="isl-label"><span class="st" aria-hidden="true">★</span>Мир ${isl.world} · Остров ${n}<span class="st" aria-hidden="true">★</span></div>
         <h2 class="isl-name">${st.locked ? 'Остров закрыт' : esc(isl.name)}</h2>
         <div class="isl-meta">${esc(w.name || '')}</div>`;
       const tier = isl.tier === 'hard' ? 'hard' : isl.tier === 'medium' ? 'gold' : 'ok';
       card.innerHTML = `
-        <div class="isl-row"><span class="lft"><span class="tag tag-${tier}">${TIER[isl.tier] || TIER.easy}</span>${stagesWord(isl.stages)}</span>
-          <span class="rec">${st.best ? 'Рекорд: ' + (st.best >= isl.stages ? 'пройден' : 'этап ' + st.best) : ''}</span></div>
+        <div class="isl-row"><span class="lft"><span class="tag tag-${tier}">${TIER[isl.tier] || TIER.easy}</span>Остров ${n}</span></div>
         ${UI.stageBar({ n, best: st.locked ? 0 : st.best, current: cur })}
         <div class="isl-tags">${st.locked ? '' : tags.join('')}</div>`;
 
