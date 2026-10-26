@@ -17,7 +17,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = n => {
     const v = Math.round(n || 0);
-    return Math.abs(v) >= 10000 ? v.toLocaleString('ru-RU') : String(v);
+    return Math.abs(v) >= 10000 ? v.toLocaleString(T.lang() === 'ru' ? 'ru-RU' : 'en-US') : String(v);
   };
   const hhmm = ms => {
     const s = Math.max(0, Math.floor(ms / 1000)), hh = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60;
@@ -26,6 +26,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const D = () => PS.DATA || {};
   const P = () => (PS.Meta && PS.Meta.profile) || null;
   const has = (o, fn) => !!(o && typeof o[fn] === 'function');
+  const T = PS.T;
 
   const UI = PS.UI = {
     h, esc, fmt, sleep, $,
@@ -60,8 +61,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       u = { kind: u.slice(0, i), id: u.slice(i + 1) };
     }
     if (u.kind === 'relicRarity') {
-      const names = { common: 'Обычные реликвии', rare: 'Редкие реликвии', legendary: 'Легендарные реликвии' };
-      return { icon: '🏺', name: names[u.id] || 'Реликвии', desc: 'Новые реликвии в наградах за босса.' };
+      const names = { common: T('Обычные реликвии', 'Common relics'), rare: T('Редкие реликвии', 'Rare relics'), legendary: T('Легендарные реликвии', 'Legendary relics') };
+      return { icon: '🏺', name: names[u.id] || T('Реликвии', 'Relics'), desc: T('Новые реликвии в наградах за босса.', 'New relics in boss rewards.') };
     }
     const it = UI.item(u.kind, u.id);
     return { icon: it.icon, name: it.name, desc: it.desc, kind: it.kind, id: it.id };
@@ -158,8 +159,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
   UI.stageBar = function (opts) {
     const isl = UI.island(opts.n) || { stages: 1, bossAt: [] };
     const S = isl.stages || 1, bossAt = isl.bossAt || [];
-    // Stage k sits at the middle of its segment, so "reached stage k" reads as distance travelled.
-    const pos = k => (k <= 0 ? 0 : (k - 0.5) / S * 100).toFixed(2) + '%';
+    // First stage at the left edge, last at the right: the final boss must read as the end of the line.
+    const pos = k => (k <= 0 ? 0 : S === 1 ? 100 : (k - 1) / (S - 1) * 100).toFixed(2) + '%';
     const best = Math.min(opts.best || 0, S), cur = Math.min(opts.current || 0, S);
     let marks = '';
     for (let k = 1; k <= S; k++) {
@@ -167,18 +168,18 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const passed = cur ? k < cur : k <= best;
       marks += `<i class="sbar-mark${boss ? ' boss' : ''}${passed ? ' passed' : ''}${k === cur ? ' cur' : ''}" style="left:${pos(k)}">${boss ? ICO.crown(18) : ''}</i>`;
     }
-    const flag = best > 0 && (best < S || opts.showFlagAtEnd) ? `<b class="sbar-flag${opts.newBest ? ' new' : ''}" style="left:${pos(best)}" title="Рекорд">🚩</b>` : '';
+    // The record is the faded part of the line; a separate flag only collided with labels above the strip.
     const pin = cur ? `<b class="sbar-pin" style="left:${pos(cur)}"></b>` : '';
     return `<div class="sbar${opts.compact ? ' compact' : ''}"><div class="sbar-track">
       <div class="sbar-best" style="width:${pos(best)}"></div><div class="sbar-fill" style="width:${pos(cur)}"></div>
-      ${marks}${flag}${pin}<i class="sbar-end">🏁</i></div></div>`;
+      ${marks}${pin}</div></div>`;
   };
 
   // ---------- router ----------
   UI.screen = function (name, impl) { screens[name] = impl; };
   UI.go = function (name, params) {
     const impl = screens[name];
-    if (!impl) { console.warn('No screen', name); UI.toast('Экран «' + name + '» ещё не готов'); return; }
+    if (!impl) { console.warn('No screen', name); UI.toast(T('Экран «' + name + '» ещё не готов', 'Screen "' + name + '" isn\'t ready yet')); return; }
     const host = $('screen');
     const prev = cur;
     if (prev && prev.impl.unmount) { try { prev.impl.unmount(prev.el); } catch (e) { console.error(e); } }
@@ -196,7 +197,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       Object.assign(prev.el.style, { top: prevRect.top - host.getBoundingClientRect().top + 'px', bottom: 'auto', height: prevRect.height + 'px', pointerEvents: 'none' });
     }
     host.appendChild(el);
-    try { impl.mount(el, cur.params); } catch (e) { console.error(e); el.innerHTML = `<div class="scr-error">Ошибка экрана: ${esc(e.message)}</div>`; }
+    try { impl.mount(el, cur.params); } catch (e) { console.error(e); el.innerHTML = `<div class="scr-error">${T('Ошибка экрана', 'Screen error')}: ${esc(e.message)}</div>`; }
     UI.topbar();
     if (prev) {
       const old = prev.el;
@@ -222,13 +223,13 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const seal = has(PS.Meta, 'sealActive') && PS.Meta.sealActive(now);
     const days = seal && has(PS.Meta, 'sealDaysLeft') ? PS.Meta.sealDaysLeft(now) : 0;
     bar.innerHTML = `
-      <button class="tb-seal${seal ? ' on' : ''}" data-act="seal" aria-label="Печать алхимика">
-        <span class="tb-seal-ico">${ICO.seal}</span><span class="tb-seal-txt">${seal ? days + ' дн.' : 'Печать'}</span></button>
+      <button class="tb-seal${seal ? ' on' : ''}" data-act="seal" aria-label="${T('Печать алхимика', "Alchemist's Seal")}">
+        <span class="tb-seal-ico">${ICO.seal}</span><span class="tb-seal-txt">${seal ? days + T(' дн.', 'd') : T('Печать', 'Seal')}</span></button>
       <div class="tb-mid">
-        <button class="pill pill-coin" data-act="coins" aria-label="Монеты: ${fmt(p.coins)}. Магазин"><span class="pill-ico">${icoCoin}</span><b data-cur="coins">${fmt(p.coins)}</b></button>
-        <button class="pill pill-gem" data-act="gems" aria-label="Кристаллы: ${fmt(p.gems)}. Магазин"><span class="pill-ico">${icoGem}</span><b data-cur="gems">${fmt(p.gems)}</b></button>
+        <button class="pill pill-coin" data-act="coins" aria-label="${T(`Монеты: ${fmt(p.coins)}. Магазин`, `Coins: ${fmt(p.coins)}. Shop`)}"><span class="pill-ico">${icoCoin}</span><b data-cur="coins">${fmt(p.coins)}</b></button>
+        <button class="pill pill-gem" data-act="gems" aria-label="${T(`Кристаллы: ${fmt(p.gems)}. Магазин`, `Gems: ${fmt(p.gems)}. Shop`)}"><span class="pill-ico">${icoGem}</span><b data-cur="gems">${fmt(p.gems)}</b></button>
       </div>
-      <button class="pill tb-gear" data-act="settings" aria-label="Настройки">${ICO.gear}</button>`;
+      <button class="pill tb-gear" data-act="settings" aria-label="${T('Настройки', 'Settings')}">${ICO.gear}</button>`;
     bar.querySelector('[data-act=seal]').onclick = () => { PS.Snd.play('select'); UI.go('seal', { back: UI.current() }); };
     bar.querySelector('[data-act=coins]').onclick = () => { PS.Snd.play('select'); UI.go('shop', { focus: 'coins' }); };
     bar.querySelector('[data-act=gems]').onclick = () => { PS.Snd.play('select'); UI.go('shop', { focus: 'gems' }); };
@@ -259,10 +260,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   // ---------- bottom tabs ----------
   const TABS = [
-    { id: 'shop', label: 'Магазин', icon: ICO.tab.shop },
-    { id: 'lab', label: 'Лаборатория', icon: ICO.tab.lab },
-    { id: 'main', label: 'Мир', icon: ICO.tab.main },
-    { id: 'collection', label: 'Коллекция', icon: ICO.tab.collection },
+    { id: 'shop', label: T('Магазин', 'Shop'), icon: ICO.tab.shop },
+    { id: 'lab', label: T('Лаборатория', 'Lab'), icon: ICO.tab.lab },
+    { id: 'main', label: T('Мир', 'World'), icon: ICO.tab.main },
+    { id: 'collection', label: T('Коллекция', 'Collection'), icon: ICO.tab.collection },
   ];
   UI.tabs = {
     active: null,
@@ -330,14 +331,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
   UI.confirm = function (title, text, ok, cancel) {
     return new Promise(res => {
       UI.overlay(`<h2 class="ov-title">${title}</h2>${text ? `<p class="ov-text">${text}</p>` : ''}
-        <div class="ov-actions"><button class="btn btn-ghost" data-close="no">${cancel || 'Отмена'}</button>
-        <button class="btn btn-cta" data-close="yes">${ok || 'Да'}</button></div>`, { onClose: v => res(v === 'yes') });
+        <div class="ov-actions"><button class="btn btn-ghost" data-close="no">${cancel || T('Отмена', 'Cancel')}</button>
+        <button class="btn btn-cta" data-close="yes">${ok || T('Да', 'Yes')}</button></div>`, { onClose: v => res(v === 'yes') });
     });
   };
   UI.alert = function (title, text, ok) {
     return new Promise(res => {
       UI.overlay(`<h2 class="ov-title">${title}</h2>${text ? `<p class="ov-text">${text}</p>` : ''}
-        <div class="ov-actions"><button class="btn btn-cta" data-close>${ok || 'Понятно'}</button></div>`, { onClose: () => res() });
+        <div class="ov-actions"><button class="btn btn-cta" data-close>${ok || T('Понятно', 'Got it')}</button></div>`, { onClose: () => res() });
     });
   };
 
@@ -397,7 +398,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     show(kind) {
       return new Promise(res => {
         const inter = kind === 'interstitial';
-        const close = UI.overlay(`<div class="ad-box"><div class="ad-tag">Реклама (демо)</div>
+        const close = UI.overlay(`<div class="ad-box"><div class="ad-tag">${T('Реклама (демо)', 'Ad (demo)')}</div>
           <div class="ad-ico">${inter ? '📺' : '🎬'}</div><div class="ad-bar"><i></i></div>
           ${inter ? '<button class="btn-icon ad-x" data-close="x" hidden>✕</button>' : ''}</div>`,
         { cls: 'ov-ad', dismiss: false, card: true, onClose: v => res(!inter || v === 'x' ? true : true) });

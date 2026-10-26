@@ -3,6 +3,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 (function () {
   'use strict';
   const UI = PS.UI, esc = UI.esc;
+  const T = PS.T;
   const D = () => PS.DATA;
   const P = () => PS.Meta.profile;
   const START = { fire: true, water: true, life: true };
@@ -58,7 +59,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       else if (r && Math.max(up, down) < 190) pos = 'bottom:12px';
       else if (r) pos = down > up ? `top:${Math.min(H - 190, r.bottom + 46)}px` : `bottom:${Math.max(12, H - r.top + 14)}px`;
       html += `<div class="tut-bubble" style="${pos}">${opts.title ? `<div class="tt">${opts.title}</div>` : ''}<div class="tx">${opts.text}</div>
-        ${block ? `<button class="btn btn-cta btn-sm" data-ok>${opts.button || 'Понятно'}</button>` : ''}</div>`;
+        ${block ? `<button class="btn btn-cta btn-sm" data-ok>${opts.button || T('Понятно', 'Got it')}</button>` : ''}</div>`;
       layer.innerHTML = html;
       document.body.appendChild(layer);
       cur = { layer, resolve, forced: !block };
@@ -94,13 +95,13 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const step = sel === forced.from ? 'to' : 'from';
     const i = step === 'from' ? forced.from : forced.to;
     const texts = step === 'from'
-      ? [n === 0 ? 'Нажми на колбу — возьмёшь верхний слой.' : n === 1 ? 'Ещё раз: выбери колбу.' : 'Последний раз: выбери колбу.', 'Переливание']
-      : ['Теперь нажми, куда налить. Лить можно на такой же цвет или в пустую колбу.', 'Куда налить'];
+      ? [n === 0 ? T('Нажми на колбу — возьмёшь верхний слой.', 'Tap a tube to pick up its top layer.') : n === 1 ? T('Ещё раз: выбери колбу.', 'Again: pick a tube.') : T('Последний раз: выбери колбу.', 'One last time: pick a tube.'), T('Переливание', 'Pouring')]
+      : [T('Теперь нажми, куда налить. Лить можно на такой же цвет или в пустую колбу.', 'Now tap where to pour. Pour onto the same color or into an empty tube.'), T('Куда налить', 'Where to pour')];
     show({ target: ctx.tubeEl(i), title: texts[1], text: texts[0], block: false });
   }
 
   // ---------- public ----------
-  const T = PS.Tutorial = {
+  const Tut = PS.Tutorial = {
     attach(api) { ctx = api; queue = []; forced = null; },
     detach() { hide(); ctx = null; forced = null; queue = []; showing = false; },
     hide() { hide(); forced = null; },
@@ -125,18 +126,18 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const R = ctx.R;
       evs.forEach(e => {
         if (e.type === 'close' && !e.junk) {
-          if (!seen('close')) queue.push({ key: 'close', target: '.bt-enemy', title: 'Колба закрыта!', text: 'Полная колба одного цвета закрывается, срабатывает её эффект, а на место приходят слои из очереди.' });
-          if (e.color === 'fire' && !seen('fire')) queue.push({ key: 'fire', target: '.bt-einfo', title: '🔥 Огонь', text: 'Огонь бьёт врага. Сведи его HP к нулю — и этап пройден.' });
-          if (e.color === 'water' && !seen('water')) queue.push({ key: 'water', target: '.bt-shield', title: '💧 Вода = щит', text: 'Щит поглощает урон от атаки врага и сгорает после неё.' });
-          if (e.color === 'life' && !seen('life')) queue.push({ key: 'life', target: '.bt-player .bar', title: '🌿 Жизнь = лечение', text: 'Жизнь восстанавливает HP. HP переходит между этапами.' });
+          if (!seen('close')) queue.push({ key: 'close', target: '.bt-enemy', title: T('Колба закрыта!', 'Tube closed!'), text: T('Полная колба одного цвета закрывается, срабатывает её эффект, а на место приходят слои из очереди.', 'A full tube of one color closes: its effect fires and new layers drop in from the queue.') });
+          if (e.color === 'fire' && !seen('fire')) queue.push({ key: 'fire', target: '.bt-einfo', title: T('🔥 Огонь', '🔥 Fire'), text: T('Огонь бьёт врага. Сведи его HP к нулю — и этап пройден.', 'Fire hits the enemy. Bring its HP to zero to clear the stage.') });
+          if (e.color === 'water' && !seen('water')) queue.push({ key: 'water', target: '.bt-shield', title: T('💧 Вода = щит', '💧 Water = shield'), text: T('Щит поглощает урон от атаки врага и сгорает после неё.', 'Shield blocks damage from the enemy attack, then breaks.') });
+          if (e.color === 'life' && !seen('life')) queue.push({ key: 'life', target: '.bt-player .bar', title: T('🌿 Жизнь = лечение', '🌿 Life = heal'), text: T('Жизнь восстанавливает HP. HP переходит между этапами.', 'Life restores HP. Your HP carries over between stages.') });
         }
-        if (e.type === 'boss_fled' && !seen('bossfled')) queue.push({ key: 'bossfled', target: '.bt-sbar', title: 'Ещё увидимся!', text: 'Побитый босс может убежать. Он вернётся на следующей встрече с половиной здоровья — и с пластырем. На последнем этапе острова он бьётся до конца.' });
-        if (e.type === 'rage' && !seen('rage')) queue.push({ key: 'rage', target: '.bt-intent', title: 'Ярость!', text: 'Финальный босс ранен — теперь он действует на 1 ход раньше. Торопись!' });
+        if (e.type === 'boss_fled' && !seen('bossfled')) queue.push({ key: 'bossfled', target: '.bt-sbar', title: T('Ещё увидимся!', 'See you later!'), text: T('Побитый босс может убежать. Он вернётся на следующей встрече с половиной здоровья — и с пластырем. На последнем этапе острова он бьётся до конца.', 'A beaten boss may flee. It comes back next fight with half its HP — and a band-aid. On the island\'s last stage it fights to the end.') });
+        if (e.type === 'rage' && !seen('rage')) queue.push({ key: 'rage', target: '.bt-intent', title: T('Ярость!', 'Rage!'), text: T('Финальный босс ранен — теперь он действует на 1 ход раньше. Торопись!', 'The final boss is hurt — now it acts 1 turn sooner. Hurry!') });
       });
       if (guided() && R.phase === 'battle') {
         const st = R.stage;
         if (st === 0 && (flags().pours || 0) >= 1 && !seen('timer') && evs.some(e => e.type === 'turn')) {
-          queue.push({ key: 'timer', target: '.bt-intent', title: 'Таймер врага', text: 'Над врагом — его следующее действие и через сколько ходов оно наступит. Каждое переливание — ход.' });
+          queue.push({ key: 'timer', target: '.bt-intent', title: T('Таймер врага', 'Enemy timer'), text: T('Над врагом — его следующее действие и через сколько ходов оно наступит. Каждое переливание — ход.', 'Above the enemy: its next move and how many turns until it happens. Every pour is a turn.') });
         }
       }
     },
@@ -154,7 +155,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     // Called whenever the battle becomes idle and accepts input.
     async idle() {
       if (!ctx || showing) return;
-      await T.flush();
+      await Tut.flush();
       if (!ctx) return;
       const R = ctx.R, b = B();
       if (R.phase !== 'battle' || !b || b.status !== 'active') return;
@@ -165,32 +166,32 @@ var PS = globalThis.PS || (globalThis.PS = {});
           forced = bestPour();
           if (forced) { pointForced(); return; }
         }
-        if (st === 1 && !seen('combo')) steps.push({ key: 'combo', target: '.bt-combo', title: 'Комбо', text: 'Закрывай колбы ход за ходом — эффект растёт: ×1,5 → ×2 → ×3. Ход без закрытия сбрасывает комбо.' });
-        if (st === 2 && !seen('drain')) steps.push({ key: 'drain', target: '.bt-drain', title: 'Слить колбу', text: 'Нажми «Слить», затем колбу — она опустеет. Стоит 3 HP и ход. Если ходов нет (тупик) — даром.' });
-        if (st === 2 && !seen('potions')) steps.push({ key: 'potions', target: '.bt-belt', title: 'Зелья', text: 'Тапни зелье, чтобы выпить. ↶ Отмена откатит последний ход, ❤ вылечит. Долгое нажатие — описание.' });
-        if (b.enemy.boss && !seen('boss')) steps.push({ key: 'boss', target: '.bt-einfo', title: 'Босс!', text: 'Хозяин острова: сильнее обычных врагов и действует хитрее. Победи его, чтобы пройти остров.' });
+        if (st === 1 && !seen('combo')) steps.push({ key: 'combo', target: '.bt-combo', title: T('Комбо', 'Combo'), text: T('Закрывай колбы ход за ходом — эффект растёт: ×1,5 → ×2 → ×3. Ход без закрытия сбрасывает комбо.', 'Close tubes turn after turn and effects grow: ×1.5 → ×2 → ×3. A turn without a close resets the combo.') });
+        if (st === 2 && !seen('drain')) steps.push({ key: 'drain', target: '.bt-drain', title: T('Слить колбу', 'Drain a tube'), text: T('Нажми «Слить», затем колбу — она опустеет. Стоит 3 HP и ход. Если ходов нет (тупик) — даром.', 'Tap “Drain”, then a tube to empty it. Costs 3 HP and a turn. Free when you\'re out of moves (dead end).') });
+        if (st === 2 && !seen('potions')) steps.push({ key: 'potions', target: '.bt-belt', title: T('Зелья', 'Potions'), text: T('Тапни зелье, чтобы выпить. ↶ Отмена откатит последний ход, ❤ вылечит. Долгое нажатие — описание.', 'Tap a potion to drink it. ↶ Undo takes back your last turn, ❤ heals. Long-press for details.') });
+        if (b.enemy.boss && !seen('boss')) steps.push({ key: 'boss', target: '.bt-einfo', title: T('Босс!', 'Boss!'), text: T('Хозяин острова: сильнее обычных врагов и действует хитрее. Победи его, чтобы пройти остров.', 'The island\'s master: tougher and trickier than regular enemies. Beat it to clear the island.') });
       }
       const F = b.field;
       const find = f => F.tubes.findIndex(f);
       let j = find(t => t.layers.some(x => JUNK[x]));
-      if (j >= 0 && !seen('junk')) steps.push({ key: 'junk', target: ctx.tubeEl(j), title: 'Мусор', text: '🪨 Камень и 🫧 слизь льются только на такой же мусор или в пустую колбу. Полная колба камней рассыпается, слизи — даёт щит. Закрытие соседней колбы разбивает камни.' });
+      if (j >= 0 && !seen('junk')) steps.push({ key: 'junk', target: ctx.tubeEl(j), title: T('Мусор', 'Junk'), text: T('🪨 Камень и 🫧 слизь льются только на такой же мусор или в пустую колбу. Полная колба камней рассыпается, слизи — даёт щит. Закрытие соседней колбы разбивает камни.', '🪨 Stone and 🫧 slime pour only onto the same junk or into an empty tube. A full tube of stone crumbles; of slime, gives a shield. Closing a neighboring tube breaks stones.') });
       j = find(t => t.frozen > 0);
-      if (j >= 0 && !seen('frozen')) steps.push({ key: 'frozen', target: ctx.tubeEl(j), title: 'Колба заморожена', text: 'Из неё и в неё нельзя лить, пока не оттает. Число — сколько ходов осталось.' });
+      if (j >= 0 && !seen('frozen')) steps.push({ key: 'frozen', target: ctx.tubeEl(j), title: T('Колба заморожена', 'Tube frozen'), text: T('Из неё и в неё нельзя лить, пока не оттает. Число — сколько ходов осталось.', 'No pouring in or out until it thaws. The number shows turns left.') });
       F.tubes.forEach((t, i) => {
         const c = t.layers.find(x => !JUNK[x] && !START[x]);
         if (c && !seen('color_' + c)) {
           const cd = D().colors[c];
-          if (cd && !steps.some(s => s.key === 'color_' + c)) steps.push({ key: 'color_' + c, target: ctx.tubeEl(i), title: `Новый цвет: ${cd.icon} ${esc(cd.name)}`, text: esc(cd.desc) });
+          if (cd && !steps.some(s => s.key === 'color_' + c)) steps.push({ key: 'color_' + c, target: ctx.tubeEl(i), title: T(`Новый цвет: ${cd.icon} ${esc(cd.name)}`, `New color: ${cd.icon} ${esc(cd.name)}`), text: esc(cd.desc) });
         }
         if (t.kind !== 'plain' && !seen('tube_' + t.kind)) {
           const td = D().tubes[t.kind];
-          if (td && !steps.some(s => s.key === 'tube_' + t.kind)) steps.push({ key: 'tube_' + t.kind, target: ctx.tubeEl(i), title: `Особая колба: ${td.icon} ${esc(td.name)}`, text: esc(td.desc) });
+          if (td && !steps.some(s => s.key === 'tube_' + t.kind)) steps.push({ key: 'tube_' + t.kind, target: ctx.tubeEl(i), title: T(`Особая колба: ${td.icon} ${esc(td.name)}`, `Special tube: ${td.icon} ${esc(td.name)}`), text: esc(td.desc) });
         }
       });
-      if (b.stuck && !seen('deadend')) steps.push({ key: 'deadend', target: '.bt-drain', title: 'Тупик', text: 'Ходов нет. Слей любую колбу — сейчас это бесплатно и не тратит ход.' });
+      if (b.stuck && !seen('deadend')) steps.push({ key: 'deadend', target: '.bt-drain', title: T('Тупик', 'Dead end'), text: T('Ходов нет. Слей любую колбу — сейчас это бесплатно и не тратит ход.', 'No moves left. Drain any tube — right now it\'s free and costs no turn.') });
       if (!steps.length) return;
       queue = queue.concat(steps);
-      await T.flush();
+      await Tut.flush();
     },
     // One-off hint for in-run windows (pick, relic, revive). Resolves when dismissed or immediately if seen.
     async once(key, h) {
@@ -213,7 +214,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       if (name === 'start' && !seen('boosters')) {
         setTimeout(() => {
           if (UI.current() !== 'start' || seen('boosters')) return;
-          T.once('boosters', { target: '[data-boosts]', title: 'Бусты', text: 'Перед островом можно взять бусты за 💎 — они действуют одну попытку. Не обязательно: жми «Начать».', hand: false });
+          Tut.once('boosters', { target: '[data-boosts]', title: T('Бусты', 'Boosts'), text: T('Перед островом можно взять бусты за 💎 — они действуют одну попытку. Не обязательно: жми «Начать».', 'Before an island you can grab boosts for 💎 — they last one run. Optional: just hit “Start”.'), hand: false });
         }, 450);
       }
       if (name === 'results' && !seen('lab') && P().stats.runs >= 1) {
@@ -221,7 +222,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           if (UI.current() !== 'results' || seen('lab')) return;
           // The results screen may open an interstitial; the hint would sit above the ad, so wait for it to close.
           if (document.querySelector('#overlays .ov')) { setTimeout(labHint, 400); return; }
-          T.once('lab', { target: '.scr-results [data-a=lab]', title: 'Лаборатория', text: 'Монеты остаются после попытки. Трать их в Лаборатории на вечные улучшения — и попробуй снова.' });
+          Tut.once('lab', { target: '.scr-results [data-a=lab]', title: T('Лаборатория', 'Lab'), text: T('Монеты остаются после попытки. Трать их в Лаборатории на вечные улучшения — и попробуй снова.', 'You keep your coins after a run. Spend them in the Lab on permanent upgrades — then try again.') });
         };
         setTimeout(labHint, 1100);
       }

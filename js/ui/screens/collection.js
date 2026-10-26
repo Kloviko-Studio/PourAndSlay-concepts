@@ -2,11 +2,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
 (function () {
   'use strict';
   const UI = PS.UI, esc = UI.esc;
+  const T = PS.T;
   let tab = 'colors';
 
   const TABS = [
-    { id: 'colors', label: 'Цвета' }, { id: 'potions', label: 'Зелья' }, { id: 'relics', label: 'Реликвии' },
-    { id: 'tubes', label: 'Колбы' }, { id: 'enemies', label: 'Враги' },
+    { id: 'colors', label: T('Цвета', 'Colors') }, { id: 'potions', label: T('Зелья', 'Potions') }, { id: 'relics', label: T('Реликвии', 'Relics') },
+    { id: 'tubes', label: T('Колбы', 'Tubes') }, { id: 'enemies', label: T('Враги', 'Enemies') },
   ];
 
   // Every entry: {key (Meta seen-key or null), island (opens on), icon html, name, desc, cls}
@@ -26,7 +27,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       });
       Object.keys(D.bosses || {}).forEach(id => {
         const b = D.bosses[id];
-        out.push({ key: null, island: (b.islands || [b.world * 2 - 1])[0], icon: UI.enemyArt(id), name: b.name, desc: b.desc, cls: 'r-legendary', sub: b.final ? 'Финальный босс' : 'Босс' });
+        out.push({ key: null, island: (b.islands || [b.world * 2 - 1])[0], icon: UI.enemyArt(id), name: b.name, desc: b.desc, cls: 'r-legendary', sub: b.final ? T('Финальный босс', 'Final boss') : T('Босс', 'Boss') });
       });
       return out.sort((a, b) => a.island - b.island);
     }
@@ -51,21 +52,21 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const counts = {};
         TABS.forEach(t => { counts[t.id] = entries(t.id).filter(e => isOpen(e) && isNew(e)).length; });
         const open = list.filter(isOpen).length;
-        el.innerHTML = `<div class="scr-head"><h1>📖 Коллекция</h1><span class="tag">${open}/${list.length}</span></div>
+        el.innerHTML = `<div class="scr-head"><h1>📖 ${T('Коллекция', 'Collection')}</h1><span class="tag">${open}/${list.length}</span></div>
           <div class="seg">${TABS.map(t => `<button data-t="${t.id}" class="${t.id === tab ? 'on' : ''}">${t.label}${counts[t.id] ? `<span class="badge">${counts[t.id]}</span>` : ''}</button>`).join('')}</div>
           <div class="coll-grid">${list.map((e, i) => {
             const o = isOpen(e);
             return `<button class="coll-it ${o ? e.cls : 'locked'}" data-i="${i}">${o && isNew(e) ? '<span class="badge">!</span>' : ''}
-              <span class="c-ico">${e.icon}</span><span class="c-name">${o ? esc(e.name) : '???'}</span>${o ? '' : `<span class="tiny dim">Остров ${e.island}</span>`}</button>`;
+              <span class="c-ico">${e.icon}</span><span class="c-name">${o ? esc(e.name) : '???'}</span>${o ? '' : `<span class="tiny dim">${T('Остров', 'Island')} ${e.island}</span>`}</button>`;
           }).join('')}</div>`;
         el.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { PS.Snd.play('select'); tab = b.dataset.t; render(); el.scrollTop = 0; });
         el.querySelectorAll('[data-i]').forEach(b => b.onclick = () => {
           const e = list[+b.dataset.i];
           PS.Snd.play('select');
-          if (!isOpen(e)) { UI.toast(`Откроется на острове ${e.island}`); return; }
+          if (!isOpen(e)) { UI.toast(T(`Откроется на острове ${e.island}`, `Unlocks on island ${e.island}`)); return; }
           UI.overlay(`<div class="ov-hero" style="width:110px;height:110px;margin:0 auto 8px;display:grid;place-items:center">${e.icon}</div>
             <h2 class="ov-title">${esc(e.name)}</h2>${e.sub ? `<div class="tag ${e.cls === 'r-legendary' ? 'tag-gold' : ''}">${esc(e.sub)}</div>` : ''}
-            <p class="ov-text">${esc(e.desc || '')}</p><div class="ov-actions"><button class="btn btn-cta" data-close>Понятно</button></div>`);
+            <p class="ov-text">${esc(e.desc || '')}</p><div class="ov-actions"><button class="btn btn-cta" data-close>${T('Понятно', 'Got it')}</button></div>`);
         });
         // Badges are shown on this visit, then cleared for the next one.
         list.filter(e => isOpen(e) && isNew(e)).forEach(e => { if (PS.Meta.markSeen) PS.Meta.markSeen(e.key); });

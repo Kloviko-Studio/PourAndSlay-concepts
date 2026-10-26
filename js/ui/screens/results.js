@@ -2,6 +2,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 (function () {
   'use strict';
   const UI = PS.UI, esc = UI.esc;
+  const T = PS.T;
 
   // params: {run: R, result?: Meta.finishRun output}. Without result the screen finishes the run itself.
   UI.finishOnce = function (params) {
@@ -33,24 +34,24 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const labId = UI.labAffordable();
       const lab = labId ? UI.item('lab', labId) : null;
       el.innerHTML = `
-        <div class="res-head"><h1 class="res-title lose">Попытка окончена</h1>
-          <div class="res-sub">Мир ${isl.world} · Остров ${n} · ${esc(isl.name)}</div></div>
+        <div class="res-head"><h1 class="res-title lose">${T('Попытка окончена', 'Run over')}</h1>
+          <div class="res-sub">${T('Остров', 'Island')} ${n} · ${esc(isl.name)}</div></div>
         <div class="panel">
-          <div class="row between"><b>Дистанция</b><span class="muted">этап ${reached} из ${isl.stages}</span></div>
+          <div class="row between"><b>${T('Дистанция', 'Distance')}</b><span class="muted">${T(`этап ${reached} из ${isl.stages}`, `stage ${reached} of ${isl.stages}`)}</span></div>
           ${UI.stageBar({ n, best, current: reached, newBest: res.newBest })}
-          ${res.newBest ? '<div class="center"><span class="tag tag-gold">🚩 Новый рекорд!</span></div>' : `<div class="center small dim">Рекорд: этап ${best}</div>`}
+          ${res.newBest ? `<div class="center res-best"><span class="tag tag-gold">${T('Новый рекорд!', 'New best!')}</span></div>` : `<div class="center small dim res-best">${T(`Рекорд: этап ${best}`, `Best: stage ${best}`)}</div>`}
         </div>
         <div class="gap"></div>
         <div class="panel center">
-          <div class="muted small">Заработано за попытку</div>
-          <div class="res-coins"><span class="ico">🪙</span><span data-coins>${UI.fmt(res.coins)}</span></div>
-          ${res.coins > 0 && UI.ads.online ? '<button class="btn btn-green btn-ad btn-block" data-a="x2">×2 за рекламу</button>' : ''}
+          <div class="muted small">${T('Заработано за попытку', 'Earned this run')}</div>
+          <div class="res-coins"><span class="ico">${UI.ico.coin(40)}</span><span data-coins>${UI.fmt(res.coins)}</span></div>
+          ${res.coins > 0 && UI.ads.online ? `<button class="btn btn-green btn-ad btn-block" data-a="x2">${T('×2 за рекламу', '×2 for an ad')}</button>` : ''}
         </div>
         ${lab ? `<div class="gap"></div><button class="card res-hint" data-a="labhint"><span class="card-ico">${lab.icon}</span>
-          <span class="card-body"><span class="card-desc">Хватает на:</span><span class="card-title">${esc(lab.name)} ${PS.Meta.labTier(labId) + 1}</span></span><span class="c-gold">›</span></button>` : ''}
+          <span class="card-body"><span class="card-desc">${T('Хватает на:', 'You can afford:')}</span><span class="card-title">${esc(lab.name)} ${PS.Meta.labTier(labId) + 1}</span></span><span class="c-gold">›</span></button>` : ''}
         <div class="res-actions">
-          <button class="btn btn-cta btn-lg btn-block" data-a="again">Ещё раз</button>
-          <div class="row"><button class="btn" data-a="lab">⚗️ Лаборатория</button><button class="btn btn-ghost" data-a="main">Главный</button></div>
+          <button class="btn btn-cta btn-lg btn-block" data-a="again">${T('Ещё раз', 'Try again')}</button>
+          <div class="row"><button class="btn" data-a="lab">⚗️ ${T('Лаборатория', 'Lab')}</button><button class="btn btn-ghost" data-a="main">${T('Главный', 'Home')}</button></div>
         </div>`;
 
       const x2 = el.querySelector('[data-a=x2]');
@@ -61,7 +62,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         PS.Meta.addCoins(res.coins);
         const c = el.querySelector('[data-coins]');
         c.textContent = UI.fmt(res.coins * 2);
-        x2.disabled = true; x2.textContent = '×2 получено';
+        x2.disabled = true; x2.textContent = T('×2 получено', '×2 claimed');
         PS.Fx.bigPop('×2');
         UI.flyCurrency(c, 'coins', 8);
       };

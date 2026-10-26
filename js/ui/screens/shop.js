@@ -2,6 +2,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 (function () {
   'use strict';
   const UI = PS.UI, esc = UI.esc;
+  const T = PS.T;
   let timer = null;
 
   const hhmm = UI.hhmm;
@@ -20,30 +21,30 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const starter = PS.Meta.starterAvailable(now) ? prod('starter') : null;
         const noAds = prod('no_ads');
         el.innerHTML = `
-          <div class="scr-head"><h1>🛒 Магазин</h1></div>
+          <div class="scr-head"><h1>🛒 ${T('Магазин', 'Shop')}</h1></div>
           <button class="panel shop-banner" data-a="seal"><span class="sb-ico">🔱</span><span class="grow" style="text-align:left">
-            <span class="card-title c-gold">Печать алхимика</span><br>
-            <span class="card-desc">${seal ? `Активна: осталось ${days} дн.` : '+50% монет, награда ×2, без рекламы'}</span></span>
-            <span class="btn btn-sm btn-cta">${seal ? 'Открыть' : esc(prod('seal').price)}</span></button>
+            <span class="card-title c-gold">${T('Печать алхимика', "Alchemist's Seal")}</span><br>
+            <span class="card-desc">${seal ? T(`Активна: осталось ${days} дн.`, `Active: ${days}d left`) : T('+50% монет, награда ×2, без рекламы', '+50% coins, ×2 rewards, no ads')}</span></span>
+            <span class="btn btn-sm btn-cta">${seal ? T('Открыть', 'Open') : esc(prod('seal').price)}</span></button>
           ${starter ? `<div class="gap"></div><div class="panel shop-banner starter"><span class="sb-ico">🎁</span><span class="grow">
-            <span class="card-title">Стартовый набор</span><br><span class="card-desc">${starter.gems} 💎 + ${starter.coins} 🪙 · ⏳ <span data-timer>${hhmm(PS.Meta.starterLeftMs ? PS.Meta.starterLeftMs(now) : 0)}</span></span></span>
+            <span class="card-title">${T('Стартовый набор', 'Starter Pack')}</span><br><span class="card-desc">${starter.gems} 💎 + ${starter.coins} 🪙 · ⏳ <span data-timer>${hhmm(PS.Meta.starterLeftMs ? PS.Meta.starterLeftMs(now) : 0)}</span></span></span>
             <button class="btn btn-sm btn-cta" data-buy="starter">${esc(starter.price)}</button></div>` : ''}
-          <div class="sec-title">Бесплатно</div>
-          <div class="card"><div class="card-ico">🎬</div><div class="card-body"><div class="card-title">${D.economy.gems.adGift} 💎 за рекламу</div>
-            <div class="card-desc">Сегодня: ${giftMax - giftLeft}/${giftMax}</div></div>
-            <div class="card-side">${UI.ads.online ? `<button class="btn btn-sm btn-green btn-ad" data-a="gift" ${giftLeft > 0 ? '' : 'disabled'}>${giftLeft > 0 ? 'Смотреть' : 'Завтра'}</button>` : '<span class="tag">Нет сети</span>'}</div></div>
-          <div class="sec-title" data-focus="gems">Кристаллы</div>
+          <div class="sec-title">${T('Бесплатно', 'Free')}</div>
+          <div class="card"><div class="card-ico">🎬</div><div class="card-body"><div class="card-title">${D.economy.gems.adGift} 💎 ${T('за рекламу', 'for an ad')}</div>
+            <div class="card-desc">${T('Сегодня', 'Today')}: ${giftMax - giftLeft}/${giftMax}</div></div>
+            <div class="card-side">${UI.ads.online ? `<button class="btn btn-sm btn-green btn-ad" data-a="gift" ${giftLeft > 0 ? '' : 'disabled'}>${giftLeft > 0 ? T('Смотреть', 'Watch') : T('Завтра', 'Tomorrow')}</button>` : `<span class="tag">${T('Нет сети', 'Offline')}</span>`}</div></div>
+          <div class="sec-title" data-focus="gems">${T('Кристаллы', 'Gems')}</div>
           <div class="shop-grid">${gems.map(g => `<div class="panel tight prod">${best[g.id] ? `<span class="tag tag-new p-bonus">${best[g.id]}</span>` : ''}
-            <span class="p-ico">${g.icon || '💎'}</span><span class="p-amt">${UI.fmt(g.gems)} 💎</span><span class="p-name">${esc(g.name)}</span>
+            <span class="p-ico">${g.icon || '💎'}</span><span class="p-amt">${UI.fmt(g.gems)}</span><span class="p-name">${esc(g.name)}</span>
             <button class="btn btn-sm btn-cta" data-buy="${g.id}">${esc(g.price)}</button></div>`).join('')}</div>
-          <div class="sec-title" data-focus="coins">Монеты за кристаллы</div>
+          <div class="sec-title" data-focus="coins">${T('Монеты за кристаллы', 'Coins for gems')}</div>
           <div class="shop-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">${D.shop.coinPacks.map(c => `<div class="panel tight prod">
-            <span class="p-ico">${c.icon || '🪙'}</span><span class="p-amt coin">${UI.fmt(PS.Meta.coinPackAmount ? PS.Meta.coinPackAmount(c.id) : c.coins)} 🪙</span><span class="p-name">${esc(c.name || '')}</span>
-            <button class="btn btn-sm btn-gem" data-pack="${c.id}">💎${c.gems}</button></div>`).join('')}</div>
-          <div class="sec-title">Прочее</div>
-          <div class="card"><div class="card-ico">🚫</div><div class="card-body"><div class="card-title">${esc(noAds.name || 'Без рекламы')}</div><div class="card-desc">${esc(noAds.desc || '')}</div></div>
-            <div class="card-side">${p.noAds ? '<span class="tag tag-ok">Куплено</span>' : `<button class="btn btn-sm btn-cta" data-buy="no_ads">${esc(noAds.price)}</button>`}</div></div>
-          <div class="center tiny dim" style="margin:14px 0 4px">Демо: покупки начисляются сразу, без оплаты</div>`;
+            <span class="p-ico">${c.icon || '🪙'}</span><span class="p-amt coin">${UI.fmt(PS.Meta.coinPackAmount ? PS.Meta.coinPackAmount(c.id) : c.coins)}</span><span class="p-name">${esc(c.name || '')}</span>
+            <button class="btn btn-sm btn-gem" data-pack="${c.id}"><span class="price">${UI.ico.gem(18)}${c.gems}</span></button></div>`).join('')}</div>
+          <div class="sec-title">${T('Прочее', 'Other')}</div>
+          <div class="card"><div class="card-ico">🚫</div><div class="card-body"><div class="card-title">${esc(noAds.name || T('Без рекламы', 'No Ads'))}</div><div class="card-desc">${esc(noAds.desc || '')}</div></div>
+            <div class="card-side">${p.noAds ? `<span class="tag tag-ok">${T('Куплено', 'Owned')}</span>` : `<button class="btn btn-sm btn-cta" data-buy="no_ads">${esc(noAds.price)}</button>`}</div></div>
+          <div class="center tiny dim" style="margin:14px 0 4px">${T('Демо: покупки начисляются сразу, без оплаты', 'Demo: purchases are instant and free')}</div>`;
 
         el.querySelector('[data-a=seal]').onclick = () => { PS.Snd.play('select'); UI.go('seal', { back: 'shop' }); };
         const gift = el.querySelector('[data-a=gift]');
@@ -61,7 +62,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           if (!PS.Meta.buy(id, UI.now())) { PS.Snd.play('bad'); return; }
           PS.Snd.play('buy');
           const it = prod(id);
-          UI.toast(`Куплено: ${it.name || id}`);
+          UI.toast(T(`Куплено: ${it.name || id}`, `Purchased: ${it.name || id}`));
           const from = PS.Fx.centerOf(b);
           keep(render);
           if (it.gems) UI.flyCurrency(from, 'gems', 8);
@@ -69,7 +70,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         });
         el.querySelectorAll('[data-pack]').forEach(b => b.onclick = () => {
           const c = PS.DATA.shop.coinPacks.find(x => x.id === b.dataset.pack);
-          if (p.gems < c.gems) { PS.Snd.play('bad'); PS.Fx.animClass(b, 'wiggle', 320); UI.toast('Не хватает кристаллов'); return; }
+          if (p.gems < c.gems) { PS.Snd.play('bad'); PS.Fx.animClass(b, 'wiggle', 320); UI.toast(T('Не хватает кристаллов', 'Not enough gems')); return; }
           if (!PS.Meta.buyCoinPack(c.id)) { PS.Snd.play('bad'); return; }
           PS.Snd.play('buy');
           UI.flyCurrency(b, 'coins', 8);

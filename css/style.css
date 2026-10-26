@@ -191,7 +191,7 @@ body[data-screen="main"] #tabs { position: absolute; left: 0; right: 0; bottom: 
 .bar-lg .bar-label { font-size: 14px; }
 
 /* ---------- stage strip: nodes joined by dotted line ---------- */
-.sbar { padding: 12px 22px 8px 14px; }
+.sbar { padding: 12px 18px 8px; }
 .sbar-track { position: relative; height: 4px; border-radius: 2px; background: radial-gradient(circle, #b9d9c3 2px, transparent 2.5px) 0 0/9px 4px repeat-x; }
 .sbar-best, .sbar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: radial-gradient(circle, #7cc463 2px, transparent 2.5px) 0 0/9px 4px repeat-x; }
 .sbar-best { opacity: .45; }
@@ -202,11 +202,8 @@ body[data-screen="main"] #tabs { position: absolute; left: 0; right: 0; bottom: 
 .sbar-mark.boss svg { width: 16px; height: 16px; display: block; }
 .sbar-mark.boss.passed { background: linear-gradient(180deg, #fff9dc, #ffd36b); }
 .sbar-mark.cur:not(.boss) { width: 22px; height: 22px; margin: -11px 0 0 -11px; background: var(--butter); box-shadow: 0 0 0 2px rgba(240, 127, 82, .5), 0 2px 6px rgba(60, 120, 140, .2); }
-.sbar-flag { position: absolute; bottom: 12px; margin-left: -3px; font-size: 16px; line-height: 1; filter: drop-shadow(0 2px 0 rgba(60, 120, 140, .3)); }
-.sbar-flag.new { animation: flagPop .7s cubic-bezier(.3, 1.6, .5, 1); }
 .sbar-pin { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--cta3); border: 3px solid #fff; z-index: 2; box-shadow: 0 0 10px rgba(240, 127, 82, .7); }
-.sbar-end { display: none; }
-.sbar.compact { padding: 8px 14px 4px; }
+.sbar.compact { padding: 8px 16px 4px; }
 
 /* ---------- cards (choice, item, lab rows) ---------- */
 .card {
@@ -298,17 +295,15 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
 .scr-main { padding: 0 16px calc(96px + var(--safe-b)); overflow: hidden; }
 .isl-view { position: absolute; inset: 0; touch-action: pan-y; }
 .isl-track { position: absolute; inset: 0; display: flex; will-change: transform; }
-.isl-slide { position: relative; flex: 0 0 100%; height: 100%; display: grid; place-items: center; padding: 140px 48px 230px; overflow: hidden; }
-.isl-img { position: absolute; left: 50%; top: 0; height: 100%; min-width: 100%; object-fit: cover; object-position: 50% 0; transform: translateX(-50%); }
-.isl-art { position: relative; width: 100%; max-width: 300px; height: 100%; max-height: 260px; display: grid; place-items: center; animation: float 5s ease-in-out infinite; filter: drop-shadow(0 18px 18px rgba(60, 120, 140, .25)); }
+/* --gap-t / --gap-b: free sky between the title and the card, measured by main.js */
+.isl-slide { position: relative; flex: 0 0 100%; height: 100%; display: grid; place-items: center; padding: var(--gap-t, 140px) 72px var(--gap-b, 240px); overflow: hidden; }
+.isl-img { position: absolute; left: 50%; top: 0; height: 100%; max-width: none; transform: translateX(-50%);
+  /* the picture is resized to fit the island, so its edges blend into the app sky instead of showing a seam */
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent); }
+.isl-art { position: relative; width: 100%; max-width: 280px; height: 100%; max-height: 260px; display: grid; place-items: center; animation: float 5s ease-in-out infinite; filter: drop-shadow(0 18px 18px rgba(60, 120, 140, .25)); }
 .isl-art svg { width: 100%; height: 100%; overflow: visible; }
 .isl-slide.locked .isl-art, .isl-slide.locked .isl-img { filter: brightness(.6) saturate(.4); }
 .isl-slide.soon .isl-art { font-size: 90px; filter: none; }
-.isl-arrow { position: absolute; top: 58%; transform: translateY(-50%); z-index: 2; width: 44px; height: 44px; border-radius: 22px; border: 3px solid #fff; display: grid; place-items: center;
-  background: rgba(255, 250, 243, .75); box-shadow: 0 3px 8px rgba(60, 120, 140, .18); }
-.isl-arrow svg { display: block; }
-.isl-arrow:disabled { opacity: 0; pointer-events: none; }
-.isl-arrow.l { left: 16px; } .isl-arrow.r { right: 16px; }
 .isl-new { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); z-index: 3; white-space: nowrap; }
 
 .isl-head { position: absolute; left: 16px; right: 16px; top: calc(76px + var(--safe-t)); z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
@@ -317,13 +312,18 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
 .isl-name { font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 44px; color: var(--ink); text-align: center; text-shadow: 0 0 2px #fff, 0 0 12px #fffffff2, 0 0 22px #ffffffb3; margin: 0; }
 .isl-meta { font-weight: 800; font-size: 13px; line-height: 18px; color: #3f6b75; text-align: center; text-shadow: 0 0 8px #ffffffe6; }
 
-.isl-card { position: relative; z-index: 3; margin: 0; padding: 12px 16px 6px; border: 0; border-radius: 24px; background: var(--cream); box-shadow: 0 8px 18px rgba(60, 120, 140, .22); }
-.isl-row { display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-size: 13px; color: var(--ink); gap: 8px; }
-.isl-row .rec { color: var(--ink2); font-weight: 800; text-align: right; }
-.isl-row .lft { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.isl-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.isl-card { position: relative; z-index: 3; margin: 0; padding: 10px 10px 8px; border: 0; border-radius: 24px; background: var(--cream); box-shadow: 0 8px 18px rgba(60, 120, 140, .22); }
+.isl-row { display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-size: 14px; color: var(--ink); gap: 8px; }
+.isl-row .lft { display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; }
+/* island pager lives in the card, so nothing floats over the art or the side buttons */
+.isl-nav { flex: none; width: 36px; height: 36px; border-radius: 18px; display: grid; place-items: center; background: linear-gradient(180deg, var(--skyp2), var(--skyp)); border: 2px solid #fff; box-shadow: 0 2px 6px rgba(60, 120, 140, .18); }
+.isl-nav svg { display: block; width: 16px; height: 16px; }
+.isl-nav:active:not(:disabled) { transform: translateY(2px); }
+.isl-nav:disabled { visibility: hidden; }
+.isl-tags { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin-top: 6px; }
 .isl-tags:empty { display: none; }
-.isl-card .sbar { padding: 14px 22px 8px 14px; }
+.isl-card .sbar { padding: 12px 22px 8px; }
+.isl-soon { padding: 8px 12px 6px; text-align: center; font-weight: 800; font-size: 13px; color: var(--ink2); }
 .dots { display: none; }
 .main-actions { position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 0 24px; margin-top: 16px; flex: none; }
 .scr-main > .spacer { flex: 1; }
@@ -349,6 +349,8 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
 .start-boss .tag { position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); }
 .start-hero .isl-label { background: var(--skyp); border: 0; height: 22px; font-size: 11px; }
 .start-hero .isl-name { text-align: left; text-shadow: none; font-size: 26px; line-height: 30px; margin-top: 4px; }
+.start-bar { margin-top: 14px; }
+.price svg { flex: none; display: block; }
 .boost { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--radius); width: 100%; text-align: left; min-height: 64px;
   background: linear-gradient(180deg, #fff, var(--cream)); border: 3px solid #fff; box-shadow: var(--sh); transition: background .15s, box-shadow .15s; }
 .boost.on { background: linear-gradient(180deg, #fffdf6, #fff3dc); box-shadow: 0 0 0 4px #ffb27a, 0 0 22px 6px rgba(255, 178, 122, .5), 0 10px 18px rgba(200, 90, 50, .22); }
@@ -365,8 +367,9 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
 .res-title { font-size: 40px; line-height: 44px; color: var(--ink); text-shadow: 0 0 2px #fff, 0 0 12px #fffffff2; }
 .res-title.lose { color: #a33d22; }
 .res-sub { margin-top: 6px; font-weight: 800; }
+.res-best { margin-top: 6px; }
 .res-coins { display: flex; align-items: center; justify-content: center; gap: 10px; font-family: var(--display); font-weight: 400; font-size: 44px; color: var(--ink); margin: 6px 0; text-shadow: 0 0 10px #fff; font-variant-numeric: tabular-nums; }
-.res-coins .ico { font-size: 34px; }
+.res-coins .ico { display: flex; }
 .res-line { display: flex; justify-content: space-between; padding: 8px 2px; border-bottom: 2px dashed var(--line); font-size: 15px; }
 .res-line:last-child { border-bottom: 0; }
 .res-hint { display: flex; align-items: center; gap: 10px; text-align: left; width: 100%; }
@@ -386,6 +389,10 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
 .lab-fx { font-size: 13px; color: var(--ink2); }
 .lab-fx b { color: var(--ok); }
 .lab-btn { min-width: 86px; }
+.scr-lab .card-title { font-size: 18px; line-height: 22px; }
+.lab-lvl { gap: 8px; margin-top: 2px; }
+.lab-lvl .tiers { flex: 1; margin-top: 0; }
+.lab-lvl .stack-n { color: var(--ink3); }
 
 /* ---------- shop ---------- */
 .shop-banner { overflow: hidden; display: flex; gap: 12px; align-items: center; background: linear-gradient(135deg, var(--lilac2), var(--lilac)); box-shadow: 0 0 0 3px #fff, var(--sh-lg); }
@@ -463,7 +470,6 @@ select.inp { font: inherit; color: var(--ink); background: #fff; border: 3px sol
 @keyframes wig { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes unlockIn { from { transform: scale(.2) rotate(-20deg); opacity: 0; } }
-@keyframes flagPop { 0% { transform: translateY(-20px) scale(.3); opacity: 0; } 100% { transform: none; opacity: 1; } }
 @keyframes bob { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-5px) scale(1.02, .98); } }
 @keyframes hurt { 0% { transform: none; filter: none; } 30% { transform: scale(1.18, .82) translateY(8px); filter: brightness(2.2); } 100% { transform: none; filter: none; } }
 @keyframes lunge { 0% { transform: none; } 35% { transform: translateY(-12px) scale(.94); } 60% { transform: translateY(26px) scale(1.22); } 100% { transform: none; } }

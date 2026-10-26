@@ -2,6 +2,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 (function () {
   'use strict';
   const UI = PS.UI, esc = UI.esc;
+  const T = PS.T;
   let tab = 'colors', query = '';
 
   const HIDE = { id: 1, name: 1, icon: 1, sym: 1, desc: 1, art: 1, later: 1, unlock: 1, nameEn: 1 };
@@ -31,7 +32,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     return out;
   }
 
-  const IN_GAME = { later: false, label: 'в игре' };
+  const IN_GAME = { later: false, label: T('в игре', 'in game') };
 
   // unlock null or `later` marks content that exists in data but is not in the current build.
   function status(it) {
@@ -68,14 +69,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   const CATS = [
-    { id: 'colors', label: 'Цвета', raw: () => D().colors, list: () => fromMap(D().colors, (e, it) => { e.icon = `<span class="cat-sw" style="background:${esc(it.css)}"></span>${it.icon}`; return e; }) },
-    { id: 'junk', label: 'Мусор', raw: () => D().junk, list: () => fromMap(D().junk) },
-    { id: 'tubes', label: 'Колбы', raw: () => D().tubes, list: () => fromMap(D().tubes) },
-    { id: 'potions', label: 'Зелья', raw: () => ({ potions: D().potions, potionStart: D().potionStart }), list: () => fromMap(D().potions, e => { e.params.inStartBelt = (D().potionStart || []).indexOf(e.id) >= 0; return e; }) },
-    { id: 'mods', label: 'Моды', raw: () => D().mods, list: () => fromMap(D().mods) },
-    { id: 'finds', label: 'Находки', raw: () => D().finds, list: () => fromMap(D().finds) },
+    { id: 'colors', label: T('Цвета', 'Colors'), raw: () => D().colors, list: () => fromMap(D().colors, (e, it) => { e.icon = `<span class="cat-sw" style="background:${esc(it.css)}"></span>${it.icon}`; return e; }) },
+    { id: 'junk', label: T('Мусор', 'Junk'), raw: () => D().junk, list: () => fromMap(D().junk) },
+    { id: 'tubes', label: T('Колбы', 'Tubes'), raw: () => D().tubes, list: () => fromMap(D().tubes) },
+    { id: 'potions', label: T('Зелья', 'Potions'), raw: () => ({ potions: D().potions, potionStart: D().potionStart }), list: () => fromMap(D().potions, e => { e.params.inStartBelt = (D().potionStart || []).indexOf(e.id) >= 0; return e; }) },
+    { id: 'mods', label: T('Моды', 'Mods'), raw: () => D().mods, list: () => fromMap(D().mods) },
+    { id: 'finds', label: T('Находки', 'Finds'), raw: () => D().finds, list: () => fromMap(D().finds) },
     {
-      id: 'relics', label: 'Реликвии', raw: () => ({ relics: D().relics, rarity: D().rarity }),
+      id: 'relics', label: T('Реликвии', 'Relics'), raw: () => ({ relics: D().relics, rarity: D().rarity }),
       list: () => {
         const R = D().rarity || {}, order = Object.keys(R);
         return fromMap(D().relics, (e, it) => {
@@ -83,66 +84,66 @@ var PS = globalThis.PS || (globalThis.PS = {});
           e.island = r.unlock || 1; e.group = r.name || it.rarity;
           e.rank = order.indexOf(it.rarity);
           e.params = params(it, { rarity: 1 });
-          e.params.rarity = `${it.rarity} (вес ${r.weight}, с острова ${r.unlock})`;
+          e.params.rarity = T(`${it.rarity} (вес ${r.weight}, с острова ${r.unlock})`, `${it.rarity} (weight ${r.weight}, from island ${r.unlock})`);
           return e;
         }).sort((a, b) => a.rank - b.rank);
       },
     },
-    { id: 'rarity', label: 'Редкость', raw: () => D().rarity, list: () => fromMap(D().rarity) },
-    { id: 'boosters', label: 'Бустеры', raw: () => D().boosters, list: () => fromMap(D().boosters) },
+    { id: 'rarity', label: T('Редкость', 'Rarity'), raw: () => D().rarity, list: () => fromMap(D().rarity) },
+    { id: 'boosters', label: T('Бустеры', 'Boosts'), raw: () => D().boosters, list: () => fromMap(D().boosters) },
     {
-      id: 'lab', label: 'Лаборатория', raw: () => D().lab,
+      id: 'lab', label: T('Лаборатория', 'Lab'), raw: () => D().lab,
       list: () => fromMap(D().lab, (e, it) => { e.params.totalCost = it.costs.reduce((s, c) => s + c, 0); return e; }),
     },
     {
-      id: 'enemies', label: 'Враги', raw: () => D().enemies,
+      id: 'enemies', label: T('Враги', 'Enemies'), raw: () => D().enemies,
       list: () => fromMap(D().enemies, (e, it) => { e.icon = art(it.id); e.island = it.world * 2 - 1; return e; }),
     },
     {
-      id: 'bosses', label: 'Боссы', raw: () => D().bosses,
+      id: 'bosses', label: T('Боссы', 'Bosses'), raw: () => D().bosses,
       list: () => fromMap(D().bosses, (e, it) => { e.icon = art(it.id); e.island = it.islands[0]; return e; }),
     },
     {
-      id: 'islands', label: 'Острова', raw: () => D().islands,
+      id: 'islands', label: T('Острова', 'Islands'), raw: () => D().islands,
       list: () => D().islands.map(it => {
         const w = (D().worlds || [])[it.world - 1] || {};
         const p = params(it);
         p.regulars = it.regulars.map(id => ((D().enemies || {})[id] || {}).name || id).join(', ');
         const u = (D().unlocks || {})[it.n];
         if (u) p.opens = fmt(openedBy(u));
-        return { id: it.id, name: `${it.n}. ${it.name}`, icon: w.icon || '🏝', desc: u && u.note, island: it.n, st: IN_GAME, params: p, group: 'Мир ' + it.world };
+        return { id: it.id, name: `${it.n}. ${it.name}`, icon: w.icon || '🏝', desc: u && u.note, island: it.n, st: IN_GAME, params: p, group: T('Мир ', 'World ') + it.world };
       }),
     },
     {
-      id: 'worlds', label: 'Миры', raw: () => D().worlds,
+      id: 'worlds', label: T('Миры', 'Worlds'), raw: () => D().worlds,
       list: () => D().worlds.map(w => ({ id: w.id, name: `${w.n}. ${w.name}`, icon: w.icon, desc: w.desc, island: w.n * 2 - 1, st: IN_GAME, params: params(w, { n: 1 }), group: '' })),
     },
     {
-      id: 'unlocks', label: 'Открытия', raw: () => D().unlocks,
+      id: 'unlocks', label: T('Открытия', 'Unlocks'), raw: () => D().unlocks,
       list: () => Object.keys(D().unlocks).map(n => {
         const u = D().unlocks[n];
-        return { id: 'island_' + n, name: `Остров ${n}`, icon: '🔓', desc: u.note, island: +n, st: IN_GAME, params: openedBy(u), group: '' };
+        return { id: 'island_' + n, name: T(`Остров ${n}`, `Island ${n}`), icon: '🔓', desc: u.note, island: +n, st: IN_GAME, params: openedBy(u), group: '' };
       }),
     },
-    { id: 'economy', label: 'Экономика', raw: () => D().economy, list: () => fromParams(D().economy) },
+    { id: 'economy', label: T('Экономика', 'Economy'), raw: () => D().economy, list: () => fromParams(D().economy) },
     {
-      id: 'daily', label: 'Ежедневка', raw: () => D().daily,
-      list: () => D().daily.map((d, i) => ({ id: 'day_' + (i + 1), name: `День ${i + 1}`, icon: '🎁', desc: '', island: null, st: IN_GAME, params: d, group: '' })),
+      id: 'daily', label: T('Ежедневка', 'Daily'), raw: () => D().daily,
+      list: () => D().daily.map((d, i) => ({ id: 'day_' + (i + 1), name: T(`День ${i + 1}`, `Day ${i + 1}`), icon: '🎁', desc: '', island: null, st: IN_GAME, params: d, group: '' })),
     },
     {
-      id: 'quests', label: 'Задания', raw: () => ({ quests: D().quests, questsPerDay: D().questsPerDay, questReward: D().questReward }),
+      id: 'quests', label: T('Задания', 'Quests'), raw: () => ({ quests: D().quests, questsPerDay: D().questsPerDay, questReward: D().questReward }),
       list: () => D().quests.map(q => ({ id: q.id, name: q.id, icon: '📜', desc: q.text, island: null, st: IN_GAME, params: params(q, { text: 1 }), group: '' })),
     },
     {
-      id: 'shop', label: 'Магазин', raw: () => D().shop,
+      id: 'shop', label: T('Магазин', 'Shop'), raw: () => D().shop,
       list: () => {
         const mk = (it, g) => Object.assign(fromMap({ [it.id]: it })[0], { group: g, island: null });
-        return D().shop.products.map(p => mk(p, 'Товары за деньги')).concat(D().shop.coinPacks.map(p => mk(p, 'Пачки монет за кристаллы')));
+        return D().shop.products.map(p => mk(p, T('Товары за деньги', 'Real-money items'))).concat(D().shop.coinPacks.map(p => mk(p, T('Пачки монет за кристаллы', 'Coin packs for gems'))));
       },
     },
-    { id: 'seal', label: 'Печать', raw: () => D().seal, list: () => fromParams(D().seal) },
+    { id: 'seal', label: T('Печать', 'Seal'), raw: () => D().seal, list: () => fromParams(D().seal) },
     {
-      id: 'misc', label: 'Прочее', raw: () => ({ startDeck: D().startDeck, combo: D().combo, potionStart: D().potionStart }),
+      id: 'misc', label: T('Прочее', 'Misc'), raw: () => ({ startDeck: D().startDeck, combo: D().combo, potionStart: D().potionStart }),
       list: () => fromParams({ startDeck: D().startDeck, combo: D().combo, potionStart: D().potionStart }).map(e => { e.params = { value: fmt(e.params.value) }; return e; }),
     },
   ];
@@ -156,13 +157,13 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function copy(text, what) {
-    const done = () => UI.toast(`Скопировано: ${what}`);
+    const done = () => UI.toast(T(`Скопировано: ${what}`, `Copied: ${what}`));
     // file:// and some webviews reject the async clipboard API.
     const fallback = () => {
       const ta = document.createElement('textarea');
       ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
       document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); done(); } catch (e) { UI.toast('Не удалось скопировать'); }
+      try { document.execCommand('copy'); done(); } catch (e) { UI.toast(T('Не удалось скопировать', "Couldn't copy")); }
       ta.remove();
     };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
@@ -176,7 +177,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         <div class="cat-title"><b>${esc(e.name)}</b><span class="cat-id">${esc(e.id)}</span></div>
         <div class="cat-tags">
           <span class="tag ${e.st.later ? 'tag-gold' : 'tag-ok'}">${esc(e.st.label)}</span>
-          ${e.island ? `<span class="tag">ост. ${e.island}</span>` : ''}
+          ${e.island ? `<span class="tag">${T('ост.', 'isl.')} ${e.island}</span>` : ''}
         </div>
       </div>
       ${e.desc ? `<p class="cat-desc">${esc(e.desc)}</p>` : ''}
@@ -188,15 +189,15 @@ var PS = globalThis.PS || (globalThis.PS = {});
     chrome: { tabs: false },
     mount(el, params) {
       const back = params.back;
-      el.innerHTML = `<div class="scr-head"><button class="btn-icon" data-a="back" aria-label="Назад">${UI.ico.left}</button><h1>🗂 Каталог</h1><span class="tag" data-r="total"></span></div>
+      el.innerHTML = `<div class="scr-head"><button class="btn-icon" data-a="back" aria-label="${T('Назад', 'Back')}">${UI.ico.left}</button><h1>🗂 ${T('Каталог', 'Catalog')}</h1><span class="tag" data-r="total"></span></div>
         <div class="seg" data-r="tabs"></div>
         <div class="row cat-tools">
-          <input class="cat-search" type="search" placeholder="Поиск: id, имя, поле…" value="${esc(query)}" data-a="q">
+          <input class="cat-search" type="search" placeholder="${T('Поиск: id, имя, поле…', 'Search: id, name, field…')}" value="${esc(query)}" data-a="q">
         </div>
         <div class="row cat-tools wrap">
           <span class="tiny dim cat-counts" data-r="counts"></span>
-          <button class="btn btn-sm" data-a="copyCat">JSON: категория</button>
-          <button class="btn btn-sm" data-a="copyAll">JSON: всё</button>
+          <button class="btn btn-sm" data-a="copyCat">JSON: ${T('категория', 'category')}</button>
+          <button class="btn btn-sm" data-a="copyAll">JSON: ${T('всё', 'all')}</button>
         </div>
         <div data-r="list"></div>`;
       const $ = r => el.querySelector(`[data-r=${r}]`);
@@ -214,20 +215,20 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const all = cat(tab).list();
         const shown = all.filter(e => matches(e, query));
         const later = all.filter(e => e.st.later).length;
-        $('counts').textContent = `всего ${all.length} · в v1 ${all.length - later} · later ${later}` + (query ? ` · найдено ${shown.length}` : '');
+        $('counts').textContent = T(`всего ${all.length} · в v1 ${all.length - later} · later ${later}`, `total ${all.length} · in v1 ${all.length - later} · later ${later}`) + (query ? T(` · найдено ${shown.length}`, ` · found ${shown.length}`) : '');
         $('total').textContent = String(all.length);
         let g = null, html = '';
         shown.forEach(e => {
           if (e.group !== g) { g = e.group; if (g) html += `<div class="sec-title">${esc(g)}</div>`; }
           html += card(e);
         });
-        $('list').innerHTML = html || '<p class="center dim">Ничего не найдено</p>';
+        $('list').innerHTML = html || `<p class="center dim">${T('Ничего не найдено', 'Nothing found')}</p>`;
       }
 
       el.querySelector('[data-a=back]').onclick = () => { PS.Snd.play('select'); UI.go('settings', { back }); };
       el.querySelector('[data-a=q]').oninput = ev => { query = ev.target.value.trim(); renderList(); };
       el.querySelector('[data-a=copyCat]').onclick = () => copy(JSON.stringify(cat(tab).raw(), null, 2), cat(tab).label);
-      el.querySelector('[data-a=copyAll]').onclick = () => copy(JSON.stringify(PS.DATA, null, 2), 'весь PS.DATA');
+      el.querySelector('[data-a=copyAll]').onclick = () => copy(JSON.stringify(PS.DATA, null, 2), T('весь PS.DATA', 'all of PS.DATA'));
       renderTabs();
       renderList();
     },
