@@ -118,15 +118,16 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   // ---------- icons: SVGs from the approved cloud-pastel mockups, used as-is ----------
   const stroke = (w, c) => `fill="none" stroke="${c || '#3a4a5a'}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
+  // Painted icons (top bar, tabs, main-screen buttons, coins and gems).
+  UI.art = (name, s) => `<img class="art-ico" src="img/icons/main_screen/${name}.webp" width="${s}" height="${s}" alt="" draggable="false">`;
   UI.ico = {
-    coin: s => `<svg width="${s || 26}" height="${s || 26}" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11" fill="#ffd36b" stroke="#e8a93a" stroke-width="2"/><circle cx="13" cy="13" r="6.5" fill="none" stroke="#f0b94a" stroke-width="2"/><ellipse cx="9" cy="7.8" rx="3" ry="1.6" fill="#fff" opacity=".75"/></svg>`,
-    gem: s => `<svg width="${s || 26}" height="${s || 26}" viewBox="0 0 26 26" aria-hidden="true"><path d="M6 4h14l5 7-12 13L1 11z" fill="#9fe6f0" stroke="#45a9bd" stroke-width="2" stroke-linejoin="round"/><path d="M1 11h24M8 4l5 20M18 4l-5 20" fill="none" stroke="#fff" stroke-width="1.2" opacity=".75"/><path d="M7.5 6.5h3l-1.5 3z" fill="#fff" opacity=".8"/></svg>`,
+    coin: s => UI.art('coin', s || 26),
+    gem: s => UI.art('diamond', s || 26),
     crown: s => `<svg width="${s || 22}" height="${s || 22}" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l-1-9 5 4 4-6 4 6 5-4-1 9z" fill="#ffd36b" stroke="#e8a93a" stroke-width="1.5" stroke-linejoin="round"/><rect x="4" y="17" width="16" height="3" rx="1.5" fill="#e8a93a"/><circle cx="12" cy="13" r="1.4" fill="#f0584a"/></svg>`,
     check: s => `<svg width="${s || 14}" height="${s || 14}" viewBox="0 0 24 24" ${stroke(4, '#fff')} aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>`,
     left: `<svg width="18" height="18" viewBox="0 0 24 24" ${stroke(3)} aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>`,
     right: `<svg width="18" height="18" viewBox="0 0 24 24" ${stroke(3)} aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>`,
     close: `<svg width="16" height="16" viewBox="0 0 24 24" ${stroke(3.4)} aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
-    lock: '<svg width="64" height="64" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 11V8a4.5 4.5 0 0 1 9 0v3" fill="none" stroke="#fff" stroke-width="4.4" stroke-linecap="round"/><path d="M7.5 11V8a4.5 4.5 0 0 1 9 0v3" fill="none" stroke="#c9d3dc" stroke-width="2.2" stroke-linecap="round"/><rect x="4" y="10" width="16" height="12" rx="3.5" fill="#ffd36b" stroke="#fff" stroke-width="1.6"/><rect x="5.5" y="11.5" width="13" height="3" rx="1.5" fill="#fff" opacity=".45"/><circle cx="12" cy="15.6" r="1.7" fill="#c4881a"/><path d="M12 16.5v2.4" stroke="#c4881a" stroke-width="1.8" stroke-linecap="round"/></svg>',
     pause: '<svg width="16" height="16" viewBox="0 0 24 24" fill="#3a4a5a" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="2.5"/><rect x="14" y="4" width="5" height="16" rx="2.5"/></svg>',
     bag: `<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l2 12H4z" fill="#ffd6c2" stroke="#3a4a5a" stroke-width="2" stroke-linejoin="round"/><path d="M9 8V6a3 3 0 0 1 6 0v2" fill="none" stroke="#3a4a5a" stroke-width="2" stroke-linecap="round"/></svg>`,
     heart: s => `<svg width="${s || 28}" height="${s || 28}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-8.5-5.3-8.5-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8.5 2.8C20.5 15.7 12 21 12 21z" fill="#ff8f8f" stroke="#fff" stroke-width="2.2"/><ellipse cx="8" cy="9.5" rx="2" ry="1.2" fill="#fff" opacity=".8"/></svg>`,
@@ -142,8 +143,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
     },
   };
   const ICO = UI.ico;
-  // Painted icons for the top bar, bottom tabs and main-screen buttons.
-  UI.art = (name, s) => `<img class="art-ico" src="img/icons/main_screen/${name}.webp" width="${s}" height="${s}" alt="" draggable="false">`;
   const icoCoin = UI.art('coin', 28), icoGem = UI.art('diamond', 28);
 
   // ---------- stage strip (shared by main, start, results, battle) ----------
@@ -460,7 +459,33 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (p && p.activeRun) UI.go('battle', { run: p.activeRun, resumed: true });
   };
 
+  // Copy, data, toasts and pop-ups write coins and gems as 🪙 / 💎; swap them for the painted icons wherever they get rendered.
+  const CUR = { '🪙': 'coin', '💎': 'diamond' }, CUR_RE = /(🪙|💎)/u;
+  function swapCurrency(root) {
+    const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: n => CUR_RE.test(n.data) && !n.parentElement.closest('select, textarea') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,
+    });
+    const hits = [];
+    while (walk.nextNode()) hits.push(walk.currentNode);
+    for (const n of hits) {
+      const frag = document.createDocumentFragment();
+      for (const part of n.data.split(CUR_RE)) {
+        if (CUR[part]) {
+          const img = document.createElement('img');
+          img.className = 'cur-ico'; img.src = `img/icons/main_screen/${CUR[part]}.webp`; img.alt = part; img.draggable = false;
+          frag.appendChild(img);
+        } else if (part) frag.appendChild(document.createTextNode(part));
+      }
+      n.replaceWith(frag);
+    }
+  }
+
   UI.init = function () {
+    swapCurrency(document.body);
+    new MutationObserver(list => list.forEach(m => m.addedNodes.forEach(n => {
+      if (n.nodeType === 1) swapCurrency(n);
+      else if (n.nodeType === 3 && n.parentNode) swapCurrency(n.parentNode);
+    }))).observe(document.body, { childList: true, subtree: true });
     initTips();
     UI.tabs.render('main');
     UI.topbar();

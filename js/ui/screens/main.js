@@ -196,7 +196,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       let slides = '';
       for (let n = 1; n <= N; n++) {
         const locked = n > p.maxIsland;
-        slides += `<div class="isl-slide${locked ? ' locked' : ''}">${n <= ISLAND_IMGS ? `<img class="isl-img" src="img/islands/island_${n}.webp" alt="${esc(UI.island(n).name)}" draggable="false">` : `<div class="isl-art">${UI.islandArt(n)}</div>`}<div class="isl-lock">${UI.ico.lock}</div></div>`;
+        slides += `<div class="isl-slide${locked ? ' locked' : ''}">${n <= ISLAND_IMGS ? `<img class="isl-img" src="img/islands/island_${n}.webp" alt="${esc(UI.island(n).name)}" draggable="false">` : `<div class="isl-art">${UI.islandArt(n)}</div>`}<div class="isl-lock">${UI.art('lock', 72)}</div></div>`;
       }
       slides += '<div class="isl-slide soon"><div class="isl-art">☁️</div></div>';
       el.innerHTML = `${sky()}

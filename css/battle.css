@@ -13,7 +13,7 @@
 .bt-top .sbar-mark.passed { background: #7cc463; }
 .bt-top .sbar-mark.cur:not(.boss) { width: 24px; height: 24px; margin: -12px 0 0 -12px; background: var(--butter); box-shadow: 0 0 0 2px rgba(240, 127, 82, .5); }
 .bt-top .sbar-mark.boss { width: 28px; height: 28px; margin: -14px 0 0 -14px; }
-.bt-stage-lbl { font-size: 11px; font-weight: 900; color: #2f5f6a; line-height: 14px; padding-left: 4px; }
+.bt-stage-lbl { font-size: 11px; font-weight: 900; color: var(--ink); text-shadow: 0 0 6px rgba(255, 255, 255, .9); line-height: 14px; padding-left: 4px; }
 
 /* ---------- enemy ---------- */
 .bt-enemy { display: flex; flex-direction: column; gap: 6px; flex: 0 1 auto; min-height: 0; }
@@ -42,9 +42,9 @@
 .bt-intent { position: absolute; left: 0; top: 4px; z-index: 3; min-width: 96px; max-width: 36%; padding: 6px 12px 7px; border-radius: 22px; text-align: center;
   background: var(--cream); border: 3px solid #fff; color: var(--ink); filter: drop-shadow(0 4px 6px rgba(50, 110, 130, .22)); }
 .bt-intent::after { content: ''; position: absolute; right: -13px; bottom: 8px; width: 18px; height: 16px; background: var(--cream); clip-path: polygon(0 0, 100% 100%, 0 70%); }
-.bt-intent .il { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; color: #b8452a; line-height: 14px; }
+.bt-intent .il { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; color: var(--num); line-height: 14px; }
 .bt-intent .iv { font-weight: 900; font-size: 18px; white-space: nowrap; line-height: 24px; }
-.bt-intent .it { font-size: 11px; font-weight: 900; color: #b8452a; white-space: nowrap; }
+.bt-intent .it { font-size: 11px; font-weight: 900; color: var(--num); white-space: nowrap; }
 .bt-intent.paused { background: var(--skyp2); }
 .bt-intent.paused::after { background: var(--skyp2); }
 .bt-intent.paused .il, .bt-intent.paused .it { color: #2f5f6a; }
@@ -68,7 +68,7 @@
 .bt-bar { position: relative; }
 .bt-mark { position: absolute; top: -3px; bottom: -3px; width: 4px; margin-left: -2px; border-radius: 2px; background: var(--cta3); box-shadow: 0 0 0 1px #fff; z-index: 2; }
 .bt-mark.rage { background: var(--alarm); }
-.bt-bar .bt-shieldbar { position: absolute; right: 0; top: 0; bottom: 0; background: linear-gradient(90deg, #9ccdf6cc, #5aa2eacc); border-left: 2px solid #fff; transition: width .3s; }
+.bt-bar .bt-shieldbar { position: absolute; right: 0; top: 0; bottom: 0; background: #7ab8f0cc; border-left: 2px solid #fff; transition: width .3s; }
 
 /* ---------- player ---------- */
 .bt-player { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
@@ -134,17 +134,17 @@
 /* ---------- bottom ---------- */
 .bt-bottom { display: flex; align-items: center; gap: 12px; min-height: 56px; }
 .bt-belt { flex: 1; display: flex; gap: 10px; min-width: 0; }
-.bt-pot { position: relative; flex: 0 0 52px; width: 52px; height: 52px; border-radius: 26px; border: 3px solid #fff; font-size: 24px; display: grid; place-items: center; background: linear-gradient(180deg, #fff, var(--cream2));
-  box-shadow: 0 5px 10px rgba(50, 110, 130, .25), inset 0 -4px 0 rgba(0, 0, 0, .06), inset 0 8px 10px rgba(255, 255, 255, .55); }
+.bt-pot { position: relative; flex: 0 0 52px; width: 52px; height: 52px; border-radius: 26px; border: 3px solid #fff; font-size: 24px; display: grid; place-items: center; background: var(--cream);
+  box-shadow: 0 5px 10px rgba(50, 110, 130, .25), inset 0 -4px 0 rgba(0, 0, 0, .06); }
 .bt-pot svg { display: block; }
-.bt-pot.pt-undo, .bt-pot.pt-sleep { background: linear-gradient(180deg, var(--lilac2), var(--lilac)); }
-.bt-pot.pt-heal, .bt-pot.pt-firebomb { background: linear-gradient(180deg, #ffe4e4, #ffc9c9); }
-.bt-pot.pt-flask, .bt-pot.pt-shake { background: linear-gradient(180deg, var(--mint2), var(--mint)); }
-.bt-pot.pt-solvent, .bt-pot.pt-combo { background: linear-gradient(180deg, var(--skyp2), var(--skyp)); }
+.bt-pot.pt-undo, .bt-pot.pt-sleep { background: var(--lilac); }
+.bt-pot.pt-heal, .bt-pot.pt-firebomb { background: #ffd6d6; }
+.bt-pot.pt-flask, .bt-pot.pt-shake { background: var(--mint); }
+.bt-pot.pt-solvent, .bt-pot.pt-combo { background: var(--skyp); }
 .bt-pot:active:not(.empty) { transform: translateY(2px); }
 .bt-pot.empty { background: rgba(255, 255, 255, .18); border: 3px dashed rgba(255, 255, 255, .95); box-shadow: none; font-size: 22px; color: #fff; font-weight: 900; }
 .bt-pot.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); animation: btBreathe 1s infinite; }
-.bt-pot-n { position: absolute; right: -6px; top: -6px; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px; background: var(--cta3); border: 3px solid #fff; color: #fff; font-size: 12px; font-weight: 900; line-height: 18px; text-align: center; pointer-events: none; }
+.bt-pot-n { position: absolute; right: -6px; top: -6px; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px; background: var(--cta); border: 3px solid #fff; color: #fff; font-size: 12px; font-weight: 900; line-height: 18px; text-align: center; pointer-events: none; }
 .bt-drain { flex: none; width: 56px; min-height: 56px; padding: 0; border-radius: 28px; }
 .bt-drain svg { display: block; flex: none; width: 22px; height: 22px; }
 .bt-drain.armed { animation: btBreathe 1s infinite; }
