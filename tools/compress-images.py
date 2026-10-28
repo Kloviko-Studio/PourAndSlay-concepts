@@ -6,7 +6,7 @@ from PIL import Image
 ROOT = pathlib.Path(__file__).resolve().parent.parent / 'img'
 # Longest on-screen width (CSS px) x 3 for dense phone screens; the first matching glob wins, unmatched files keep their size.
 # Tubes with wings, arrows or a fuse spend part of the width on them, so they get more pixels to keep the glass itself sharp.
-MAX_W = [('tubes/cork*', 128), ('tubes/tube_amp*', 384), ('tubes/tube_catalyst*', 384), ('tubes/tube_bomb*', 384), ('tubes/*', 256), ('texture/tubes/*', 384), ('islands/*', 1024), ('sky/cloud_*', 768), ('icons/*', 256), ('texture/*', 512)]
+MAX_W = [('tubes/cork*', 128), ('tubes/tube_amp*', 384), ('tubes/tube_catalyst*', 384), ('tubes/tube_bomb*', 384), ('tubes/*', 256), ('texture/tubes/*', 384), ('islands/*', 1024), ('mobs/*', 512), ('sky/cloud_*', 768), ('icons/*', 256), ('texture/*', 512)]
 # Smooth gradients band and fine paper grain washes out at lower quality.
 QUALITY = [('sky/sky_*', 92), ('texture/tubes/*', 85), ('texture/*', 96)]
 DEFAULT_Q = 85

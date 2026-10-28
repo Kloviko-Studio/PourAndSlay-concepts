@@ -262,14 +262,20 @@ PS.Art = (function () {
     }
   };
 
+  // Painted enemies replace their vector drawing inside the same svg, so sizing, state filters and the plaster keep working.
+  // The vector drawings below stay only as a fallback for an id without a picture.
+  function painted(id, kind, vb) {
+    var d = PS.DATA && PS.DATA[kind === 'boss' ? 'bosses' : 'enemies'][id];
+    return d && ['', '<image href="img/mobs/world_' + d.world + '/' + kind + '_' + id + '.webp" width="' + vb + '" height="' + vb + '"/>'];
+  }
   function enemy(id, opts) {
     var f = E[id];
     if (!f) return '';
-    var u = uid(), rage = !!(opts && opts.rage), p = f(u, rage);
+    var u = uid(), rage = !!(opts && opts.rage), p = painted(id, 'enemy', 120) || f(u, rage);
     return wrapMon(120, u, rage, p[0], p[1]);
   }
   // Forehead spot above the right eye of each boss; a returning boss wears a plaster there.
-  var PLASTER_AT = { slime_king: [106, 70, -30], ancient_golem: [104, 50, -25], ice_queen: [104, 56, -30], mycelium_mother: [104, 118, -25], lava_serpent: [134, 38, -20], trickster: [100, 46, -30] };
+  var PLASTER_AT = { slime_king: [110, 52, -30], ancient_golem: [84, 22, -25], ice_queen: [80, 29, -30], mycelium_mother: [94, 57, -25], lava_serpent: [124, 18, -20], trickster: [112, 32, -30] };
   function plaster(at) {
     function strip(rot) {
       return '<g transform="rotate(' + rot + ')"><rect x="-17" y="-5.5" width="34" height="11" rx="5.5" fill="#f4c99a" stroke="#b07a4a" stroke-width="1.5"/>' +
@@ -280,7 +286,7 @@ PS.Art = (function () {
   function boss(id, opts) {
     var f = B[id];
     if (!f) return '';
-    var u = uid(), rage = !!(opts && opts.rage), p = f(u, rage);
+    var u = uid(), rage = !!(opts && opts.rage), p = painted(id, 'boss', 160) || f(u, rage);
     var body = p[1] + (opts && opts.patched && PLASTER_AT[id] ? plaster(PLASTER_AT[id]) : '');
     return wrapMon(160, u, rage, p[0], body);
   }
