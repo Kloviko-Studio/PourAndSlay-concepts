@@ -161,7 +161,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     }
     // The record is the faded part of the line; a separate flag only collided with labels above the strip.
     const pin = cur ? `<b class="sbar-pin" style="left:${pos(cur)}"></b>` : '';
-    return `<div class="sbar${opts.compact ? ' compact' : ''}"><div class="sbar-track">
+    // Past 8 stages the round nodes run together, so ordinary stages shrink to ticks; bosses and the current stage stay round.
+    return `<div class="sbar${opts.compact ? ' compact' : ''}${S > 8 ? ' many' : ''}"><div class="sbar-track">
       <div class="sbar-best" style="width:${pos(best)}"></div><div class="sbar-fill" style="width:${pos(cur)}"></div>
       ${marks}${pin}</div></div>`;
   };
