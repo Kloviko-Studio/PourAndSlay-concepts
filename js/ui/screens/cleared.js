@@ -12,7 +12,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const runCoins = R.coins || 0, firstBonus = Math.max(0, res.coins - runCoins);
       // Only gameplay novelties get a card (max 2 per island); lab upgrades and relic rarity are one quiet line.
       const quiet = u => u.kind === 'lab' || u.kind === 'relicRarity';
-      const ORDER = ['colors', 'tubes', 'potions', 'mods', 'finds'], rank = u => ORDER.indexOf(u.kind);
+      const ORDER = ['elements', 'tubes', 'potions', 'mods', 'finds'], rank = u => ORDER.indexOf(u.kind);
       const unlocked = (res.unlocked || []).filter(u => !quiet(u)).sort((a, b) => rank(a) - rank(b)).map(UI.unlockLabel).filter(Boolean);
       const also = res.firstClear ? (res.unlocked || []).filter(quiet).map(UI.unlockLabel).filter(Boolean) : [];
       const labNew = also.filter(u => u.kind === 'lab'), restNew = also.filter(u => u.kind !== 'lab');

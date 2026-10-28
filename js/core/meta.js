@@ -50,6 +50,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (R && R.boss && R.boss.maxHp == null && D().bosses[R.boss.id] && islandOf(R.island)) {
       R.boss.maxHp = U.round(D().bosses[R.boss.id].hp * islandOf(R.island).M);
     }
+    // the "colors" section became "elements"; keep what was already seen in the collection
+    Object.keys(p.seen || {}).forEach(k => { if (k.indexOf('colors:') === 0) p.seen['elements:' + k.slice(7)] = p.seen[k]; });
     return fill(p, defaults(now));
   }
 
@@ -208,17 +210,17 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function questAvailable(t) {
     const r = t.requires, max = P_().maxIsland;
     if (!r) return true;
-    if (r.color) { const c = D().colors[r.color]; if (c && (c.unlock || 1) > max) return false; }
+    if (r.color) { const c = D().elements[r.color]; if (c && (c.unlock || 1) > max) return false; }
     if (r.island && r.island > max) return false;
     if (r.lab && !Meta.labOpen()) return false;
     return true;
   }
-  function unlockedColors() { return Object.keys(D().colors).filter(id => (D().colors[id].unlock || 1) <= P_().maxIsland); }
+  function unlockedColors() { return Object.keys(D().elements).filter(id => (D().elements[id].unlock || 1) <= P_().maxIsland); }
   function questTarget(t) { const n = U.lin(t.n, P_().maxIsland); return t.scaleP ? Math.round(n * Meta.P()) : n; }
   Meta.questText = function (q) {
     const t = D().quests.find(x => x.id === q.id);
     if (!t) return '';
-    const c = q.color && D().colors[q.color];
+    const c = q.color && D().elements[q.color];
     return t.text.replace('{n}', q.target).replace('{color}', c ? (c.gen || c.name) : '');
   };
   Meta.quests = function (now) {

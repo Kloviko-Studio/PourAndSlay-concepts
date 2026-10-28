@@ -3,10 +3,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
   'use strict';
   const UI = PS.UI, esc = UI.esc;
   const T = PS.T;
-  let tab = 'colors';
+  let tab = 'elements';
 
   const TABS = [
-    { id: 'colors', label: T('Цвета', 'Colors') }, { id: 'potions', label: T('Зелья', 'Potions') }, { id: 'relics', label: T('Реликвии', 'Relics') },
+    { id: 'elements', label: T('Стихии', 'Elements') }, { id: 'potions', label: T('Зелья', 'Potions') }, { id: 'relics', label: T('Реликвии', 'Relics') },
     { id: 'tubes', label: T('Колбы', 'Tubes') }, { id: 'enemies', label: T('Враги', 'Enemies') },
   ];
 
@@ -34,7 +34,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const src = D[kind] || {};
     return Object.keys(src).filter(id => !src[id].later).map(id => {
       const it = src[id];
-      return { key: kind + ':' + id, island: it.unlock || 1, icon: it.icon || '❔', name: it.name, desc: it.desc, cls: '' };
+      return { key: kind + ':' + id, island: it.unlock || 1, icon: kind === 'elements' ? UI.elBadge(id) : it.icon || '❔', name: it.name, desc: it.desc, cls: '' };
     }).sort((a, b) => a.island - b.island);
   }
 

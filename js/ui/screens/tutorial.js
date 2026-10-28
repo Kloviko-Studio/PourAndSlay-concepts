@@ -127,9 +127,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
       evs.forEach(e => {
         if (e.type === 'close' && !e.junk) {
           if (!seen('close')) queue.push({ key: 'close', target: '.bt-enemy', title: T('Колба закрыта!', 'Tube closed!'), text: T('Полная колба одного цвета закрывается, срабатывает её эффект, а на место приходят слои из очереди.', 'A full tube of one color closes: its effect fires and new layers drop in from the queue.') });
-          if (e.color === 'fire' && !seen('fire')) queue.push({ key: 'fire', target: '.bt-einfo', title: T('🔥 Огонь', '🔥 Fire'), text: T('Огонь бьёт врага. Сведи его HP к нулю — и этап пройден.', 'Fire hits the enemy. Bring its HP to zero to clear the stage.') });
-          if (e.color === 'water' && !seen('water')) queue.push({ key: 'water', target: '.bt-shield', title: T('💧 Вода = щит', '💧 Water = shield'), text: T('Щит поглощает урон от атаки врага и сгорает после неё.', 'Shield blocks damage from the enemy attack, then breaks.') });
-          if (e.color === 'life' && !seen('life')) queue.push({ key: 'life', target: '.bt-player .bar', title: T('🌿 Жизнь = лечение', '🌿 Life = heal'), text: T('Жизнь восстанавливает HP. HP переходит между этапами.', 'Life restores HP. Your HP carries over between stages.') });
+          if (e.color === 'fire' && !seen('fire')) queue.push({ key: 'fire', target: '.bt-einfo', title: `${UI.elBadge('fire')} ${T('Огонь', 'Fire')}`, text: T('Огонь бьёт врага. Сведи его HP к нулю — и этап пройден.', 'Fire hits the enemy. Bring its HP to zero to clear the stage.') });
+          if (e.color === 'water' && !seen('water')) queue.push({ key: 'water', target: '.bt-shield', title: `${UI.elBadge('water')} ${T('Вода = щит', 'Water = shield')}`, text: T('Щит поглощает урон от атаки врага и сгорает после неё.', 'Shield blocks damage from the enemy attack, then breaks.') });
+          if (e.color === 'life' && !seen('life')) queue.push({ key: 'life', target: '.bt-player .bar', title: `${UI.elBadge('life')} ${T('Жизнь = лечение', 'Life = heal')}`, text: T('Жизнь восстанавливает HP. HP переходит между этапами.', 'Life restores HP. Your HP carries over between stages.') });
         }
         if (e.type === 'boss_fled' && !seen('bossfled')) queue.push({ key: 'bossfled', target: '.bt-sbar', title: T('Ещё увидимся!', 'See you later!'), text: T('Побитый босс может убежать. Он вернётся на следующей встрече с половиной здоровья — и с пластырем. На последнем этапе острова он бьётся до конца.', 'A beaten boss may flee. It comes back next fight with half its HP — and a band-aid. On the island\'s last stage it fights to the end.') });
         if (e.type === 'rage' && !seen('rage')) queue.push({ key: 'rage', target: '.bt-intent', title: T('Ярость!', 'Rage!'), text: T('Финальный босс ранен — теперь он действует на 1 ход раньше. Торопись!', 'The final boss is hurt — now it acts 1 turn sooner. Hurry!') });
@@ -180,8 +180,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       F.tubes.forEach((t, i) => {
         const c = t.layers.find(x => !JUNK[x] && !START[x]);
         if (c && !seen('color_' + c)) {
-          const cd = D().colors[c];
-          if (cd && !steps.some(s => s.key === 'color_' + c)) steps.push({ key: 'color_' + c, target: ctx.tubeEl(i), title: T(`Новый цвет: ${cd.icon} ${esc(cd.name)}`, `New color: ${cd.icon} ${esc(cd.name)}`), text: esc(cd.desc) });
+          const cd = D().elements[c];
+          if (cd && !steps.some(s => s.key === 'color_' + c)) steps.push({ key: 'color_' + c, target: ctx.tubeEl(i), title: T(`Новая стихия: ${UI.elBadge(c)} ${esc(cd.name)}`, `New element: ${UI.elBadge(c)} ${esc(cd.name)}`), text: esc(cd.desc) });
         }
         if (t.kind !== 'plain' && !seen('tube_' + t.kind)) {
           const td = D().tubes[t.kind];

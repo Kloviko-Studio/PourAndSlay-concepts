@@ -42,7 +42,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   // ---------- items: one lookup for every kind of content ----------
   const KINDS = {
-    colors: 'colors', color: 'colors', potions: 'potions', potion: 'potions', mods: 'mods', mod: 'mods',
+    elements: 'elements', element: 'elements', colors: 'elements', color: 'elements', potions: 'potions', potion: 'potions', mods: 'mods', mod: 'mods',
     finds: 'finds', find: 'finds', tubes: 'tubes', tube: 'tubes', lab: 'lab', relics: 'relics', relic: 'relics',
     enemies: 'enemies', enemy: 'enemies', bosses: 'bosses', boss: 'bosses', boosters: 'boosters', booster: 'boosters',
   };
@@ -50,7 +50,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const k = KINDS[kind] || kind, src = D()[k];
     const it = src && src[id];
     if (!it) return { id, kind: k, icon: '❔', name: String(id), desc: '' };
-    return Object.assign({ kind: k, id, icon: '❔', name: String(id), desc: '' }, it);
+    const el = k === 'elements' ? id : k === 'lab' && it.per && it.per.color;
+    return Object.assign({ kind: k, id, icon: '❔', name: String(id), desc: '' }, it, el && PS.DATA.elements[el] ? { icon: UI.elBadge(el) } : null);
   };
   // Meta.newUnlocks gives {kind, id}; relicRarity is a pseudo-item, so it gets its own label.
   UI.unlockLabel = function (u) {
@@ -120,6 +121,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const stroke = (w, c) => `fill="none" stroke="${c || '#3a4a5a'}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
   // Painted icons (top bar, tabs, main-screen buttons, coins and gems).
   UI.art = (name, s) => `<img class="art-ico" src="img/icons/main_screen/${name}.webp" width="${s}" height="${s}" alt="" draggable="false">`;
+  // painted white element glyphs, sized by the surrounding rule
+  UI.elIco = id => PS.DATA.elements[id] ? `<img class="el-ico" src="img/icons/gameplay/bonuses/bonus_${id}.webp" alt="" draggable="false">` : '';
+  // the glyphs are white, so off the liquid they sit on a chip of the element's colour; sized in em like the emoji it replaces
+  UI.elBadge = id => { const c = PS.DATA.elements[id]; return c ? `<span class="el-badge" style="background:${c.css}">${UI.elIco(id)}</span>` : ''; };
   UI.ico = {
     coin: s => UI.art('coin', s || 26),
     gem: s => UI.art('diamond', s || 26),
@@ -135,12 +140,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
     drop: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 5 6 8 6 12a6 6 0 0 1-12 0c0-4 3-7 6-12z" fill="#fff"/></svg>',
     undo: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6b4fb0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>',
     heal: '<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 2.5h5M10.5 2.5v5l-5 8a4 4 0 0 0 3.4 6h6.2a4 4 0 0 0 3.4-6l-5-8v-5" fill="#fff" stroke="#e05a6a" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 15.5h10l1 1.5a3 3 0 0 1-2.6 4.5H8.6A3 3 0 0 1 6 17z" fill="#ff8f8f"/><path d="M12 15.8s-2.2-1.4-2.2-2.9a1.2 1.2 0 0 1 2.2-.7 1.2 1.2 0 0 1 2.2.7c0 1.5-2.2 2.9-2.2 2.9z" fill="#fff"/></svg>',
-    // white marks on the colour layers; colours without one keep their emoji
-    mark: {
-      fire: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c1 3.6 5.5 5.6 5.5 10.6a5.5 5.5 0 0 1-11 0c0-2.8 1.8-4.3 2-7 1.5 1.1 2.8 2.6 2.8 4.1.7-2.8.7-5 .7-7.7z" fill="#fff"/></svg>',
-      water: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 4.5 6 7.6 6 11.2a6 6 0 0 1-12 0C6 10.6 9 7.5 12 3z" fill="#fff"/></svg>',
-      life: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 11 5 19 5c0 8-5 14-14 14z" fill="#fff"/><path d="M5.5 18.5l8-8" stroke="#6fbb57" stroke-width="1.8" stroke-linecap="round"/></svg>',
-    },
   };
   const ICO = UI.ico;
   const icoCoin = UI.art('coin', 28), icoGem = UI.art('diamond', 28);
@@ -250,6 +249,44 @@ var PS = globalThis.PS || (globalThis.PS = {});
     return Promise.all(all).then(() => UI.topbar());
   };
 
+  // ---------- cloud backdrop ----------
+  // A textured cream shape whose top edge is a row of soft bumps; drawn in SVG so it is rebuilt for any width.
+  const TEXTURE = 'img/texture/menu_texture.webp';
+  let cloudN = 0;
+  function cloudPath(W, H, top, bumps, r, step) {
+    const s = 1.5, yb = top, bot = top + H - s;
+    r = Math.min(r, (bot - yb) / 2);
+    const x0 = s + r, x1 = W - s - r, n = Math.max(2, Math.round((x1 - x0) / step)), seg = (x1 - x0) / n;
+    const f = v => v.toFixed(1);
+    let d = `M${f(x0)} ${yb}`;
+    for (let i = 0; i < n; i++) {
+      // control points at 4/3 of the bump height put the crest at the height itself
+      const a = x0 + seg * i, b = a + seg, h = yb - bumps[i % bumps.length] * 4 / 3;
+      d += ` C${f(a + seg * .12)} ${f(h)} ${f(b - seg * .12)} ${f(h)} ${f(b)} ${yb}`;
+    }
+    return d + ` A${f(r)} ${f(r)} 0 0 1 ${f(W - s)} ${f(yb + r)} L${f(W - s)} ${f(bot - r)} A${f(r)} ${f(r)} 0 0 1 ${f(x1)} ${f(bot)}` +
+      ` L${f(x0)} ${f(bot)} A${f(r)} ${f(r)} 0 0 1 ${s} ${f(bot - r)} L${s} ${f(yb + r)} A${f(r)} ${f(r)} 0 0 1 ${f(x0)} ${yb} Z`;
+  }
+  // Safe to call after every innerHTML rewrite of `el`: the shape and its resize watcher are kept on the element.
+  UI.cloud = function (el, opts) {
+    if (el._cloud) { if (el.firstElementChild !== el._cloud.svg) el.prepend(el._cloud.svg); el._cloud.draw(); return; }
+    const o = Object.assign({ bumps: [9, 12, 8, 11, 10], r: 24, step: 64 }, opts);
+    const id = 'cloud' + (++cloudN), top = Math.max.apply(null, o.bumps) + 2;
+    el.insertAdjacentHTML('afterbegin', `<svg class="cloud-shape" style="top:-${top}px" aria-hidden="true"><defs><pattern id="${id}" patternUnits="userSpaceOnUse" width="256" height="256"><image href="${TEXTURE}" width="256" height="256"/></pattern></defs>` +
+      `<path fill="#fdf8ea"/><path fill="url(#${id})" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>`);
+    const svg = el.firstElementChild, paths = svg.querySelectorAll('path');
+    const draw = () => {
+      const W = el.offsetWidth, H = el.offsetHeight;
+      if (!W || !H) return;
+      svg.setAttribute('width', W); svg.setAttribute('height', H + top); svg.setAttribute('viewBox', `0 0 ${W} ${H + top}`);
+      const d = cloudPath(W, H, top, o.bumps, o.r, o.step);
+      paths.forEach(p => p.setAttribute('d', d));
+    };
+    el._cloud = { svg, draw };
+    draw();
+    if (window.ResizeObserver) new ResizeObserver(draw).observe(el);
+  };
+
   // ---------- bottom tabs ----------
   const TABS = [
     { id: 'shop', label: T('Магазин', 'Shop'), icon: UI.art('market', 34) },
@@ -271,6 +308,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         if (id === UI.current() && id !== 'main') return;
         UI.go(id);
       });
+      UI.cloud(nav, { bumps: [5, 7, 6, 7, 5], r: 30, step: 78 });
       this.badges();
     },
     badges() {

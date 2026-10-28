@@ -40,7 +40,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
             else if (max) side = `<span class="tag tag-ok">${T('Максимум', 'Max')}</span>`;
             else side = `<button class="btn btn-sm lab-btn ${PS.Meta.canBuyLab(id) ? 'btn-cta' : ''}" data-buy="${id}" ${p.activeRun || !PS.Meta.labOpen() ? 'disabled' : ''}><span class="price">${UI.ico.coin(18)}${UI.fmt(cost)}</span></button>`;
             return `<div class="card${locked ? ' locked' : ''}" data-id="${id}" data-tip="<b>${esc(def.name)}</b><br>${esc(def.desc)}">
-              <div class="card-ico">${def.icon}</div>
+              <div class="card-ico">${UI.item('lab', id).icon}</div>
               <div class="card-body"><span class="card-title">${esc(def.name)}</span>
                 ${locked ? `<div class="card-desc">${esc(def.desc)}</div>` : `<div class="lab-fx">${tier ? `${esc(effectAt(def, tier))}${max ? '' : ' → '}` : ''}${max ? '' : `<b>${esc(effectAt(def, tier + 1))}</b>`}</div>`}
                 <div class="row lab-lvl"><div class="tiers">${tiers}</div><span class="stack-n">${tier}/${def.tiers}</span></div></div>

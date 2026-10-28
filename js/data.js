@@ -11,7 +11,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   var D = {};
 
-  D.colors = {
+  D.elements = {
     fire: {
       id: 'fire', name: 'Огонь', gen: 'огня', icon: '🔥', sym: '🔥', role: 'damage', unlock: 1,
       base: { dmg: 6 }, boost: { dmg: 3 }, boostMax: 3, css: '#f07a52', dark: '#c85a36',
@@ -93,8 +93,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
   };
 
   D.finds = {
-    new_color: { id: 'new_color', name: 'Новая эссенция', icon: '🎨', unlock: 1, desc: 'Добавь открытый цвет, которого нет в колоде. При 5 цветах — замени выбранный (его усиления пропадают).' },
-    boost_color: { id: 'boost_color', name: 'Усиление эссенции', icon: '⬆️', unlock: 1, cap: 3, desc: '+1 шаг усиления выбранному цвету колоды (до 3 на цвет, кроме зеркала).' },
+    new_color: { id: 'new_color', name: 'Новая стихия', icon: '🎨', unlock: 1, desc: 'Добавь открытую стихию, которой нет в колоде. При 5 стихиях — замени выбранную (её усиления пропадают).' },
+    boost_color: { id: 'boost_color', name: 'Усиление стихии', icon: '⬆️', unlock: 1, cap: 3, desc: '+1 шаг усиления выбранной стихии колоды (до 3 на стихию, кроме зеркала).' },
     special_tube: { id: 'special_tube', name: 'Особая колба', icon: '🧫', unlock: 1, desc: 'Случайная открытая особая колба в пустой слот; если пустых нет — заменить выбранную.' },
     extra_slot: { id: 'extra_slot', name: 'Лишний слот', icon: '➕', unlock: 5, maxSlots: 5, desc: '+1 пустая колба в каждом бою (всего слотов до 5).' },
     filter: { id: 'filter', name: 'Фильтр', icon: '🧹', unlock: 1, cap: 1, pct: 0.5, requires: 'junkEnemy', desc: 'Камней и спор от врагов и мусора в очереди вдвое меньше.' }
@@ -258,16 +258,16 @@ var PS = globalThis.PS || (globalThis.PS = {});
   // At most 2 gameplay novelties per island (one card each after the previous island); lab and relic rarity open quietly.
   // Finds like new_color / special_tube / filter sit in the starting pool but only show up once they have something to offer.
   D.unlocks = {
-    1: { colors: ['fire', 'water', 'life'], potions: ['undo', 'heal', 'flask', 'solvent', 'sleep'], mods: ['tough', 'apron', 'caustic', 'bubble', 'potion_pick', 'prep', 'thorns'], finds: ['boost_color', 'new_color', 'special_tube', 'filter'], tubes: [], lab: ['vitality', 'essence_fire', 'essence_water', 'essence_life', 'start_shield'], relicRarity: 'common', note: 'Обучение: огонь, вода, жизнь' },
-    2: { colors: ['poison'], potions: [], mods: ['leech'], finds: [], tubes: [], lab: ['belt'], relicRarity: null, note: 'Новый цвет: яд' },
-    3: { colors: [], potions: [], mods: [], finds: [], tubes: ['amp', 'sieve'], lab: ['intuition', 'second_wind'], relicRarity: null, note: 'Особые колбы: Усилитель и Сито' },
-    4: { colors: ['lightning'], potions: [], mods: [], finds: [], tubes: [], lab: ['thrift'], relicRarity: null, note: 'Новый цвет: молния' },
-    5: { colors: [], potions: [], mods: [], finds: ['extra_slot'], tubes: ['catalyst'], lab: ['slot'], relicRarity: 'rare', note: 'Катализатор и Лишний слот' },
-    6: { colors: ['ice'], potions: [], mods: [], finds: [], tubes: [], lab: ['mastery'], relicRarity: null, note: 'Новый цвет: лёд' },
-    7: { colors: [], potions: ['firebomb'], mods: [], finds: [], tubes: ['bomb'], lab: [], relicRarity: null, note: 'Бомба и Огненная бомба' },
-    8: { colors: ['dark'], potions: [], mods: [], finds: [], tubes: [], lab: [], relicRarity: 'legendary', note: 'Новый цвет: тьма' },
-    9: { colors: ['mirror'], potions: [], mods: [], finds: [], tubes: [], lab: [], relicRarity: null, note: 'Новый цвет: зеркало' },
-    10: { colors: [], potions: [], mods: [], finds: [], tubes: ['big', 'vial'], lab: [], relicRarity: null, note: 'Большая колба и Пробирка' }
+    1: { elements: ['fire', 'water', 'life'], potions: ['undo', 'heal', 'flask', 'solvent', 'sleep'], mods: ['tough', 'apron', 'caustic', 'bubble', 'potion_pick', 'prep', 'thorns'], finds: ['boost_color', 'new_color', 'special_tube', 'filter'], tubes: [], lab: ['vitality', 'essence_fire', 'essence_water', 'essence_life', 'start_shield'], relicRarity: 'common', note: 'Обучение: огонь, вода, жизнь' },
+    2: { elements: ['poison'], potions: [], mods: ['leech'], finds: [], tubes: [], lab: ['belt'], relicRarity: null, note: 'Новая стихия: яд' },
+    3: { elements: [], potions: [], mods: [], finds: [], tubes: ['amp', 'sieve'], lab: ['intuition', 'second_wind'], relicRarity: null, note: 'Особые колбы: Усилитель и Сито' },
+    4: { elements: ['lightning'], potions: [], mods: [], finds: [], tubes: [], lab: ['thrift'], relicRarity: null, note: 'Новая стихия: молния' },
+    5: { elements: [], potions: [], mods: [], finds: ['extra_slot'], tubes: ['catalyst'], lab: ['slot'], relicRarity: 'rare', note: 'Катализатор и Лишний слот' },
+    6: { elements: ['ice'], potions: [], mods: [], finds: [], tubes: [], lab: ['mastery'], relicRarity: null, note: 'Новая стихия: лёд' },
+    7: { elements: [], potions: ['firebomb'], mods: [], finds: [], tubes: ['bomb'], lab: [], relicRarity: null, note: 'Бомба и Огненная бомба' },
+    8: { elements: ['dark'], potions: [], mods: [], finds: [], tubes: [], lab: [], relicRarity: 'legendary', note: 'Новая стихия: тьма' },
+    9: { elements: ['mirror'], potions: [], mods: [], finds: [], tubes: [], lab: [], relicRarity: null, note: 'Новая стихия: зеркало' },
+    10: { elements: [], potions: [], mods: [], finds: [], tubes: ['big', 'vial'], lab: [], relicRarity: null, note: 'Большая колба и Пробирка' }
   };
 
   D.economy = {

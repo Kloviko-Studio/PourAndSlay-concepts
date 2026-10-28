@@ -3,7 +3,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   'use strict';
   const UI = PS.UI, esc = UI.esc;
   const T = PS.T;
-  let tab = 'colors', query = '';
+  let tab = 'elements', query = '';
 
   const HIDE = { id: 1, name: 1, icon: 1, sym: 1, desc: 1, art: 1, later: 1, unlock: 1, nameEn: 1 };
 
@@ -71,7 +71,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
   // Every icon still drawn as emoji or inline SVG; the painted ones in img/icons (coins, gems, tabs, top bar…) are already final and left out.
   const PAINTED = /🪙|💎/u;
   const svg = (k, s) => { const v = UI.ico[k]; return typeof v === 'function' ? v(s) : v; };
-  const onLayer = (k, bg) => `<span class="cat-mark" style="background:${bg}">${UI.ico.mark[k]}</span>`;
   const UI_ICONS = () => {
     const G = { ui: T('Интерфейс', 'Interface'), set: T('Настройки и Печать', 'Settings & Seal'), bt: T('Бой', 'Battle'), win: T('Окна и подсказки', 'Windows & hints') };
     return [
@@ -120,22 +119,17 @@ var PS = globalThis.PS || (globalThis.PS = {});
       [svg('undo'), T('Отмена (SVG)', 'Undo (SVG)'), T('Зелье «Отмена» на поясе', 'Undo potion on the belt'), G.bt],
       [svg('heal'), T('Лечение (SVG)', 'Heal (SVG)'), T('Зелье «Лечение» на поясе', 'Heal potion on the belt'), G.bt],
       [svg('crown', 22), T('Корона (SVG)', 'Crown (SVG)'), T('Метка «Босс» у имени врага', '"Boss" tag by the enemy name'), G.bt],
-      [onLayer('fire', '#f07a52'), T('Метка огня', 'Fire mark'), T('Значок на слое огня в колбе', 'Mark on fire layers in tubes'), G.bt],
-      [onLayer('water', '#5aa2ea'), T('Метка воды', 'Water mark'), T('Значок на слое воды', 'Mark on water layers'), G.bt],
-      [onLayer('life', '#6fbb57'), T('Метка жизни', 'Life mark'), T('Значок на слое жизни', 'Mark on life layers'), G.bt],
       ['⚔️', T('Мечи', 'Swords'), T('Намерение врага: удар; страница правил «Враг»', 'Enemy intent: attack; "Enemy" rules page'), G.bt],
       ['🪨', T('Камень', 'Rock'), T('Намерение: камни в колбы; камнепад; правила «Мусор»', 'Intent: stones in tubes; rockfall; "Junk" rules'), G.bt],
       ['🍄', T('Гриб', 'Mushroom'), T('Намерение: слизь в очередь', 'Intent: slime into the queue'), G.bt],
-      ['❄️', T('Снежинка', 'Snowflake'), T('Намерение: заморозка колбы; враг заморожен', 'Intent: freeze a tube; enemy frozen'), G.bt],
+      ['❄️', T('Снежинка', 'Snowflake'), T('Намерение и метка на колбе: заморозка колбы', 'Intent and tube mark: tube frozen'), G.bt],
       ['🤏', T('Щепотка', 'Pinch'), T('Намерение: украдёт слой', 'Intent: steal a layer'), G.bt],
       ['🔀', T('Перемешать', 'Shuffle'), T('Намерение: поменяет цвета', 'Intent: swap colours'), G.bt],
       ['🛡', T('Щит (враг)', 'Shield (enemy)'), T('Намерение и статус: щит врага; +щит', 'Intent and status: enemy shield; +shield'), G.bt],
       ['💪', T('Бицепс', 'Biceps'), T('Намерение и статус: усиленный удар ×2', 'Intent and status: next hit ×2'), G.bt],
       ['💚', T('Зелёное сердце', 'Green heart'), T('Намерение: враг лечится', 'Intent: enemy heals'), G.bt],
-      ['☠', T('Череп', 'Skull'), T('Статус: яд на враге', 'Status: poison on the enemy'), G.bt],
       ['😡', T('Злость', 'Angry face'), T('Статус: ярость врага', 'Status: enemy rage'), G.bt],
       ['🔥', T('Огонь (статус)', 'Fire (status)'), T('Статус: поджог игрока', 'Status: burn on the player'), G.bt],
-      ['⚡', T('Молния (число)', 'Bolt (number)'), T('Всплывающее число: таймер врага отодвинут', 'Floating number: enemy timer delayed'), G.bt],
       ['💤', T('Сон', 'Sleep'), T('Всплывающее число: зелье сна', 'Floating number: sleep potion'), G.bt],
       ['⇄', T('Обмен', 'Swap'), T('Всплывающее: цвета поменялись', 'Floating: colours swapped'), G.bt],
       ['🧪', T('Пробирка', 'Test tube'), T('Страница правил «Переливание»', '"Pouring" rules page'), G.win],
@@ -153,7 +147,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   };
   // Item icons straight from the data, so this list follows any rename or new item.
   const DATA_ICONS = () => [
-    ['colors', T('Цвета', 'Colors')], ['junk', T('Мусор', 'Junk')], ['tubes', T('Колбы', 'Tubes')], ['potions', T('Зелья', 'Potions')],
+    ['junk', T('Мусор', 'Junk')], ['tubes', T('Колбы', 'Tubes')], ['potions', T('Зелья', 'Potions')],
     ['mods', T('Моды', 'Mods')], ['finds', T('Находки', 'Finds')], ['relics', T('Реликвии', 'Relics')], ['boosters', T('Бустеры', 'Boosts')],
     ['lab', T('Лаборатория', 'Lab')], ['worlds', T('Миры', 'Worlds')], ['shop', T('Магазин', 'Shop')],
   ].flatMap(([k, group]) => {
@@ -165,7 +159,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   const CATS = [
     { id: 'icons', label: T('Все иконки', 'All icons'), raw: () => ({ ui: UI_ICONS().map(e => ({ name: e.name, desc: e.desc, group: e.group })), data: DATA_ICONS().map(e => ({ id: e.id, icon: e.icon, group: e.group })) }), list: () => UI_ICONS().concat(DATA_ICONS()) },
-    { id: 'colors', label: T('Цвета', 'Colors'), raw: () => D().colors, list: () => fromMap(D().colors, (e, it) => { e.icon = `<span class="cat-sw" style="background:${esc(it.css)}"></span>${it.icon}`; return e; }) },
+    { id: 'elements', label: T('Стихии', 'Elements'), raw: () => D().elements, list: () => fromMap(D().elements, (e, it) => { e.icon = `<span class="cat-mark" style="background:${esc(it.css)}">${UI.elIco(e.id)}</span>`; return e; }) },
     { id: 'junk', label: T('Мусор', 'Junk'), raw: () => D().junk, list: () => fromMap(D().junk) },
     { id: 'tubes', label: T('Колбы', 'Tubes'), raw: () => D().tubes, list: () => fromMap(D().tubes) },
     { id: 'potions', label: T('Зелья', 'Potions'), raw: () => ({ potions: D().potions, potionStart: D().potionStart }), list: () => fromMap(D().potions, e => { e.params.inStartBelt = (D().potionStart || []).indexOf(e.id) >= 0; return e; }) },

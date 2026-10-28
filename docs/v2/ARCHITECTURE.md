@@ -56,7 +56,7 @@ PS.Rng.weighted(r, [{w, ...}]) -> item
 
 ```js
 PS.DATA = {
-  colors: {            // порядок ключей = порядок показа
+  elements: {          // стихии; порядок ключей = порядок показа
     fire:      { role, unlock: 1, base: {dmg: 6},  boost: {dmg: 3},  css: '#...', dark: '#...' },
     water:     { base: {shield: 6}, boost: {shield: 3} },
     life:      { base: {heal: 4},   boost: {heal: 2} },
@@ -82,7 +82,7 @@ PS.DATA = {
   bosses:  { slime_king: {hp: 36, cycle: [...], extra: {t: 'shield', v: 6, turns: 2}, art: 'slimeKing'}, ... },
   worlds:  [{ n: 1, id: 'meadows', name, theme: 'day'|'night', twist: null | {type: 'stonefall', every: 8} | {type: 'frozenStart', turns: 3} | {type: 'slimeQueue', pct: 0.1} | {type: 'burn', dmg: 2, turns: 2}, boss: 'slime_king', palette: {sky, ground, accent} }],
   islands: [{ n: 1, id: 'sunny_shallows', world: 1, name, tier: 'easy'|'medium'|'hard', stages: 4, bossAt: [4], regulars: ['slime'], M: 1.0, A: 0, final: false }],
-  unlocks: { 1: {colors: [...], potions: [...], mods: [...], finds: [...], tubes: [...], lab: [...], relicRarity: 'common', note: '...'}, 2: {...}, ... },   // таблица «Что открывает остров»; предметы с later: 'v1.2' не открываются
+  unlocks: { 1: {elements: [...], potions: [...], mods: [...], finds: [...], tubes: [...], lab: [...], relicRarity: 'common', note: '...'}, 2: {...}, ... },   // таблица «Что открывает остров»; предметы с later: 'v1.2' не открываются
   economy: {
     player: {hp: 50}, cap: 4, filledMin: 5, slots: {base: 3, max: 5}, belt: {base: 3}, deckMax: 5,
     drain: {hp: 3}, heal: {regular: 0.10, boss: 0.25}, potionDrop: 0.20, relicInPick: {chance: 0.15, from: 4},

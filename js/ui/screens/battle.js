@@ -13,12 +13,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
   let S = null;
 
   // ---------- content helpers ----------
-  const colorDef = c => D().colors[c] || D().junk[c] || { css: '#888888', icon: '?', name: c };
-  const iconOf = c => UI.ico.mark[c] || colorDef(c).sym || colorDef(c).icon;
+  const colorDef = c => D().elements[c] || D().junk[c] || { css: '#888888', icon: '?', name: c };
+  const iconOf = c => UI.elIco(c) || colorDef(c).sym || colorDef(c).icon;
   function layerBg(c) {
-    const k = colorDef(c).css, sh = Fx.shade;
+    const k = colorDef(c).css;
     const dots = c === 'slime' ? 'radial-gradient(circle at 22% 70%, #ffffff40 0 2.5px, #0000 3px), radial-gradient(circle at 68% 35%, #ffffff38 0 3px, #0000 3.5px), ' : '';
-    return `${dots}linear-gradient(180deg, ${sh(k, 22)}, ${k})`;
+    return dots + k;
   }
   const turnsTxt = n => n + ' ' + T.pl(n, ['ход', 'хода', 'ходов'], ['turn', 'turns']);
 
@@ -51,7 +51,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function colorValue(c, kind) {
     const B = valB();
     if (!B) return '';
-    const k = 1, v = PS.Combat.effectValue(B, c, k, kind || 'plain'), cd = D().colors[c];
+    const k = 1, v = PS.Combat.effectValue(B, c, k, kind || 'plain'), cd = D().elements[c];
     switch (c) {
       case 'fire': case 'lightning': case 'dark': return T(`${v} урона`, `${v} damage`);
       case 'water': return T(`${v} щита`, `${v} shield`);
@@ -183,8 +183,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const vm = S.vm, B = S.R.battle, e = B.enemy, out = [];
     if (vm.eShield > 0) out.push(['c-shield', `🛡 ${vm.eShield}`, T('Щит врага поглощает урон. Яд идёт насквозь.', 'Enemy shield blocks damage. Poison goes through.')]);
     const pz = e.poison.reduce((s, p) => s + p.tick, 0);
-    if (pz) out.push(['c-poison', `☠ ${pz}`, T(`Яд: ${pz} урона за ход, мимо щита. Осталось до ${turnsTxt(Math.max.apply(null, e.poison.map(p => p.turns)))}.`, `Poison: ${pz} damage per turn, ignores shield. Up to ${turnsTxt(Math.max.apply(null, e.poison.map(p => p.turns)))} left.`)]);
-    if (vm.frozen > 0) out.push(['c-ice', `❄ ${vm.frozen}`, T(`Враг заморожен ещё на ${turnsTxt(vm.frozen)}: таймер стоит, по нему +50% урона.`, `Enemy frozen for ${turnsTxt(vm.frozen)} more: timer paused, +50% damage to it.`)]);
+    if (pz) out.push(['c-poison', `${UI.elBadge('poison')} ${pz}`, T(`Яд: ${pz} урона за ход, мимо щита. Осталось до ${turnsTxt(Math.max.apply(null, e.poison.map(p => p.turns)))}.`, `Poison: ${pz} damage per turn, ignores shield. Up to ${turnsTxt(Math.max.apply(null, e.poison.map(p => p.turns)))} left.`)]);
+    if (vm.frozen > 0) out.push(['c-ice', `${UI.elBadge('ice')} ${vm.frozen}`, T(`Враг заморожен ещё на ${turnsTxt(vm.frozen)}: таймер стоит, по нему +50% урона.`, `Enemy frozen for ${turnsTxt(vm.frozen)} more: timer paused, +50% damage to it.`)]);
     if (vm.buff > 1) out.push(['c-buff', '💪 ×2', T('Следующая атака врага ×2.', 'Next enemy attack ×2.')]);
     if (vm.rage) out.push(['c-rage', T('😡 ярость', '😡 rage'), T('Ярость: действует на 1 ход раньше.', 'Rage: acts 1 turn sooner.')]);
     if (B.burn && B.burn.length) out.push(['c-rage', `🔥 ${B.burn.reduce((s, b) => s + b.dmg, 0)}`, T('Поджог: урон тебе каждый ход, мимо щита.', 'Burn: damages you every turn, ignores shield.')]);
@@ -242,9 +242,13 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const n = t.layers.length;
         const fresh = opts.drop === 'all' || opts.drop === i;
         const sp = opts.splash && opts.splash.tube === i ? opts.splash.n : 0;
+        // Equal neighbours read as one body of liquid: no seams inside a run, one icon at its middle (carried by its bottom layer).
+        let run = 0;
         const layers = t.layers.map((c, k) => {
-          const cls = 'bt-layer' + (k === n - 1 ? ' top' : '') + (fresh ? ' drop' : '') + (sp && k >= n - sp ? ' splash' : '');
-          return `<div class="${cls}" style="background:${layerBg(c)}${fresh ? `;animation-delay:${k * 60}ms` : ''}"><i>${iconOf(c)}</i></div>`;
+          if (k === 0 || c !== t.layers[k - 1]) { run = 1; while (t.layers[k + run] === c) run++; }
+          const first = k === 0 || c !== t.layers[k - 1], last = c !== t.layers[k + 1];
+          const cls = 'bt-layer' + (k === n - 1 ? ' top' : '') + (last ? ' run-top' : '') + (fresh ? ' drop' : '') + (sp && k >= n - sp ? ' splash' : '');
+          return `<div class="${cls}" style="background:${layerBg(c)}${fresh ? `;animation-delay:${k * 60}ms` : ''}">${first ? `<i style="--run:${run}">${iconOf(c)}</i>` : ''}</div>`;
         }).join('');
         const td = D().tubes[t.kind] || {};
         w.innerHTML = `<div class="bt-tube k-${t.kind}" style="--cap:${t.cap}"><div class="bt-liq">${layers}</div>${t.frozen ? `<div class="bt-ice">❄ ${t.frozen}</div>` : ''}</div>
@@ -431,9 +435,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
       if (ev.kind === 'shield' || ev.kind === 'slime') {
         vm.pShield += ev.value; renderPlayer(); Snd.play('shield');
         hitNum($('.bt-shield'), '🛡+' + ev.value, '#a7dcff');
-      } else if (ev.kind === 'poison') { Snd.play('poison'); hitNum(monEl(), `☠ ${ev.value}×${ev.turns}`, '#a6e35a'); renderChips(); }
+      } else if (ev.kind === 'poison') { Snd.play('poison'); hitNum(monEl(), `${UI.elBadge('poison')} ${ev.value}×${ev.turns}`, '#a6e35a'); renderChips(); }
       else if (ev.kind === 'freeze') { Snd.play('freeze'); vm.frozen = ev.value; renderEnemyBars(); renderIntent(); }
-      else if (ev.kind === 'delay') { Snd.play('zap'); vm.timer += ev.value; renderIntent(); hitNum($('.bt-intent'), '⚡+' + ev.value, '#ffe36a'); }
+      else if (ev.kind === 'delay') { Snd.play('zap'); vm.timer += ev.value; renderIntent(); hitNum($('.bt-intent'), UI.elBadge('lightning') + '+' + ev.value, '#ffe36a'); }
       return 60;
     },
     enemy_hit(ev) {
@@ -533,7 +537,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           Snd.play('zap');
           await Fx.shake($('.bt-field'), 10);
           renderTubes(ev.tubes);
-          if (ev.target) hitNum($('.bt-field'), `${iconOf(ev.target.a)} ⇄ ${iconOf(ev.target.b)}`, '#ffe08a', true);
+          if (ev.target) hitNum($('.bt-field'), `${UI.elBadge(ev.target.a) || iconOf(ev.target.a)} ⇄ ${UI.elBadge(ev.target.b) || iconOf(ev.target.b)}`, '#ffe08a', true);
           break;
         case 'spores':
           Snd.play('poison');
@@ -788,8 +792,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const f = it('finds', o.id);
         icon = f.icon; name = f.name; desc = f.desc; tags = `<span class="tag tag-find">${T('Находка', 'Find')}</span>`;
         if (o.color) {
-          const c = D().colors[o.color];
-          icon = c.icon;
+          const c = D().elements[o.color];
+          icon = UI.elBadge(o.color);
           if (o.id === 'new_color') { name = `${f.name}: ${c.name}`; desc = c.desc; }
           else {
             const lvl = R.deck[o.color] || 0, key = Object.keys(c.boost || {})[0];
@@ -809,8 +813,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       case 'potion': { const p = it('potions', o.id); icon = p.icon; name = p.name; desc = p.desc; tags = `<span class="tag">${T('Зелье', 'Potion')}</span>`; break; }
       case 'coins': icon = '🪙'; name = T(`${o.v} монет`, `${o.v} coins`); desc = T('Подходящих наград не осталось — возьми монеты.', 'No fitting rewards left — take coins.'); break;
       case 'color': {
-        const c = D().colors[o.id], lvl = R.deck[o.id] || 0;
-        icon = c.icon; name = c.name; desc = lvl ? T(`Усиления (${lvl}) пропадут.`, `Empowers (${lvl}) will be lost.`) : T('Без усилений.', 'No empowers.');
+        const c = D().elements[o.id], lvl = R.deck[o.id] || 0;
+        icon = UI.elBadge(o.id); name = c.name; desc = lvl ? T(`Усиления (${lvl}) пропадут.`, `Empowers (${lvl}) will be lost.`) : T('Без усилений.', 'No empowers.');
         break;
       }
       case 'tube': { const t = D().tubes[o.id]; icon = t.icon; name = T(`Слот ${o.slot + 1}: ${t.name}`, `Slot ${o.slot + 1}: ${t.name}`); desc = t.desc; break; }
@@ -829,7 +833,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       pick: [T('Выбери бонус', 'Pick a bonus'), T('Действует до конца острова', 'Lasts until the end of the island')],
       relic: [T('Реликвия босса', 'Boss relic'), T('Сильный пассивный эффект до конца острова', 'Strong passive effect for the rest of the island')],
       potion_pick: [T('Выбери зелье', 'Pick a potion'), T('Зелье ляжет в пояс', 'It goes on your belt')],
-      replace_color: [T('Колода полна', 'Deck full'), pend ? T(`Какой цвет заменить на ${D().colors[pend].icon} ${esc(D().colors[pend].name)}?`, `Which color to swap for ${D().colors[pend].icon} ${esc(D().colors[pend].name)}?`) : T('Какой цвет заменить?', 'Which color to replace?')],
+      replace_color: [T('Колода полна', 'Deck full'), pend ? T(`Какую стихию заменить на ${UI.elBadge(pend)} ${esc(D().elements[pend].name)}?`, `Which element to swap for ${UI.elBadge(pend)} ${esc(D().elements[pend].name)}?`) : T('Какую стихию заменить?', 'Which element to replace?')],
       replace_tube: [T('Слоты заняты', 'Slots full'), pend ? T(`Какую колбу заменить на ${D().tubes[pend].icon} ${esc(D().tubes[pend].name)}?`, `Which tube to swap for ${D().tubes[pend].icon} ${esc(D().tubes[pend].name)}?`) : T('Какую колбу заменить?', 'Which tube to replace?')],
     };
     const [title, subt] = titles[off.kind] || [T('Выбор', 'Choose'), ''];
@@ -934,7 +938,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   const RULES = [
     ['🧪', T('Переливание', 'Pouring'), T('<p>Тапни колбу, затем куда лить. Льётся весь верхний одноцветный блок — <b>на такой же цвет</b> или <b>в пустую колбу</b>.</p><p>Каждое переливание — ход.</p>', '<p>Tap a tube, then where to pour. The whole same-color top block pours — <b>onto the same color</b> or <b>into an empty tube</b>.</p><p>Every pour is a turn.</p>')],
-    ['✨', T('Закрытие', 'Closing'), T('<p>Колба, полная одного цвета, <b>закрывается</b>: срабатывает эффект цвета, на её место приходят слои из очереди.</p><p>🔥 огонь — урон · 💧 вода — щит · 🌿 жизнь — лечение. Долгое нажатие на что угодно — подробности.</p>', '<p>A tube full of one color <b>closes</b>: the color\'s effect fires and new layers drop in from the queue.</p><p>🔥 fire — damage · 💧 water — shield · 🌿 life — heal. Long-press anything for details.</p>')],
+    ['✨', T('Закрытие', 'Closing'), T('<p>Колба, полная одного цвета, <b>закрывается</b>: срабатывает эффект цвета, на её место приходят слои из очереди.</p><p>' + UI.elBadge('fire') + ' огонь — урон · ' + UI.elBadge('water') + ' вода — щит · ' + UI.elBadge('life') + ' жизнь — лечение. Долгое нажатие на что угодно — подробности.</p>', '<p>A tube full of one color <b>closes</b>: the color\'s effect fires and new layers drop in from the queue.</p><p>' + UI.elBadge('fire') + ' fire — damage · ' + UI.elBadge('water') + ' water — shield · ' + UI.elBadge('life') + ' life — heal. Long-press anything for details.</p>')],
     ['🔥', T('Комбо', 'Combo'), T('<p>Закрытия ход за ходом растят комбо: <b>×1,5 → ×2 → ×3</b>. Ход без закрытия его сбрасывает.</p><p>Если новые слои сами закрыли колбу — <b>каскад</b>, без траты хода.</p>', '<p>Closes turn after turn build a combo: <b>×1.5 → ×2 → ×3</b>. A turn without a close resets it.</p><p>If new layers close a tube on their own, that\'s a <b>cascade</b> — no turn spent.</p>')],
     ['⚔️', T('Враг', 'Enemy'), T('<p>Над врагом — его следующее действие и <b>через сколько ходов</b> оно наступит. Щит поглощает урон и сгорает после атаки.</p><p>Побитый босс может убежать и вернуться на следующей встрече с половиной здоровья. На последнем этапе острова он бьётся до конца.</p>', '<p>Above the enemy: its next move and <b>how many turns</b> until it happens. Shield blocks damage, then breaks after the attack.</p><p>A beaten boss may flee and come back next fight with half its HP. On the island\'s last stage it fights to the end.</p>')],
     ['🪨', T('Мусор', 'Junk'), T('<p>🪨 Камень и 🫧 слизь льются только на такой же мусор или в пустую колбу.</p><p>Закрытие соседней колбы разбивает камни. Полная колба слизи даёт щит.</p>', '<p>🪨 Stone and 🫧 slime pour only onto the same junk or into an empty tube.</p><p>Closing a neighboring tube breaks stones. A full tube of slime gives a shield.</p>')],
@@ -976,8 +980,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function showBuild() {
     const R = S.R, d = D();
     const deck = Object.keys(R.deck).map(c => {
-      const cd = d.colors[c], lvl = R.deck[c];
-      return itemTile(cd.icon, cd.name + (lvl ? ` +${lvl}` : ''), esc(colorValue(c)), `<b>${cd.name}</b>${lvl ? T(` · усиление ${lvl}`, ` · empower ${lvl}`) : ''}<br>${cd.desc}`);
+      const cd = d.elements[c], lvl = R.deck[c];
+      return itemTile(UI.elBadge(c), cd.name + (lvl ? ` +${lvl}` : ''), esc(colorValue(c)), `<b>${cd.name}</b>${lvl ? T(` · усиление ${lvl}`, ` · empower ${lvl}`) : ''}<br>${cd.desc}`);
     }).join('');
     const mods = Object.keys(R.mods).filter(id => R.mods[id]).map(id => {
       const m = UI.item('mods', id);
@@ -993,7 +997,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const empty = t => `<div class="bt-empty">${t}</div>`;
     UI.overlay(`<button class="btn-icon ov-x" data-close>✕</button><h2 class="ov-title">🎒 ${T('Сборка', 'Build')}</h2>
       <div class="tiny dim center">${T('Долгое нажатие — подробности', 'Long-press for details')}</div>
-      <div class="bt-sec">${T('Цвета', 'Colors')}</div><div class="bt-items">${deck}</div>
+      <div class="bt-sec">${T('Стихии', 'Elements')}</div><div class="bt-items">${deck}</div>
       <div class="bt-sec">${T('Бонусы', 'Bonuses')}</div>${mods || finds ? `<div class="bt-items">${mods}${finds}</div>` : empty(T('Пока нет — бери их после этапов.', 'None yet — pick them up after stages.'))}
       <div class="bt-sec">${T('Реликвии', 'Relics')}</div>${relics ? `<div class="bt-items">${relics}</div>` : empty(T('Реликвии дают за встречи с боссом.', 'Relics drop from boss fights.'))}
       <div class="bt-sec">${T('Пустые колбы', 'Empty tubes')}</div><div class="bt-items">${tubes}</div>

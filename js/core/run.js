@@ -49,7 +49,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function unlockedPool(R, kind) {
     const d = D();
     switch (kind) {
-      case 'colors': return Object.keys(d.colors).filter(id => unlocked(R, d.colors[id]));
+      case 'elements': return Object.keys(d.elements).filter(id => unlocked(R, d.elements[id]));
       case 'potions': return Object.keys(d.potions).filter(id => unlocked(R, d.potions[id]));
       case 'tubes': return Object.keys(d.tubes).filter(id => id !== 'plain' && unlocked(R, d.tubes[id]));
       case 'mods': return Object.keys(d.mods).filter(id => unlocked(R, d.mods[id]) && modOk(R, id));
@@ -70,9 +70,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const d = D();
     switch (id) {
       case 'new_color':
-        return unlockedPool(R, 'colors').filter(c => !(c in R.deck)).map(c => ({ type: 'find', id, color: c }));
+        return unlockedPool(R, 'elements').filter(c => !(c in R.deck)).map(c => ({ type: 'find', id, color: c }));
       case 'boost_color':
-        return Object.keys(R.deck).filter(c => d.colors[c].boost && R.deck[c] < (d.finds.boost_color.cap || 3))
+        return Object.keys(R.deck).filter(c => d.elements[c].boost && R.deck[c] < (d.finds.boost_color.cap || 3))
           .map(c => ({ type: 'find', id, color: c }));
       case 'special_tube':
         return unlockedPool(R, 'tubes').map(t => ({ type: 'find', id, tube: t }));

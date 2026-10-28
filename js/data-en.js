@@ -3,7 +3,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 (function () {
   'use strict';
   PS.DATA_EN = {
-    colors: {
+    elements: {
       fire: { name: 'Fire', gen: 'fire', desc: 'Direct damage: 6. Empower: +3 damage per step.' },
       water: { name: 'Water', gen: 'water', desc: 'Shield: 6. Absorbs damage and burns off after the enemy attacks. Empower: +3 shield.' },
       life: { name: 'Life', gen: 'life', desc: 'Heals 4 HP. Empower: +2 HP.' },
@@ -39,8 +39,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       potion_pick: { name: 'Potion of Choice', desc: 'Pick 1 of 3 potions. Not offered when the belt is full.' }
     },
     finds: {
-      new_color: { name: 'New Essence', desc: 'Add an unlocked color you don\'t have yet. At 5 colors — replace one (its empowers are lost).' },
-      boost_color: { name: 'Empower Essence', desc: '+1 empower step to a color in your deck (up to 3 per color, not mirror).' },
+      new_color: { name: 'New Element', desc: 'Add an unlocked element you don\'t have yet. At 5 elements — replace one (its empowers are lost).' },
+      boost_color: { name: 'Empower Element', desc: '+1 empower step to an element in your deck (up to 3 per element, not mirror).' },
       special_tube: { name: 'Special Tube', desc: 'A random unlocked special tube in an empty slot; if none is empty — replace one.' },
       extra_slot: { name: 'Extra Slot', desc: '+1 empty tube in every fight (up to 5 slots).' },
       filter: { name: 'Filter', desc: 'Half as many stones and spores from enemies and junk in the queue.' }
@@ -135,14 +135,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
     },
     unlockNotes: {
       1: 'Tutorial: fire, water, life',
-      2: 'New color: poison',
+      2: 'New element: poison',
       3: 'Special tubes: Amplifier and Sieve',
-      4: 'New color: lightning',
+      4: 'New element: lightning',
       5: 'Catalyst and Extra Slot',
-      6: 'New color: ice',
+      6: 'New element: ice',
       7: 'Bomb and Fire Bomb',
-      8: 'New color: dark',
-      9: 'New color: mirror',
+      8: 'New element: dark',
+      9: 'New element: mirror',
       10: 'Big Tube and Vial'
     },
     quests: {

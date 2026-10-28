@@ -228,7 +228,7 @@ test('pick offer: >=1 mod and >=1 find, size 3 (4 with intuition), respects caps
       assert.notStrictEqual(x.id, 'extra_slot');
       if (x.type === 'mod') assert.ok(D.mods[x.id].unlock <= 5);
       if (x.id === 'combo_master') assert.fail('combo_master is from island 7');
-      if (x.id === 'new_color') assert.ok(D.colors[x.color].unlock <= 5 && !(x.color in R.deck));
+      if (x.id === 'new_color') assert.ok(D.elements[x.color].unlock <= 5 && !(x.color in R.deck));
       if (x.id === 'boost_color') assert.ok(x.color in R.deck);
       if (x.id === 'special_tube') assert.ok(['amp', 'sieve', 'catalyst'].indexOf(x.tube) >= 0);
     });

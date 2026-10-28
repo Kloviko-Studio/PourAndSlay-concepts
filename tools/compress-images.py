@@ -5,9 +5,9 @@ from PIL import Image
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / 'img'
 # Longest on-screen width (CSS px) x 3 for dense phone screens; the first matching glob wins, unmatched files keep their size.
-MAX_W = [('islands/*', 1024), ('sky/cloud_*', 768), ('icons/*', 256)]
-# Smooth gradients band at lower quality.
-QUALITY = [('sky/sky_*', 92)]
+MAX_W = [('islands/*', 1024), ('sky/cloud_*', 768), ('icons/*', 256), ('texture/*', 512)]
+# Smooth gradients band and fine paper grain washes out at lower quality.
+QUALITY = [('sky/sky_*', 92), ('texture/*', 96)]
 DEFAULT_Q = 85
 
 def pick(rules, rel, default):

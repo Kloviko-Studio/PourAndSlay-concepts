@@ -40,8 +40,8 @@
 
 /* speech bubble to the left of the enemy */
 .bt-intent { position: absolute; left: 0; top: 4px; z-index: 3; min-width: 96px; max-width: 36%; padding: 6px 12px 7px; border-radius: 22px; text-align: center;
-  background: var(--cream); border: 3px solid #fff; color: var(--ink); filter: drop-shadow(0 4px 6px rgba(50, 110, 130, .22)); }
-.bt-intent::after { content: ''; position: absolute; right: -13px; bottom: 8px; width: 18px; height: 16px; background: var(--cream); clip-path: polygon(0 0, 100% 100%, 0 70%); }
+  background: var(--puff); border: 3px solid #fff; color: var(--ink); filter: drop-shadow(0 4px 6px rgba(50, 110, 130, .22)); }
+.bt-intent::after { content: ''; position: absolute; right: -13px; bottom: 8px; width: 18px; height: 16px; background: var(--puff); clip-path: polygon(0 0, 100% 100%, 0 70%); }
 .bt-intent .il { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; color: var(--num); line-height: 14px; }
 .bt-intent .iv { font-weight: 900; font-size: 18px; white-space: nowrap; line-height: 24px; }
 .bt-intent .it { font-size: 11px; font-weight: 900; color: var(--num); white-space: nowrap; }
@@ -108,10 +108,12 @@
 .bt-tube.k-vial::before { background: var(--lilac); }
 .bt-liq { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--cap) * var(--lh)); display: flex; flex-direction: column-reverse; overflow: hidden; border-radius: 0 0 18px 18px; }
 .bt-tube.k-vial .bt-liq { border-radius: 0 0 12px 12px; }
-.bt-layer { height: var(--lh); flex: none; position: relative; display: flex; align-items: center; justify-content: center; border-radius: 6px;
-  box-shadow: inset 0 3px 0 rgba(255, 255, 255, .35), inset 0 -3px 0 rgba(0, 0, 0, .08), inset 0 0 0 1px rgba(255, 255, 255, .55); }
-.bt-layer i { font-style: normal; display: flex; align-items: center; justify-content: center; font-size: min(14px, calc(var(--lh) * .55)); line-height: 1; opacity: .95; filter: drop-shadow(0 1px 1px rgba(40, 50, 60, .4)); }
-.bt-layer i svg { width: min(16px, calc(var(--lh) * .66)); height: min(16px, calc(var(--lh) * .66)); display: block; }
+.bt-layer { height: var(--lh); flex: none; position: relative; }
+/* the surface of each run: a soft light edge where one liquid meets the next */
+.bt-layer.run-top { box-shadow: inset 0 2px 0 rgba(255, 255, 255, .3); }
+.bt-layer i { position: absolute; z-index: 1; left: 50%; bottom: calc(var(--run) * var(--lh) / 2); transform: translate(-50%, 50%);
+  font-style: normal; display: flex; font-size: min(14px, calc(var(--lh) * .55)); line-height: 1; filter: drop-shadow(0 1px 1px rgba(40, 50, 60, .35)); }
+.bt-layer i .el-ico { width: min(24px, calc(var(--lh) * .8)); height: min(24px, calc(var(--lh) * .8)); }
 .bt-layer.drop { animation: btDrop .45s cubic-bezier(.3, 1.35, .6, 1) backwards; }
 .bt-layer.splash { animation: btSplash .32s; transform-origin: bottom; }
 .bt-liq.drain .bt-layer { animation: btDrain .25s forwards; transform-origin: bottom; }
@@ -134,7 +136,7 @@
 /* ---------- bottom ---------- */
 .bt-bottom { display: flex; align-items: center; gap: 12px; min-height: 56px; }
 .bt-belt { flex: 1; display: flex; gap: 10px; min-width: 0; }
-.bt-pot { position: relative; flex: 0 0 52px; width: 52px; height: 52px; border-radius: 26px; border: 3px solid #fff; font-size: 24px; display: grid; place-items: center; background: var(--cream);
+.bt-pot { position: relative; flex: 0 0 52px; width: 52px; height: 52px; border-radius: 26px; border: 3px solid #fff; font-size: 24px; display: grid; place-items: center; background: var(--puff);
   box-shadow: 0 5px 10px rgba(50, 110, 130, .25), inset 0 -4px 0 rgba(0, 0, 0, .06); }
 .bt-pot svg { display: block; }
 .bt-pot.pt-undo, .bt-pot.pt-sleep { background: var(--lilac); }
@@ -190,7 +192,7 @@
 .tut-ring.soft { box-shadow: 0 0 0 4px #fff, 0 0 18px var(--cta3), 0 0 0 9999px rgba(40, 90, 110, .2); }
 .tut-hand { position: absolute; font-size: 38px; line-height: 1; filter: drop-shadow(0 3px 2px rgba(40, 90, 110, .5)); animation: tutTap 1s ease-in-out infinite; transition: left .25s, top .25s; }
 .tut-bubble { position: absolute; left: 16px; right: 16px; max-width: 420px; margin: 0 auto; padding: 14px 16px; border-radius: 28px; pointer-events: auto; text-align: left;
-  background: var(--cream); border: 3px solid #fff; color: var(--ink); box-shadow: 0 8px 18px rgba(60, 120, 140, .25), 0 12px 30px rgba(40, 90, 110, .25); animation: rise .3s cubic-bezier(.3, 1.4, .6, 1); }
+  background: var(--puff); border: 3px solid #fff; color: var(--ink); box-shadow: 0 8px 18px rgba(60, 120, 140, .25), 0 12px 30px rgba(40, 90, 110, .25); animation: rise .3s cubic-bezier(.3, 1.4, .6, 1); }
 .tut-bubble .tt { font-family: var(--display); font-size: 22px; line-height: 26px; margin-bottom: 3px; }
 .tut-bubble .tx { font-size: 14px; font-weight: 800; color: var(--ink2); line-height: 1.35; }
 .tut-bubble .btn { margin-top: 10px; width: 100%; }

@@ -5,10 +5,10 @@ if (!PS.DATA) {
   const islands = [];
   for (let n = 1; n <= 10; n++) islands.push({ n, tier: n === 5 ? 'hard' : 'easy', stages: 4, M: 1 + (n - 1) * 0.5 });
   PS.DATA = {
-    colors: { fire: { unlock: 1 }, poison: { unlock: 2 } },
+    elements: { fire: { unlock: 1 }, poison: { unlock: 2 } },
     lab: { vitality: { tiers: 3, costs: [20, 30, 50], unlock: 1 }, belt: { tiers: 2, costs: [80, 300], unlock: 2 } },
     islands,
-    unlocks: { 1: { colors: ['fire'] }, 2: { colors: ['poison'], lab: ['belt'], relicRarity: 'common' }, 3: { potions: ['sleep'] } },
+    unlocks: { 1: { elements: ['fire'] }, 2: { elements: ['poison'], lab: ['belt'], relicRarity: 'common' }, 3: { potions: ['sleep'] } },
     economy: {
       coins: { first: 20, hardMult: 1.25 },
       gems: { start: 30, first: 5, firstHard: 10, adGift: 2, adGiftPerDay: 3, questsAll: 5 },
@@ -233,11 +233,11 @@ assert.strictEqual(M.shouldInterstitial(L + 3 * DAY, {}), true, 'seal expired');
 
 // seen badges
 p = fresh(T0);
-assert.strictEqual(M.isNew('colors:fire'), true);
-assert.strictEqual(M.isNew('colors:poison'), false, 'not unlocked yet');
+assert.strictEqual(M.isNew('elements:fire'), true);
+assert.strictEqual(M.isNew('elements:poison'), false, 'not unlocked yet');
 const nc = M.newCount();
-M.markSeen('colors:fire');
-assert.strictEqual(M.isNew('colors:fire'), false);
+M.markSeen('elements:fire');
+assert.strictEqual(M.isNew('elements:fire'), false);
 assert.strictEqual(M.newCount(), nc - 1);
 
 // reset + debug

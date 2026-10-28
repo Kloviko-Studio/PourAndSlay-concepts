@@ -37,9 +37,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const n = idx + 1, card = root.querySelector('.isl-card'), act = root.querySelector('.main-actions'), head = root.querySelector('.isl-head'), side = root.querySelector('.side-wrap');
     const soon = n > total();
     const p = P();
-    // Arrows flank the whole card, so they never crowd the ends of the stage strip.
-    const nav = (label, inner) => `<div class="isl-row"><button class="isl-nav" data-a="prev" aria-label="${T('Предыдущий остров', 'Previous island')}"${idx <= 0 ? ' disabled' : ''}>${UI.ico.left}</button>
-      <div class="isl-mid"><span class="lft">${label}</span>${inner}</div><button class="isl-nav" data-a="next" aria-label="${T('Следующий остров', 'Next island')}"${idx >= total() ? ' disabled' : ''}>${UI.ico.right}</button></div>`;
+    const nav = (label, inner) => `<div class="lft">${label}</div>${inner}`;
     if (soon) {
       UI.setTheme('night');
       head.innerHTML = `<h2 class="isl-name">${T('Новые острова', 'New islands')}</h2><div class="isl-meta">${T('Скоро', 'Coming soon')}</div>`;
@@ -68,6 +66,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       side.innerHTML = sideBtns();
       act.innerHTML = main;
     }
+    root.querySelector('[data-a="prev"]').disabled = idx <= 0;
+    root.querySelector('[data-a="next"]').disabled = idx >= total();
     bindActions();
     layout();
   }
@@ -79,8 +79,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (!v.height) return;
     const top = root.querySelector('.isl-head').getBoundingClientRect().bottom - v.top + 12;
     const bot = root.querySelector('.isl-card').getBoundingClientRect().top - v.top - 12;
-    view.style.setProperty('--gap-t', top + 'px');
-    view.style.setProperty('--gap-b', v.height - bot + 'px');
+    root.style.setProperty('--gap-t', top + 'px');
+    root.style.setProperty('--gap-b', v.height - bot + 'px');
+    // arrows level with the island, but never up against the gift/quest buttons in the same gutter
+    const side = root.querySelector('.side-wrap').getBoundingClientRect();
+    root.style.setProperty('--nav-y', Math.max((top + bot) / 2, side.bottom - v.top + 40) + 'px');
   }
 
   function sky() {
@@ -199,9 +202,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const locked = n > p.maxIsland;
         slides += `<div class="isl-slide${locked ? ' locked' : ''}">${n <= ISLAND_IMGS ? `<img class="isl-img" src="img/islands/island_${n}.webp" alt="${esc(UI.island(n).name)}" draggable="false">` : `<div class="isl-art">${UI.islandArt(n)}</div>`}<div class="isl-lock">${UI.art('lock', 72)}</div></div>`;
       }
-      slides += '<div class="isl-slide soon"><div class="isl-art">☁️</div></div>';
+      slides += `<div class="isl-slide soon"><img class="isl-img" src="img/islands/comming_soon.webp" alt="${T('Скоро', 'Coming soon')}" draggable="false"></div>`;
       el.innerHTML = `${sky()}
         <div class="isl-view"><div class="isl-track">${slides}</div></div>
+        <div class="isl-arrows"><button class="isl-nav" data-a="prev" aria-label="${T('Предыдущий остров', 'Previous island')}">${UI.ico.left}</button><button class="isl-nav" data-a="next" aria-label="${T('Следующий остров', 'Next island')}">${UI.ico.right}</button></div>
         <div class="isl-head"></div>
         <div class="side-wrap"></div>
         <div class="spacer"></div>

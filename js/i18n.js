@@ -25,7 +25,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const D = PS.DATA, E = PS.DATA_EN;
     if (lang !== 'en' || !D || !E) return;
     const merge = (dst, src) => { if (dst && src) Object.keys(src).forEach(k => { dst[k] = src[k]; }); };
-    ['colors', 'junk', 'potions', 'mods', 'finds', 'tubes', 'rarity', 'relics', 'lab', 'boosters', 'enemies', 'bosses'].forEach(sec => {
+    ['elements', 'junk', 'potions', 'mods', 'finds', 'tubes', 'rarity', 'relics', 'lab', 'boosters', 'enemies', 'bosses'].forEach(sec => {
       if (E[sec] && D[sec]) Object.keys(E[sec]).forEach(id => merge(D[sec][id], E[sec][id]));
     });
     D.worlds.forEach(w => { w.name = w.nameEn || w.name; merge(w, (E.worlds || {})[w.id]); });

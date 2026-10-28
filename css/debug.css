@@ -8,6 +8,7 @@
 .cat-ico > svg { max-width: 32px; max-height: 32px; }
 .cat-mark { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; }
 .cat-mark svg { display: block; width: 20px; height: 20px; }
+.cat-mark .el-ico { width: 24px; height: 24px; }
 .cat-sw { width: 14px; height: 26px; border-radius: 5px; box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, .15); }
 .cat-art { flex: none; display: block; width: 52px; height: 52px; }
 .cat-art svg, .cat-art .art-fallback { width: 100%; height: 100%; }

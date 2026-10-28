@@ -35,7 +35,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function flat(B, color) {
-    const c = D().colors[color], key = PRIMARY[color];
+    const c = D().elements[color], key = PRIMARY[color];
     let v = c.base[key] + (c.boost && c.boost[key] ? c.boost[key] * (B.deck[color] || 0) : 0);
     v += B.labFlat[color] || 0;
     if (DMG_COLORS[color]) v += stacks(B, 'caustic') * D().mods.caustic.dmg;
@@ -45,7 +45,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   function vulnMult(B) {
     if (!(B.enemy.frozen > 0)) return 1;
-    return 1 + (has(B, 'frost_crown') ? D().relics.frost_crown.vuln : D().colors.ice.base.vuln);
+    return 1 + (has(B, 'frost_crown') ? D().relics.frost_crown.vuln : D().elements.ice.base.vuln);
   }
 
   // README order: base + flat -> x special tube -> x k -> x relics/freeze/mastery/boosters -> round half up.
@@ -57,12 +57,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function freezeTurns(B, step) {
-    const c = D().colors.ice;
+    const c = D().elements.ice;
     return c.base.freeze + c.boost.freeze * (B.deck.ice || 0) + (step >= 2 ? c.base.freezeK2 - c.base.freeze : 0);
   }
 
   function delayTurns(B, step) {
-    const src = has(B, 'storm_rod') ? D().relics.storm_rod : D().colors.lightning.base;
+    const src = has(B, 'storm_rod') ? D().relics.storm_rod : D().elements.lightning.base;
     return step >= 2 ? src.delayK2 : src.delay;
   }
 
@@ -71,7 +71,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     kind = kind || 'plain';
     if (color === 'slime') return has(B, 'sponge') ? D().relics.sponge.shield : D().junk.slime.shield;
     if (color === 'stone') return 0;
-    if (color === 'mirror') return B.lastColor ? effectValue(B, B.lastColor, k, kind) : D().colors.mirror.base.fallbackShield;
+    if (color === 'mirror') return B.lastColor ? effectValue(B, B.lastColor, k, kind) : D().elements.mirror.base.fallbackShield;
     if (color === 'ice') return freezeTurns(B, stepOfK(B, k));
     return scaled(B, color, k, kind);
   }
@@ -138,7 +138,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   // ---- colour effects ----
   function applyColor(B, color, step, kind, ev, viaMirror) {
     if (!alive(B)) return;
-    const k = kOf(B, step), C = D().colors;
+    const k = kOf(B, step), C = D().elements;
     switch (color) {
       case 'fire': case 'lightning': case 'dark': {
         const v = scaled(B, color, k, kind);
