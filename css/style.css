@@ -295,14 +295,31 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
 .scr-main { padding: 0 16px calc(96px + var(--safe-b)); overflow: hidden; }
 .isl-view { position: absolute; inset: 0; touch-action: pan-y; }
 .isl-track { position: absolute; inset: 0; display: flex; will-change: transform; }
+/* painted sky + drifting clouds behind the islands; night worlds cross-fade to the night picture */
+body[data-screen="main"] #app::before { display: none; }
+.main-sky { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.sky-day, .sky-night { position: absolute; inset: 0; background: url(../img/sky/sky_day.png) center / cover; }
+.sky-night { background-image: url(../img/sky/sky_night.png); opacity: 0; transition: opacity .6s; }
+body[data-theme="night"] .sky-night { opacity: 1; }
+.star { position: absolute; height: auto; animation: twinkle ease-in-out infinite; }
+/* the lane spans the screen, so translateX(100%) carries its cloud from off the left edge to off the right */
+.cloud-lane { position: absolute; left: 0; width: 100%; animation: drift linear infinite; }
+.cloud { display: block; height: auto; max-width: none; transform: translateX(-100%); opacity: var(--op); transition: opacity .6s, filter .6s; }
+body[data-theme="night"] .isl-name { color: #fff; text-shadow: 0 2px 0 #1f2646, 0 0 14px #1f2646cc; }
+body[data-theme="night"] .isl-meta { color: #d9d4f4; text-shadow: 0 0 8px #1f2646; }
+body[data-theme="night"] .cloud { opacity: calc(var(--op) * .35); filter: brightness(.7) saturate(.6); }
 /* --gap-t / --gap-b: free sky between the title and the card, measured by main.js */
 .isl-slide { position: relative; flex: 0 0 100%; height: 100%; display: grid; place-items: center; padding: var(--gap-t, 140px) 72px var(--gap-b, 240px); overflow: hidden; }
-.isl-img { position: absolute; left: 50%; top: 0; height: 100%; max-width: none; transform: translateX(-50%);
-  /* the picture is resized to fit the island, so its edges blend into the app sky instead of showing a seam */
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent); }
+.isl-img { width: 100%; height: 100%; max-width: 340px; object-fit: contain; animation: float 6s ease-in-out infinite; }
 .isl-art { position: relative; width: 100%; max-width: 280px; height: 100%; max-height: 260px; display: grid; place-items: center; animation: float 5s ease-in-out infinite; filter: drop-shadow(0 18px 18px rgba(60, 120, 140, .25)); }
 .isl-art svg { width: 100%; height: 100%; overflow: visible; }
-.isl-slide.locked .isl-art, .isl-slide.locked .isl-img { filter: brightness(.6) saturate(.4); }
+.isl-slide > * { grid-area: 1 / 1; }
+.isl-slide.locked .isl-art, .isl-slide.locked .isl-img { filter: brightness(.35) saturate(.3); }
+/* same float as the island so the lock rides on it; fades out when the island unlocks */
+.isl-lock { z-index: 1; animation: float 6s ease-in-out infinite; filter: drop-shadow(0 4px 8px rgba(20, 30, 60, .45)); opacity: 0; scale: 1.4; transition: opacity .35s, scale .35s; }
+.isl-lock svg { display: block; }
+.isl-slide.locked .isl-lock { opacity: 1; scale: 1; }
+.isl-slide.soon .isl-lock { display: none; }
 .isl-slide.soon .isl-art { font-size: 90px; filter: none; }
 .isl-new { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); z-index: 3; white-space: nowrap; }
 
@@ -461,6 +478,8 @@ select.inp { font: inherit; color: var(--ink); background: #fff; border: 3px sol
 .wip { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; }
 
 /* ---------- keyframes ---------- */
+@keyframes twinkle { 50% { opacity: .35; transform: scale(.75); } }
+@keyframes drift { to { transform: translateX(100%); } }
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 @keyframes fadein { from { opacity: 0; } }
@@ -487,4 +506,4 @@ select.inp { font: inherit; color: var(--ink); background: #fff; border: 3px sol
   .tb-seal, .pill { padding: 0 10px 0 6px; font-size: 14px; gap: 4px; }
   .pill svg { width: 22px; height: 22px; }
 }
-@media (prefers-reduced-motion: reduce) { .isl-art, .seal-hero .s-ico, .rays, .pulse { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .isl-art, .isl-img, .isl-lock, .star, .seal-hero .s-ico, .rays, .pulse { animation: none; } .cloud-lane { animation-play-state: paused; } }

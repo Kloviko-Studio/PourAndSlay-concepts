@@ -4,10 +4,19 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const UI = PS.UI, esc = UI.esc;
   const T = PS.T;
   const TIER = { easy: T('Лёгкий', 'Easy'), medium: T('Средний', 'Medium'), hard: T('Сложный', 'Hard') };
-  // Hand-drawn key art (full-screen sky + floating island); islands without one use the generated SVG.
-  // cy / h / w: the island's vertical centre, height and width as fractions of the 9:16 picture, used to fit it between the title, the card and the side buttons.
-  const ISLAND_IMG = { 1: { src: 'img/island-1.png', cy: 0.513, h: 0.33, w: 0.43 } };
-  const SIDE_W = 76;
+  // Hand-drawn islands on a transparent background; islands past this use the generated SVG.
+  const ISLAND_IMGS = 10;
+  // Drifting clouds: picture, top (% of the screen), width (px), seconds per pass, opacity.
+  const CLOUDS = [
+    [1, 9, 170, 140, .95], [4, 21, 210, 190, .8], [2, 34, 130, 120, .7],
+    [6, 50, 230, 210, .55], [3, 64, 150, 160, .6], [5, 80, 190, 175, .75],
+  ];
+  // Night-sky stars: picture, left / top (% of the screen), size (px).
+  const STARS = [
+    [1, 8, 6, 18], [2, 27, 13, 12], [4, 46, 4, 10], [3, 64, 10, 16], [2, 86, 7, 14],
+    [4, 15, 24, 11], [1, 78, 22, 13], [2, 5, 38, 9], [3, 92, 36, 12], [4, 34, 30, 8],
+    [2, 58, 27, 10], [1, 22, 50, 10], [4, 88, 52, 9], [3, 70, 44, 8],
+  ];
   let idx = 0, root = null;
 
   const total = () => UI.islandCount();
@@ -71,16 +80,15 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const bot = root.querySelector('.isl-card').getBoundingClientRect().top - v.top - 12;
     view.style.setProperty('--gap-t', top + 'px');
     view.style.setProperty('--gap-b', v.height - bot + 'px');
-    const c = (top + bot) / 2;
-    root.querySelectorAll('.isl-img').forEach(img => {
-      const cy = +img.dataset.cy, hf = +img.dataset.h, wf = +img.dataset.w;
-      // Grow the picture just enough to lift the island to the centre with sky still covering the top,
-      // but never so much that the island outgrows the gap or reaches the side buttons; leftover strips fade into the app sky (see CSS mask).
-      const lift = Math.max(v.height, v.height + (cy * v.height - c) / (1 - cy));
-      const H = Math.min(lift, (bot - top) * 0.85 / hf, (v.width - 2 * SIDE_W) / (wf * 9 / 16));
-      img.style.height = H + 'px';
-      img.style.top = c - cy * H + 'px';
-    });
+  }
+
+  function sky() {
+    // Negative delays start each cloud mid-pass, so the sky is already full when the menu opens.
+    const clouds = CLOUDS.map(([k, top, w, dur, op], i) =>
+      `<div class="cloud-lane" style="top:${top}%;animation-duration:${dur}s;animation-delay:${-dur * ((i * 0.37 + 0.15) % 1)}s"><img class="cloud" src="img/sky/cloud_${k}.png" style="width:${w}px;--op:${op}" alt="" draggable="false"></div>`).join('');
+    const stars = STARS.map(([k, x, y, w], i) =>
+      `<img class="star" src="img/sky/star_0${k}.png" style="left:${x}%;top:${y}%;width:${w}px;animation-duration:${2.4 + (i * 0.7) % 2.2}s;animation-delay:${-(i * 0.9) % 3}s" alt="" draggable="false">`).join('');
+    return `<div class="main-sky" aria-hidden="true"><div class="sky-day"></div><div class="sky-night">${stars}</div>${clouds}</div>`;
   }
 
   function sideBtns() {
@@ -189,11 +197,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
       let slides = '';
       for (let n = 1; n <= N; n++) {
         const locked = n > p.maxIsland;
-        const img = ISLAND_IMG[n];
-        slides += `<div class="isl-slide${locked ? ' locked' : ''}">${img ? `<img class="isl-img" src="${img.src}" data-cy="${img.cy}" data-h="${img.h}" data-w="${img.w}" alt="${esc(UI.island(n).name)}" draggable="false">` : `<div class="isl-art">${UI.islandArt(n)}</div>`}</div>`;
+        slides += `<div class="isl-slide${locked ? ' locked' : ''}">${n <= ISLAND_IMGS ? `<img class="isl-img" src="img/islands/island_${n}.png" alt="${esc(UI.island(n).name)}" draggable="false">` : `<div class="isl-art">${UI.islandArt(n)}</div>`}<div class="isl-lock">${UI.ico.lock}</div></div>`;
       }
       slides += '<div class="isl-slide soon"><div class="isl-art">☁️</div></div>';
-      el.innerHTML = `
+      el.innerHTML = `${sky()}
         <div class="isl-view"><div class="isl-track">${slides}</div></div>
         <div class="isl-head"></div>
         <div class="side-wrap"></div>
