@@ -506,4 +506,5 @@ select.inp { font: inherit; color: var(--ink); background: #fff; border: 3px sol
   .tb-seal, .pill { padding: 0 10px 0 6px; font-size: 14px; gap: 4px; }
   .pill svg { width: 22px; height: 22px; }
 }
-@media (prefers-reduced-motion: reduce) { .isl-art, .isl-img, .isl-lock, .star, .seal-hero .s-ico, .rays, .pulse { animation: none; } .cloud-lane { animation-play-state: paused; } }
+/* the main menu's slow float, drift and twinkle stay on: they are the menu's ambience and too gentle to need opting out */
+@media (prefers-reduced-motion: reduce) { .isl-art, .seal-hero .s-ico, .rays, .pulse { animation: none; } }
