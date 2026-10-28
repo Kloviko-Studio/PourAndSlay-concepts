@@ -104,14 +104,14 @@ body[data-screen="main"] #topbar { position: absolute; left: 0; right: 0; top: 0
 .cloud-shape { position: absolute; left: 0; z-index: -1; pointer-events: none; overflow: visible; filter: drop-shadow(0 4px 10px rgba(60, 120, 140, .22)); }
 body[data-screen="main"] #tabs { position: absolute; left: 0; right: 0; bottom: 0; }
 .tab { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; color: var(--ink2); min-width: 0; font-size: 11px; font-weight: 800; }
-.tab-in { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.tab-in { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; box-sizing: border-box; width: calc(100% - 4px); height: 56px;
+  border: 3px solid transparent; border-radius: 18px; }
 .tab-ico { display: flex; line-height: 0; }
 .tab-ico svg { display: block; }
-.tab-lbl { font-size: 11px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.tab-lbl { font-size: 11px; line-height: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .tab.on { color: var(--ink); }
-.tab.on .tab-in { padding: 4px 12px 3px; border-radius: 20px; background: var(--peach); border: 3px solid #fff; box-shadow: 0 3px 8px rgba(200, 90, 50, .2); }
-.tab .badge { position: absolute; top: 4px; right: calc(50% - 28px); }
-.tab.on .badge { top: -6px; right: calc(50% - 36px); }
+.tab.on .tab-in { background: var(--peach); border-color: #fff; box-shadow: 0 3px 8px rgba(200, 90, 50, .2); }
+.tab .badge { position: absolute; top: 2px; right: 6px; }
 
 /* ---------- panels ---------- */
 .panel {
@@ -291,8 +291,7 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
 .num.big { font-size: 34px; }
 .pop { position: fixed; left: 50%; top: 42%; font-family: var(--display); font-weight: 400; font-size: min(54px, 11vw); line-height: 1; color: #fff; -webkit-text-stroke: 8px #f07f52; paint-order: stroke fill;
   text-shadow: 0 5px 0 #d9653d, 0 0 30px rgba(255, 178, 122, .7); text-align: center; width: max-content;
-  /* /1.2: the pop animation overshoots to scale(1.2) */
-  max-width: calc((100vw - 32px) / 1.2); }
+  transform: translate(-50%, -50%); max-width: calc(100vw - 32px); }
 #vignette { position: fixed; inset: 0; pointer-events: none; z-index: 69; box-shadow: inset 0 0 120px 40px var(--vig, #f0584a); opacity: 0; }
 .wiggle { animation: wig .3s; }
 .art-fallback { font-size: 72px; display: grid; place-items: center; width: 100%; height: 100%; }

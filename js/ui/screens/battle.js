@@ -222,7 +222,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     c.querySelector('.cv').textContent = '×' + kfmt(k);
   }
 
-  // opts: {splash: {tube, n}, drop: tubeIdx | 'all'}
+  // opts: {fill: {tube, n}, drop: tubeIdx | 'all'}
   function renderTubes(tubes, opts) {
     opts = opts || {};
     const B = S.R.battle;
@@ -241,14 +241,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
         w.dataset.i = i;
         const n = t.layers.length;
         const fresh = opts.drop === 'all' || opts.drop === i;
-        const sp = opts.splash && opts.splash.tube === i ? opts.splash.n : 0;
+        const sp = opts.fill && opts.fill.tube === i ? opts.fill.n : 0;
         // Equal neighbours read as one body of liquid: one icon at the middle of each run (carried by its bottom layer).
         let run = 0;
         const layers = t.layers.map((c, k) => {
           if (k === 0 || c !== t.layers[k - 1]) { run = 1; while (t.layers[k + run] === c) run++; }
           const first = k === 0 || c !== t.layers[k - 1];
-          const cls = 'bt-layer' + (k === n - 1 ? ' top' : '') + (fresh ? ' drop' : '') + (sp && k >= n - sp ? ' splash' : '');
-          return `<div class="${cls}" style="background:${layerBg(c)}${fresh ? `;animation-delay:${k * 60}ms` : ''}">${first ? `<i style="--run:${run}">${iconOf(c)}</i>` : ''}</div>`;
+          const cls = 'bt-layer' + (k === n - 1 ? ' top' : '') + (fresh ? ' drop' : '') + (sp && k >= n - sp ? ' fill' : '');
+          return `<div class="${cls}" style="background:${layerBg(c)}">${first ? `<i${sp && k + run === n ? ' class="late"' : ''} style="--run:${run}">${iconOf(c)}</i>` : ''}</div>`;
         }).join('');
         const td = D().tubes[t.kind] || {};
         w.innerHTML = `<div class="bt-tube k-${t.kind}" style="--cap:${t.cap}"><div class="bt-liq">${layers}</div>${t.frozen ? `<div class="bt-ice">❄ ${t.frozen}</div>` : ''}</div>
@@ -339,38 +339,19 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const effTarget = kind => kind === 'shield' || kind === 'slime' ? $('.bt-shield') : kind === 'heal' || kind === 'self' ? $('.bt-player .bar') : monEl();
   const flySrc = () => (S.flyFrom != null && tubeEl(S.flyFrom)) || $('.bt-field');
 
+  // Nothing flies between tubes: the source level drops while its top icon fades, then the target level rises and the icon of the
+  // run it lands in fades back in at the run's new middle.
   async function animPour(ev) {
-    const aw = tubeEl(ev.from), bw = tubeEl(ev.to);
-    if (!aw || !bw) { renderTubes(ev.tubes); return; }
-    const moving = [...aw.querySelectorAll('.bt-layer')].slice(-ev.n);
-    const bLiq = bw.querySelector('.bt-liq').getBoundingClientRect();
-    const bLen = bw.querySelectorAll('.bt-layer').length;
-    const dir = Fx.centerOf(bw).x > Fx.centerOf(aw).x ? 1 : -1;
-    aw.style.setProperty('--tilt', dir * 20 + 'deg');
-    aw.classList.add('pouring');
     Snd.play('pour');
-    await sleep(100);
-    const fx = document.getElementById('fx'), lh = S.lh || 24;
-    const all = moving.map((L, k) => {
-      const r = L.getBoundingClientRect(), g = L.cloneNode(true);
-      g.classList.add('bt-ghost');
-      g.classList.remove('top', 'drop', 'splash');
-      Object.assign(g.style, { width: r.width + 'px', height: r.height + 'px', animationDelay: '' });
-      fx.appendChild(g);
-      L.style.visibility = 'hidden';
-      const tx = bLiq.left + (bLiq.width - r.width) / 2;
-      const ty = ev.swallow ? bLiq.bottom - lh : bLiq.bottom - (bLen + k + 1) * lh;
-      const peak = Math.min(r.top, ty) - 46, d = 250 + k * 40;
-      const an = g.animate([
-        { transform: `translate(${r.left}px, ${r.top}px)` },
-        { transform: `translate(${(r.left + tx) / 2}px, ${peak}px) scaleX(.8)`, offset: .5 },
-        { transform: `translate(${tx}px, ${ty}px)`, opacity: ev.swallow ? 0 : 1 },
-      ], { duration: d, easing: 'ease-in-out' });
-      return Fx.settle(an, d).then(() => g.remove());
-    });
-    await Promise.all(all);
-    aw.classList.remove('pouring');
-    renderTubes(ev.tubes, { splash: { tube: ev.to, n: ev.n } });
+    const aw = tubeEl(ev.from);
+    if (aw) {
+      [...aw.querySelectorAll('.bt-layer')].slice(-ev.n).forEach(L => L.classList.add('out'));
+      const icons = aw.querySelectorAll('.bt-layer i');
+      if (icons.length) icons[icons.length - 1].classList.add('gone');
+      await sleep(200);
+    }
+    renderTubes(ev.tubes, ev.swallow ? {} : { fill: { tube: ev.to, n: ev.n } });
+    await sleep(ev.swallow ? 0 : 260);
   }
 
   async function animDrainTube(i) {

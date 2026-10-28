@@ -20,23 +20,21 @@
 /* margin: room for the islet's hanging rocks, which sit below the arena box */
 .bt-arena { position: relative; height: clamp(96px, 22vh, 190px); margin-bottom: 16px; }
 .bt-mon { position: absolute; left: 50%; bottom: 2px; height: 100%; aspect-ratio: 1; transform: translateX(-50%); z-index: 2; }
-.bt-mon-body { position: relative; z-index: 1; width: 100%; height: 100%; animation: bob 2.6s ease-in-out infinite; transform-origin: 50% 92%; }
+.bt-mon-body { position: relative; z-index: 1; width: 100%; height: 100%; }
 .bt-mon-body svg { width: 100%; height: 100%; overflow: visible; display: block; }
 .bt-mon .eyes { transform-box: fill-box; transform-origin: center; animation: btBlink 4.2s infinite; }
 /* grass islet the enemy stands on (from the approved battle mockup) */
 .bt-islet { position: absolute; left: 50%; bottom: -14%; width: 118%; transform: translateX(-50%); z-index: 0; pointer-events: none; overflow: visible; }
 .bt-mon-shadow { display: none; }
-.bt-mon.hurt .bt-mon-body { animation: hurt .35s; }
-.bt-mon.attack .bt-mon-body { animation: lunge .45s; }
-.bt-mon.dead .bt-mon-body { animation: die .7s forwards; }
-.bt-mon.flee .bt-mon-body { animation: btFlee .8s forwards; }
-.bt-mon.enter .bt-mon-body { animation: btEnter .55s cubic-bezier(.3, 1.4, .6, 1); }
+.bt-mon.hurt .bt-mon-body { animation: btFlash .3s; }
+.bt-mon.dead .bt-mon-body, .bt-mon.flee .bt-mon-body { animation: btFade .5s forwards; }
+.bt-mon.enter .bt-mon-body { animation: fadein .3s; }
 .bt-mon.gone .bt-mon-body, .bt-mon.gone .bt-islet { opacity: 0; }
 .bt-mon.frozen svg { filter: saturate(.35) brightness(1.3) hue-rotate(150deg); }
 .bt-mon.buffed svg { filter: drop-shadow(0 0 10px #f0584a); }
 .bt-mon .bt-bubble { position: absolute; inset: -6px; border-radius: 50%; border: 3px solid #fff; display: none; pointer-events: none; z-index: 2;
   background: radial-gradient(circle at 35% 30%, #ffffff88, #7ab8f044 60%, transparent 72%); }
-.bt-mon.shielded .bt-bubble { display: block; animation: btBreathe 1.4s infinite; }
+.bt-mon.shielded .bt-bubble { display: block; }
 
 /* speech bubble to the left of the enemy */
 .bt-intent { position: absolute; left: 0; top: 4px; z-index: 3; min-width: 96px; max-width: 36%; padding: 6px 12px 7px; border-radius: 22px; text-align: center;
@@ -48,7 +46,6 @@
 .bt-intent.paused { background: var(--skyp2); }
 .bt-intent.paused::after { background: var(--skyp2); }
 .bt-intent.paused .il, .bt-intent.paused .it { color: #2f5f6a; }
-.bt-intent.danger { animation: btWobble .5s infinite; }
 .bt-pips { display: flex; justify-content: center; gap: 3px; margin-top: 2px; }
 .bt-pips i { width: 7px; height: 7px; border-radius: 50%; background: var(--alarm); }
 
@@ -89,37 +86,39 @@
   background: rgba(255, 250, 243, .5); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .8), 0 6px 16px rgba(50, 110, 130, .15); position: relative; }
 .bt-row { display: flex; justify-content: center; align-items: flex-end; gap: 12px; min-height: 0; }
 .bt-tw { position: relative; flex: 0 1 50px; min-width: 30px; container-type: inline-size; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
-  transition: transform .16s cubic-bezier(.3, 1.5, .6, 1); }
+  transition: transform .12s ease-out; }
 .bt-tw.sel { transform: translateY(-14px); }
 .bt-tw.sel .bt-tube { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 7px rgba(255, 150, 90, .9)) drop-shadow(0 8px 8px rgba(200, 90, 50, .25)); }
-.bt-tw.pouring { transform: translateY(-24px) rotate(var(--tilt, 0deg)); transition: transform .14s; z-index: 3; }
 .bt-tw.hint .bt-tube { animation: btHint 1s infinite; }
 .bt-tw.bomb-n .bt-tube { filter: drop-shadow(0 0 4px #ffb27acc) drop-shadow(0 4px 5px rgba(50, 110, 130, .2)); }
 .bt-tw.wiggle { animation: wig .3s; }
-/* The glass is img/icons/gameplay/tube.webp (167x422, trimmed to the drawing); --s maps its pixels onto the tube, whose box is the
-   136px-wide body. The rim and round bottom keep their shape and only the straight middle stretches to the capacity. */
-.bt-tube { --s: calc(100cqw / 136); position: relative; width: 100%; height: calc(var(--cap) * var(--lh) + 63 * var(--s) + 4px);
+/* The glass is img/icons/gameplay/tube.webp (256x641, trimmed to the drawing); --s maps its pixels onto the tube, whose box is the
+   212px-wide body. The rim and round bottom keep their shape and only the straight middle stretches to the capacity. */
+.bt-tube { --s: calc(100cqw / 212); position: relative; width: 100%; height: calc(var(--cap) * var(--lh) + 100 * var(--s) + 4px);
   filter: drop-shadow(0 4px 5px rgba(50, 110, 130, .2)); transition: filter .2s; }
-.bt-tube::before { content: ''; position: absolute; z-index: 3; pointer-events: none; top: 0; bottom: 0; left: calc(-15 * var(--s)); right: calc(-16 * var(--s));
-  border-style: solid; border-width: calc(42 * var(--s)) 0 calc(70 * var(--s)); border-image: url(../img/icons/gameplay/tube.webp) 42 0 70 fill stretch; }
+.bt-tube::before { content: ''; position: absolute; z-index: 3; pointer-events: none; top: 0; bottom: 0; left: calc(-22 * var(--s)); right: calc(-22 * var(--s));
+  border-style: solid; border-width: calc(67 * var(--s)) 0 calc(115 * var(--s)); border-image: url(../img/icons/gameplay/tube.webp) 67 0 115 fill stretch; }
 .bt-tube.k-amp::before, .bt-tube.k-catalyst::before, .bt-tube.k-bomb::before, .bt-tube.k-big::before { filter: drop-shadow(0 0 1.5px #ffc94a) drop-shadow(0 0 1.5px #ffc94a); }
 .bt-tube.k-sieve::before { filter: drop-shadow(0 0 1.5px #9fb2bd) drop-shadow(0 0 1.5px #9fb2bd); }
 .bt-tube.k-vial::before { filter: drop-shadow(0 0 1.5px var(--lilac)) drop-shadow(0 0 1.5px var(--lilac)); }
 /* the hollow of the drawn glass, tucked a pixel under its walls */
-.bt-liq { position: absolute; left: calc(21 * var(--s)); right: calc(20 * var(--s)); bottom: calc(20 * var(--s)); height: calc(var(--cap) * var(--lh));
+.bt-liq { position: absolute; left: calc(37 * var(--s)); right: calc(37 * var(--s)); bottom: calc(32 * var(--s)); height: calc(var(--cap) * var(--lh));
   display: flex; flex-direction: column-reverse; overflow: hidden; border-radius: 0 0 999px 999px; }
 .bt-layer { height: var(--lh); flex: none; position: relative; }
 .bt-layer i { position: absolute; z-index: 1; left: 50%; bottom: calc(var(--run) * var(--lh) / 2); transform: translate(-50%, 50%);
   font-style: normal; display: flex; font-size: min(14px, calc(var(--lh) * .55)); line-height: 1; filter: drop-shadow(0 1px 1px rgba(40, 50, 60, .35)); }
 .bt-layer i .el-ico { width: min(24px, calc(var(--lh) * .8)); height: min(24px, calc(var(--lh) * .8)); }
-.bt-layer.drop { animation: btDrop .45s cubic-bezier(.3, 1.35, .6, 1) backwards; }
-.bt-layer.splash { animation: btSplash .32s; transform-origin: bottom; }
-.bt-liq.drain .bt-layer { animation: btDrain .25s forwards; transform-origin: bottom; }
-.bt-ghost { position: fixed; left: 0; top: 0; border-radius: 6px; z-index: 71; }
+.bt-layer.drop { animation: fadein .2s; }
+.bt-layer.out { height: 0; transition: height .2s ease-in; }
+.bt-layer.fill { animation: btFill .24s ease-out; }
+.bt-layer i { transition: opacity .15s; }
+.bt-layer i.gone { opacity: 0; }
+.bt-layer i.late { animation: fadein .25s .2s backwards; }
+.bt-liq.drain .bt-layer { animation: btFade .2s forwards; }
 .bt-tube.closed { filter: drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 4px var(--glow)); }
-.bt-cork { position: absolute; top: calc(42 * var(--s) - 15px); left: 50%; width: 26px; height: 17px; margin-left: -13px; border-radius: 5px 5px 7px 7px; z-index: 5;
-  background: linear-gradient(90deg, #c98a62, #e8b58a 45%, #c98a62); animation: btCork .3s cubic-bezier(.3, 1.6, .6, 1); }
-.bt-ice { position: absolute; top: calc(42 * var(--s)); left: calc(21 * var(--s)); right: calc(20 * var(--s)); bottom: calc(20 * var(--s)); border-radius: 0 0 999px 999px; z-index: 2; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: #1d4e6b;
+.bt-cork { position: absolute; top: calc(67 * var(--s) - 15px); left: 50%; width: 26px; height: 17px; margin-left: -13px; border-radius: 5px 5px 7px 7px; z-index: 5;
+  background: linear-gradient(90deg, #c98a62, #e8b58a 45%, #c98a62); animation: fadein .2s; }
+.bt-ice { position: absolute; top: calc(67 * var(--s)); left: calc(37 * var(--s)); right: calc(37 * var(--s)); bottom: calc(32 * var(--s)); border-radius: 0 0 999px 999px; z-index: 2; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: #1d4e6b;
   background: linear-gradient(135deg, #eaf9fcdd, #9fdcf5b3); box-shadow: inset 0 0 8px #fff; }
 .bt-ttag { min-height: 14px; font-size: 12px; line-height: 14px; color: #8a4a12; font-weight: 900; }
 
@@ -143,11 +142,11 @@
 .bt-pot.pt-solvent, .bt-pot.pt-combo { background: var(--skyp); }
 .bt-pot:active:not(.empty) { transform: translateY(2px); }
 .bt-pot.empty { background: rgba(255, 255, 255, .18); border: 3px dashed rgba(255, 255, 255, .95); box-shadow: none; font-size: 22px; color: #fff; font-weight: 900; }
-.bt-pot.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); animation: btBreathe 1s infinite; }
+.bt-pot.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); }
 .bt-pot-n { position: absolute; right: -6px; top: -6px; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px; background: var(--cta); border: 3px solid #fff; color: #fff; font-size: 12px; font-weight: 900; line-height: 18px; text-align: center; pointer-events: none; }
 .bt-drain { flex: none; width: 56px; min-height: 56px; padding: 0; border-radius: 28px; }
 .bt-drain svg { display: block; flex: none; width: 22px; height: 22px; }
-.bt-drain.armed { animation: btBreathe 1s infinite; }
+.bt-drain.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); }
 .bt-drain.stuck { animation: glow 1.2s infinite; }
 .scr-battle.locked .bt-field, .scr-battle.locked .bt-bottom { cursor: progress; }
 
@@ -197,15 +196,10 @@
 
 /* ---------- keyframes ---------- */
 @keyframes btBlink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
-@keyframes btBreathe { 50% { transform: scale(1.06); } }
-@keyframes btWobble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
-@keyframes btDrop { from { transform: translateY(-140px); opacity: 0; } 50% { opacity: 1; } }
-@keyframes btSplash { 0% { transform: scaleY(.4); } 100% { transform: scaleY(1); } }
-@keyframes btDrain { to { transform: scaleY(0); opacity: 0; } }
-@keyframes btCork { from { transform: translateY(-30px) scale(1.5); opacity: 0; } }
+@keyframes btFade { to { opacity: 0; } }
+@keyframes btFill { from { height: 0; } }
+@keyframes btFlash { 40% { filter: brightness(1.6); } }
 @keyframes btHint { 50% { filter: drop-shadow(0 0 8px var(--peach2)) drop-shadow(0 0 3px var(--peach)); } }
-@keyframes btFlee { 30% { transform: translateX(-10px) scaleX(-1); } 100% { transform: translateX(260px) scaleX(-1); opacity: 0; } }
-@keyframes btEnter { from { transform: translateY(-40px) scale(.4); opacity: 0; } }
 @keyframes tutRing { 50% { box-shadow: 0 0 0 6px #fff, 0 0 26px var(--cta3), 0 0 0 9999px rgba(40, 90, 110, .45); } }
 @keyframes tutTap { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(4px, 10px) scale(.92); } }
 
