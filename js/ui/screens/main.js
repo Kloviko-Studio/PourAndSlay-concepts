@@ -6,10 +6,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const TIER = { easy: T('Лёгкий', 'Easy'), medium: T('Средний', 'Medium'), hard: T('Сложный', 'Hard') };
   // Hand-drawn islands on a transparent background; islands past this use the generated SVG.
   const ISLAND_IMGS = 10;
-  // Drifting clouds: picture, top (% of the screen), width (px), seconds per pass, opacity.
+  // Clouds: picture, left / top (% of the screen), width (px), opacity.
   const CLOUDS = [
-    [1, 9, 170, 140, .95], [4, 21, 210, 190, .8], [2, 34, 130, 120, .7],
-    [6, 50, 230, 210, .55], [3, 64, 150, 160, .6], [5, 80, 190, 175, .75],
+    [1, -14, 9, 170, .95], [4, 60, 20, 210, .8], [2, 74, 35, 120, .7],
+    [6, -22, 49, 230, .55], [3, 68, 63, 150, .6], [5, 8, 79, 190, .75],
   ];
   // Night-sky stars: picture, left / top (% of the screen), size (px).
   const STARS = [
@@ -83,11 +83,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function sky() {
-    // Negative delays start each cloud mid-pass, so the sky is already full when the menu opens.
-    const clouds = CLOUDS.map(([k, top, w, dur, op], i) =>
-      `<div class="cloud-lane" style="top:${top}%;animation-duration:${dur}s;animation-delay:${-dur * ((i * 0.37 + 0.15) % 1)}s"><img class="cloud" src="img/sky/cloud_${k}.png" style="width:${w}px;--op:${op}" alt="" draggable="false"></div>`).join('');
-    const stars = STARS.map(([k, x, y, w], i) =>
-      `<img class="star" src="img/sky/star_0${k}.png" style="left:${x}%;top:${y}%;width:${w}px;animation-duration:${2.4 + (i * 0.7) % 2.2}s;animation-delay:${-(i * 0.9) % 3}s" alt="" draggable="false">`).join('');
+    const clouds = CLOUDS.map(([k, x, y, w, op]) =>
+      `<img class="cloud" src="img/sky/cloud_${k}.webp" style="left:${x}%;top:${y}%;width:${w}px;--op:${op}" alt="" draggable="false">`).join('');
+    const stars = STARS.map(([k, x, y, w]) =>
+      `<img class="star" src="img/sky/star_0${k}.webp" style="left:${x}%;top:${y}%;width:${w}px" alt="" draggable="false">`).join('');
     return `<div class="main-sky" aria-hidden="true"><div class="sky-day"></div><div class="sky-night">${stars}</div>${clouds}</div>`;
   }
 
@@ -98,8 +97,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const left = qs.filter(q => !q.done).length;
     const claimable = qs.filter(q => q.done && !q.claimed).length;
     const total = qs.length;
-    return `<button class="side-btn gift" data-a="daily" aria-label="${T('Подарок дня', 'Daily Gift')}${d.canClaim ? T(', есть награда', ', reward ready') : ''}">${UI.ico.gift}<span class="sl">${T('Подарок', 'Gift')}</span>${d.canClaim ? '<span class="badge"></span>' : ''}</button>
-      <button class="side-btn quest" data-a="quests" aria-label="${T(`Задания, выполнено ${total - left} из ${total}`, `Quests, ${total - left} of ${total} done`)}">${UI.ico.quests}<span class="sl">${total - left} / ${total}</span>${claimable ? '<span class="badge"></span>' : ''}</button>`;
+    return `<button class="side-btn gift" data-a="daily" aria-label="${T('Подарок дня', 'Daily Gift')}${d.canClaim ? T(', есть награда', ', reward ready') : ''}">${UI.art('present', 40)}<span class="sl">${T('Подарок', 'Gift')}</span>${d.canClaim ? '<span class="badge"></span>' : ''}</button>
+      <button class="side-btn quest" data-a="quests" aria-label="${T(`Задания, выполнено ${total - left} из ${total}`, `Quests, ${total - left} of ${total} done`)}">${UI.art('tasks', 38)}<span class="sl">${total - left} / ${total}</span>${claimable ? '<span class="badge"></span>' : ''}</button>`;
   }
 
   function bindActions() {
@@ -197,7 +196,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       let slides = '';
       for (let n = 1; n <= N; n++) {
         const locked = n > p.maxIsland;
-        slides += `<div class="isl-slide${locked ? ' locked' : ''}">${n <= ISLAND_IMGS ? `<img class="isl-img" src="img/islands/island_${n}.png" alt="${esc(UI.island(n).name)}" draggable="false">` : `<div class="isl-art">${UI.islandArt(n)}</div>`}<div class="isl-lock">${UI.ico.lock}</div></div>`;
+        slides += `<div class="isl-slide${locked ? ' locked' : ''}">${n <= ISLAND_IMGS ? `<img class="isl-img" src="img/islands/island_${n}.webp" alt="${esc(UI.island(n).name)}" draggable="false">` : `<div class="isl-art">${UI.islandArt(n)}</div>`}<div class="isl-lock">${UI.ico.lock}</div></div>`;
       }
       slides += '<div class="isl-slide soon"><div class="isl-art">☁️</div></div>';
       el.innerHTML = `${sky()}

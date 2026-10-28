@@ -121,10 +121,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
   UI.ico = {
     coin: s => `<svg width="${s || 26}" height="${s || 26}" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11" fill="#ffd36b" stroke="#e8a93a" stroke-width="2"/><circle cx="13" cy="13" r="6.5" fill="none" stroke="#f0b94a" stroke-width="2"/><ellipse cx="9" cy="7.8" rx="3" ry="1.6" fill="#fff" opacity=".75"/></svg>`,
     gem: s => `<svg width="${s || 26}" height="${s || 26}" viewBox="0 0 26 26" aria-hidden="true"><path d="M6 4h14l5 7-12 13L1 11z" fill="#9fe6f0" stroke="#45a9bd" stroke-width="2" stroke-linejoin="round"/><path d="M1 11h24M8 4l5 20M18 4l-5 20" fill="none" stroke="#fff" stroke-width="1.2" opacity=".75"/><path d="M7.5 6.5h3l-1.5 3z" fill="#fff" opacity=".8"/></svg>`,
-    seal: '<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#b99be8" stroke="#fff" stroke-width="2"/><path d="M12 6.5l1.6 3.4 3.7.4-2.8 2.5.8 3.7-3.3-1.9-3.3 1.9.8-3.7-2.8-2.5 3.7-.4z" fill="#fff"/></svg>',
-    gear: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3a4a5a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
-    gift: '<svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="10" width="17" height="11" rx="3" fill="#ff8f7a" stroke="#fff" stroke-width="1.6"/><rect x="2.5" y="7" width="19" height="4.5" rx="2" fill="#ffa892" stroke="#fff" stroke-width="1.6"/><path d="M12 7v14" stroke="#ffe08a" stroke-width="3"/><path d="M12 7c-2-4-6.5-3.5-5.5-.8.6 1.5 5.5.8 5.5.8zM12 7c2-4 6.5-3.5 5.5-.8-.6 1.5-5.5.8-5.5.8z" fill="#ffe08a" stroke="#fff" stroke-width="1.2"/></svg>',
-    quests: '<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="4" fill="#fff"/><path d="M7.5 8.5l1.5 1.5 2.5-3M7.5 14l1.5 1.5 2.5-3" fill="none" stroke="#4fae78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.5 9h3.5M13.5 14.5h3.5" stroke="#9ab8a6" stroke-width="2" stroke-linecap="round"/></svg>',
     crown: s => `<svg width="${s || 22}" height="${s || 22}" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l-1-9 5 4 4-6 4 6 5-4-1 9z" fill="#ffd36b" stroke="#e8a93a" stroke-width="1.5" stroke-linejoin="round"/><rect x="4" y="17" width="16" height="3" rx="1.5" fill="#e8a93a"/><circle cx="12" cy="13" r="1.4" fill="#f0584a"/></svg>`,
     check: s => `<svg width="${s || 14}" height="${s || 14}" viewBox="0 0 24 24" ${stroke(4, '#fff')} aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>`,
     left: `<svg width="18" height="18" viewBox="0 0 24 24" ${stroke(3)} aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>`,
@@ -144,16 +140,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
       water: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 4.5 6 7.6 6 11.2a6 6 0 0 1-12 0C6 10.6 9 7.5 12 3z" fill="#fff"/></svg>',
       life: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 11 5 19 5c0 8-5 14-14 14z" fill="#fff"/><path d="M5.5 18.5l8-8" stroke="#6fbb57" stroke-width="1.8" stroke-linecap="round"/></svg>',
     },
-    // bottom-tab icons
-    tab: {
-      shop: '<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="5" y="11" width="18" height="13" rx="3" fill="#fff4dc" stroke="#3a4a5a" stroke-width="2"/><rect x="11" y="16" width="6" height="8" rx="1.5" fill="#ffd36b" stroke="#3a4a5a" stroke-width="2"/><path d="M3 11.5l2.5-6.5h17l2.5 6.5c0 1.8-1.4 3-3.2 3s-3-1.2-3-3c0 1.8-1.4 3-3.3 3s-3.2-1.2-3.2-3c0 1.8-1.3 3-3 3S3 13.3 3 11.5z" fill="#ffb59a" stroke="#3a4a5a" stroke-width="2" stroke-linejoin="round"/><path d="M10 5.5l-1 6M18 5.5l1 6" stroke="#fff" stroke-width="1.6" opacity=".8"/></svg>',
-      lab: '<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M11 4h6M12 4v6.5l-6 8.5a4 4 0 0 0 3.3 6.3h9.4A4 4 0 0 0 22 19l-6-8.5V4" fill="#fff" stroke="#3a4a5a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M8.2 17h11.6l2 3a2.6 2.6 0 0 1-2.2 3.8H8.4A2.6 2.6 0 0 1 6.2 20z" fill="#9fe0bd"/><circle cx="12.5" cy="19.5" r="1.3" fill="#fff"/><circle cx="16" cy="14" r="1" fill="#9fe0bd"/></svg>',
-      main: '<svg width="30" height="30" viewBox="0 0 28 28" aria-hidden="true"><path d="M5 13q9 15 18 0z" fill="#d9a074" stroke="#3a4a5a" stroke-width="2" stroke-linejoin="round"/><path d="M12 19l2 4 2-4" fill="#8fd3f0"/><ellipse cx="14" cy="13" rx="10" ry="3.6" fill="#8fd56f" stroke="#3a4a5a" stroke-width="2"/><path d="M17 11.5V6M17 6q-3-1.2-4.2 1M17 6q3-1.2 4.2 1" fill="none" stroke="#3a4a5a" stroke-width="1.8" stroke-linecap="round"/></svg>',
-      collection: '<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M5 6.5a2.5 2.5 0 0 1 2.5-2.5H21v18H7.5A2.5 2.5 0 0 0 5 24.5z" fill="#e3d6ff" stroke="#3a4a5a" stroke-width="2" stroke-linejoin="round"/><path d="M5 24.5A2.5 2.5 0 0 1 7.5 22H21v3H7.5A2.5 2.5 0 0 1 5 24.5z" fill="#fff" stroke="#3a4a5a" stroke-width="2" stroke-linejoin="round"/><path d="M15 4v8l2.2-1.6 2.2 1.6V4" fill="#ff8f8f" stroke="#3a4a5a" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 9.5l.8 1.6 1.7.2-1.3 1.2.4 1.7-1.6-.9-1.5.9.3-1.7-1.2-1.2 1.7-.2z" fill="#fff"/></svg>',
-    },
   };
   const ICO = UI.ico;
-  const icoCoin = ICO.coin(26), icoGem = ICO.gem(26);
+  // Painted icons for the top bar, bottom tabs and main-screen buttons.
+  UI.art = (name, s) => `<img class="art-ico" src="img/icons/main_screen/${name}.webp" width="${s}" height="${s}" alt="" draggable="false">`;
+  const icoCoin = UI.art('coin', 28), icoGem = UI.art('diamond', 28);
 
   // ---------- stage strip (shared by main, start, results, battle) ----------
   // opts: {n, current (1-based stage in progress, 0 = none), best, compact}
@@ -225,12 +216,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const days = seal && has(PS.Meta, 'sealDaysLeft') ? PS.Meta.sealDaysLeft(now) : 0;
     bar.innerHTML = `
       <button class="tb-seal${seal ? ' on' : ''}" data-act="seal" aria-label="${T('Печать алхимика', "Alchemist's Seal")}">
-        <span class="tb-seal-ico">${ICO.seal}</span><span class="tb-seal-txt">${seal ? days + T(' дн.', 'd') : T('Печать', 'Seal')}</span></button>
+        <span class="tb-seal-ico">${UI.art('seal', 28)}</span><span class="tb-seal-txt">${seal ? days + T(' дн.', 'd') : T('Печать', 'Seal')}</span></button>
       <div class="tb-mid">
         <button class="pill pill-coin" data-act="coins" aria-label="${T(`Монеты: ${fmt(p.coins)}. Магазин`, `Coins: ${fmt(p.coins)}. Shop`)}"><span class="pill-ico">${icoCoin}</span><b data-cur="coins">${fmt(p.coins)}</b></button>
         <button class="pill pill-gem" data-act="gems" aria-label="${T(`Кристаллы: ${fmt(p.gems)}. Магазин`, `Gems: ${fmt(p.gems)}. Shop`)}"><span class="pill-ico">${icoGem}</span><b data-cur="gems">${fmt(p.gems)}</b></button>
       </div>
-      <button class="pill tb-gear" data-act="settings" aria-label="${T('Настройки', 'Settings')}">${ICO.gear}</button>`;
+      <button class="pill tb-gear" data-act="settings" aria-label="${T('Настройки', 'Settings')}">${UI.art('settings', 30)}</button>`;
     bar.querySelector('[data-act=seal]').onclick = () => { PS.Snd.play('select'); UI.go('seal', { back: UI.current() }); };
     bar.querySelector('[data-act=coins]').onclick = () => { PS.Snd.play('select'); UI.go('shop', { focus: 'coins' }); };
     bar.querySelector('[data-act=gems]').onclick = () => { PS.Snd.play('select'); UI.go('shop', { focus: 'gems' }); };
@@ -261,10 +252,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   // ---------- bottom tabs ----------
   const TABS = [
-    { id: 'shop', label: T('Магазин', 'Shop'), icon: ICO.tab.shop },
-    { id: 'lab', label: T('Лаборатория', 'Lab'), icon: ICO.tab.lab },
-    { id: 'main', label: T('Мир', 'World'), icon: ICO.tab.main },
-    { id: 'collection', label: T('Коллекция', 'Collection'), icon: ICO.tab.collection },
+    { id: 'shop', label: T('Магазин', 'Shop'), icon: UI.art('market', 34) },
+    { id: 'lab', label: T('Лаборатория', 'Lab'), icon: UI.art('laboratory', 34) },
+    { id: 'main', label: T('Мир', 'World'), icon: UI.art('world', 36) },
+    { id: 'collection', label: T('Коллекция', 'Collection'), icon: UI.art('collection', 34) },
   ];
   UI.tabs = {
     active: null,

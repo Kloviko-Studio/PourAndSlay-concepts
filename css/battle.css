@@ -43,7 +43,7 @@
   background: var(--cream); border: 3px solid #fff; color: var(--ink); filter: drop-shadow(0 4px 6px rgba(50, 110, 130, .22)); }
 .bt-intent::after { content: ''; position: absolute; right: -13px; bottom: 8px; width: 18px; height: 16px; background: var(--cream); clip-path: polygon(0 0, 100% 100%, 0 70%); }
 .bt-intent .il { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; color: #b8452a; line-height: 14px; }
-.bt-intent .iv { font-family: var(--display); font-size: 20px; white-space: nowrap; line-height: 24px; }
+.bt-intent .iv { font-weight: 900; font-size: 18px; white-space: nowrap; line-height: 24px; }
 .bt-intent .it { font-size: 11px; font-weight: 900; color: #b8452a; white-space: nowrap; }
 .bt-intent.paused { background: var(--skyp2); }
 .bt-intent.paused::after { background: var(--skyp2); }
