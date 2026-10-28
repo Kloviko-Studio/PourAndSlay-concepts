@@ -122,7 +122,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   // Painted icons (top bar, tabs, main-screen buttons, coins and gems).
   UI.art = (name, s) => `<img class="art-ico" src="img/icons/main_screen/${name}.webp" width="${s}" height="${s}" alt="" draggable="false">`;
   // painted white element glyphs, sized by the surrounding rule
-  UI.elIco = id => PS.DATA.elements[id] ? `<img class="el-ico" src="img/icons/gameplay/bonuses/bonus_${id}.webp" alt="" draggable="false">` : '';
+  UI.elIco = id => PS.DATA.elements[id] ? `<img class="el-ico" src="img/icons/gameplay/elements/element_${id}.webp" alt="" draggable="false">` : '';
   // the glyphs are white, so off the liquid they sit on a chip of the element's colour; sized in em like the emoji it replaces
   UI.elBadge = id => { const c = PS.DATA.elements[id]; return c ? `<span class="el-badge" style="background:${c.css}">${UI.elIco(id)}</span>` : ''; };
   UI.ico = {

@@ -242,12 +242,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const n = t.layers.length;
         const fresh = opts.drop === 'all' || opts.drop === i;
         const sp = opts.splash && opts.splash.tube === i ? opts.splash.n : 0;
-        // Equal neighbours read as one body of liquid: no seams inside a run, one icon at its middle (carried by its bottom layer).
+        // Equal neighbours read as one body of liquid: one icon at the middle of each run (carried by its bottom layer).
         let run = 0;
         const layers = t.layers.map((c, k) => {
           if (k === 0 || c !== t.layers[k - 1]) { run = 1; while (t.layers[k + run] === c) run++; }
-          const first = k === 0 || c !== t.layers[k - 1], last = c !== t.layers[k + 1];
-          const cls = 'bt-layer' + (k === n - 1 ? ' top' : '') + (last ? ' run-top' : '') + (fresh ? ' drop' : '') + (sp && k >= n - sp ? ' splash' : '');
+          const first = k === 0 || c !== t.layers[k - 1];
+          const cls = 'bt-layer' + (k === n - 1 ? ' top' : '') + (fresh ? ' drop' : '') + (sp && k >= n - sp ? ' splash' : '');
           return `<div class="${cls}" style="background:${layerBg(c)}${fresh ? `;animation-delay:${k * 60}ms` : ''}">${first ? `<i style="--run:${run}">${iconOf(c)}</i>` : ''}</div>`;
         }).join('');
         const td = D().tubes[t.kind] || {};

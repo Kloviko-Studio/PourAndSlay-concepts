@@ -5,10 +5,12 @@ from PIL import Image
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / 'img'
 # Longest on-screen width (CSS px) x 3 for dense phone screens; the first matching glob wins, unmatched files keep their size.
-MAX_W = [('islands/*', 1024), ('sky/cloud_*', 768), ('icons/*', 256), ('texture/*', 512)]
+MAX_W = [('icons/gameplay/tube*', 512), ('islands/*', 1024), ('sky/cloud_*', 768), ('icons/*', 256), ('texture/*', 512)]
 # Smooth gradients band and fine paper grain washes out at lower quality.
 QUALITY = [('sky/sky_*', 92), ('texture/*', 96)]
 DEFAULT_Q = 85
+# Cropped to the drawn shape so CSS can map the image edges onto the element; faint alpha noise around the art is ignored.
+TRIM = ['icons/gameplay/tube*']
 
 def pick(rules, rel, default):
     return next((v for pat, v in rules if fnmatch.fnmatch(rel.as_posix(), pat)), default)
@@ -22,6 +24,8 @@ for src in sorted(p for p in ROOT.rglob('*') if p.suffix.lower() in ('.png', '.j
     rel = src.relative_to(ROOT)
     im = Image.open(src)
     im = im.convert('RGBA' if 'A' in im.getbands() or 'transparency' in im.info else 'RGB')
+    if any(fnmatch.fnmatch(rel.as_posix(), pat) for pat in TRIM):
+        im = im.crop(im.getchannel('A').point(lambda v: 255 if v > 40 else 0).getbbox())
     w = pick(MAX_W, rel, None)
     if w and im.width > w:
         im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)

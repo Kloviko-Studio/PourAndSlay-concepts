@@ -88,29 +88,27 @@
 .bt-field { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: space-evenly; gap: 6px; padding: 18px 6px 6px; margin: 0 -4px; border-radius: 28px;
   background: rgba(255, 250, 243, .5); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .8), 0 6px 16px rgba(50, 110, 130, .15); position: relative; }
 .bt-row { display: flex; justify-content: center; align-items: flex-end; gap: 12px; min-height: 0; }
-.bt-tw { position: relative; flex: 0 1 50px; min-width: 30px; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
+.bt-tw { position: relative; flex: 0 1 50px; min-width: 30px; container-type: inline-size; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
   transition: transform .16s cubic-bezier(.3, 1.5, .6, 1); }
 .bt-tw.sel { transform: translateY(-14px); }
-.bt-tw.sel .bt-tube { border-color: var(--peach); box-shadow: 0 0 0 3px #fff, 0 0 18px 4px rgba(255, 178, 122, .75), 0 10px 14px rgba(200, 90, 50, .25); }
-.bt-tw.sel .bt-tube::before { background: var(--peach); }
+.bt-tw.sel .bt-tube { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 7px rgba(255, 150, 90, .9)) drop-shadow(0 8px 8px rgba(200, 90, 50, .25)); }
 .bt-tw.pouring { transform: translateY(-24px) rotate(var(--tilt, 0deg)); transition: transform .14s; z-index: 3; }
 .bt-tw.hint .bt-tube { animation: btHint 1s infinite; }
-.bt-tw.bomb-n .bt-tube { box-shadow: 0 0 0 2px #ffb27a88, 0 5px 10px rgba(50, 110, 130, .2); }
+.bt-tw.bomb-n .bt-tube { filter: drop-shadow(0 0 4px #ffb27acc) drop-shadow(0 4px 5px rgba(50, 110, 130, .2)); }
 .bt-tw.wiggle { animation: wig .3s; }
-.bt-tube { position: relative; width: 100%; height: calc(var(--cap) * var(--lh) + 12px); border: 3px solid #fff; border-radius: 10px 10px 24px 24px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, .45), rgba(255, 255, 255, .18) 40%, rgba(255, 255, 255, .35)); box-shadow: 0 5px 10px rgba(50, 110, 130, .2); transition: box-shadow .2s; }
-.bt-tube::before { content: ''; position: absolute; top: -9px; left: -8px; right: -8px; height: 10px; border-radius: 6px; background: #fff; box-shadow: 0 2px 3px rgba(50, 110, 130, .2); z-index: 4; }
-.bt-tube::after { content: ''; position: absolute; top: 9px; left: 3px; width: 4px; bottom: 15px; border-radius: 2px; background: rgba(255, 255, 255, .65); z-index: 3; pointer-events: none; }
-.bt-tube.k-amp, .bt-tube.k-catalyst, .bt-tube.k-bomb, .bt-tube.k-big { border-color: #ffe08a; }
-.bt-tube.k-amp::before, .bt-tube.k-catalyst::before, .bt-tube.k-bomb::before, .bt-tube.k-big::before { background: #ffe08a; }
-.bt-tube.k-sieve { border-style: dashed; }
-.bt-tube.k-vial { border-color: var(--lilac); border-radius: 10px 10px 16px 16px; }
-.bt-tube.k-vial::before { background: var(--lilac); }
-.bt-liq { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--cap) * var(--lh)); display: flex; flex-direction: column-reverse; overflow: hidden; border-radius: 0 0 18px 18px; }
-.bt-tube.k-vial .bt-liq { border-radius: 0 0 12px 12px; }
+/* The glass is img/icons/gameplay/tube.webp (167x422, trimmed to the drawing); --s maps its pixels onto the tube, whose box is the
+   136px-wide body. The rim and round bottom keep their shape and only the straight middle stretches to the capacity. */
+.bt-tube { --s: calc(100cqw / 136); position: relative; width: 100%; height: calc(var(--cap) * var(--lh) + 63 * var(--s) + 4px);
+  filter: drop-shadow(0 4px 5px rgba(50, 110, 130, .2)); transition: filter .2s; }
+.bt-tube::before { content: ''; position: absolute; z-index: 3; pointer-events: none; top: 0; bottom: 0; left: calc(-15 * var(--s)); right: calc(-16 * var(--s));
+  border-style: solid; border-width: calc(42 * var(--s)) 0 calc(70 * var(--s)); border-image: url(../img/icons/gameplay/tube.webp) 42 0 70 fill stretch; }
+.bt-tube.k-amp::before, .bt-tube.k-catalyst::before, .bt-tube.k-bomb::before, .bt-tube.k-big::before { filter: drop-shadow(0 0 1.5px #ffc94a) drop-shadow(0 0 1.5px #ffc94a); }
+.bt-tube.k-sieve::before { filter: drop-shadow(0 0 1.5px #9fb2bd) drop-shadow(0 0 1.5px #9fb2bd); }
+.bt-tube.k-vial::before { filter: drop-shadow(0 0 1.5px var(--lilac)) drop-shadow(0 0 1.5px var(--lilac)); }
+/* the hollow of the drawn glass, tucked a pixel under its walls */
+.bt-liq { position: absolute; left: calc(21 * var(--s)); right: calc(20 * var(--s)); bottom: calc(20 * var(--s)); height: calc(var(--cap) * var(--lh));
+  display: flex; flex-direction: column-reverse; overflow: hidden; border-radius: 0 0 999px 999px; }
 .bt-layer { height: var(--lh); flex: none; position: relative; }
-/* the surface of each run: a soft light edge where one liquid meets the next */
-.bt-layer.run-top { box-shadow: inset 0 2px 0 rgba(255, 255, 255, .3); }
 .bt-layer i { position: absolute; z-index: 1; left: 50%; bottom: calc(var(--run) * var(--lh) / 2); transform: translate(-50%, 50%);
   font-style: normal; display: flex; font-size: min(14px, calc(var(--lh) * .55)); line-height: 1; filter: drop-shadow(0 1px 1px rgba(40, 50, 60, .35)); }
 .bt-layer i .el-ico { width: min(24px, calc(var(--lh) * .8)); height: min(24px, calc(var(--lh) * .8)); }
@@ -118,10 +116,10 @@
 .bt-layer.splash { animation: btSplash .32s; transform-origin: bottom; }
 .bt-liq.drain .bt-layer { animation: btDrain .25s forwards; transform-origin: bottom; }
 .bt-ghost { position: fixed; left: 0; top: 0; border-radius: 6px; z-index: 71; }
-.bt-tube.closed { box-shadow: 0 0 22px 6px var(--glow); }
-.bt-cork { position: absolute; top: -16px; left: 50%; width: 26px; height: 17px; margin-left: -13px; border-radius: 5px 5px 7px 7px; z-index: 5;
+.bt-tube.closed { filter: drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 4px var(--glow)); }
+.bt-cork { position: absolute; top: calc(42 * var(--s) - 15px); left: 50%; width: 26px; height: 17px; margin-left: -13px; border-radius: 5px 5px 7px 7px; z-index: 5;
   background: linear-gradient(90deg, #c98a62, #e8b58a 45%, #c98a62); animation: btCork .3s cubic-bezier(.3, 1.6, .6, 1); }
-.bt-ice { position: absolute; inset: 0; border-radius: 0 0 20px 20px; z-index: 4; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: #1d4e6b;
+.bt-ice { position: absolute; top: calc(42 * var(--s)); left: calc(21 * var(--s)); right: calc(20 * var(--s)); bottom: calc(20 * var(--s)); border-radius: 0 0 999px 999px; z-index: 2; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: #1d4e6b;
   background: linear-gradient(135deg, #eaf9fcdd, #9fdcf5b3); box-shadow: inset 0 0 8px #fff; }
 .bt-ttag { min-height: 14px; font-size: 12px; line-height: 14px; color: #8a4a12; font-weight: 900; }
 
@@ -205,7 +203,7 @@
 @keyframes btSplash { 0% { transform: scaleY(.4); } 100% { transform: scaleY(1); } }
 @keyframes btDrain { to { transform: scaleY(0); opacity: 0; } }
 @keyframes btCork { from { transform: translateY(-30px) scale(1.5); opacity: 0; } }
-@keyframes btHint { 50% { border-color: var(--peach); box-shadow: 0 0 12px var(--peach2); } }
+@keyframes btHint { 50% { filter: drop-shadow(0 0 8px var(--peach2)) drop-shadow(0 0 3px var(--peach)); } }
 @keyframes btFlee { 30% { transform: translateX(-10px) scaleX(-1); } 100% { transform: translateX(260px) scaleX(-1); opacity: 0; } }
 @keyframes btEnter { from { transform: translateY(-40px) scale(.4); opacity: 0; } }
 @keyframes tutRing { 50% { box-shadow: 0 0 0 6px #fff, 0 0 26px var(--cta3), 0 0 0 9999px rgba(40, 90, 110, .45); } }

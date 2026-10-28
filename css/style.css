@@ -195,8 +195,8 @@ body[data-screen="main"] #tabs { position: absolute; left: 0; right: 0; bottom: 
 .bar { position: relative; height: 22px; border-radius: 14px; background: #fff; border: 3px solid #fff; box-shadow: 0 3px 8px rgba(50, 110, 130, .2), inset 0 2px 3px rgba(0, 0, 0, .08); overflow: hidden; }
 .bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 11px; transition: width .45s cubic-bezier(.3, .8, .3, 1); background: var(--coin-fill); box-shadow: inset 0 5px 0 rgba(255, 255, 255, .35); }
 .bar-ghost { position: absolute; left: 0; top: 0; bottom: 0; background: #ffffffd0; transition: width .8s .25s ease-out; border-radius: 11px; }
-.bar-hp .bar-fill { background: #8fd172; }
-.bar-enemy .bar-fill { background: #f78c64; }
+.bar-hp .bar-fill { background: #8fd172; box-shadow: none; }
+.bar-enemy .bar-fill { background: #f78c64; box-shadow: none; }
 .bar-shield .bar-fill { background: #7ab8f0; }
 .bar-label { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; font-weight: 900; color: var(--ink); text-shadow: 0 0 4px #fff, 0 0 4px #fff; font-variant-numeric: tabular-nums; }
 .bar-lg { height: 26px; border-radius: 14px; }
