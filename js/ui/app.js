@@ -50,8 +50,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const k = KINDS[kind] || kind, src = D()[k];
     const it = src && src[id];
     if (!it) return { id, kind: k, icon: '❔', name: String(id), desc: '' };
-    const el = k === 'elements' ? id : k === 'lab' && it.per && it.per.color;
-    return Object.assign({ kind: k, id, icon: '❔', name: String(id), desc: '' }, it, el && PS.DATA.elements[el] ? { icon: UI.elBadge(el) } : null);
+    const el = k === 'elements' || k === 'junk' ? id : k === 'lab' && it.per && it.per.color;
+    return Object.assign({ kind: k, id, icon: '❔', name: String(id), desc: '' }, it, el && (PS.DATA.elements[el] || PS.DATA.junk[el]) ? { icon: UI.elBadge(el) } : null);
   };
   // Meta.newUnlocks gives {kind, id}; relicRarity is a pseudo-item, so it gets its own label.
   UI.unlockLabel = function (u) {
@@ -122,9 +122,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
   // Painted icons (top bar, tabs, main-screen buttons, coins and gems).
   UI.art = (name, s) => `<img class="art-ico" src="img/icons/main_screen/${name}.webp" width="${s}" height="${s}" alt="" draggable="false">`;
   // painted white element glyphs, sized by the surrounding rule
-  UI.elIco = id => PS.DATA.elements[id] ? `<img class="el-ico" src="img/icons/gameplay/elements/element_${id}.webp" alt="" draggable="false">` : '';
+  // junk (stone, slime) has its own glyphs; bad_freeze marks an enemy-frozen tube, dark so it reads on ice
+  UI.elIco = id => PS.DATA.elements[id] ? `<img class="el-ico" src="img/icons/gameplay/elements/element_${id}.webp" alt="" draggable="false">`
+    : PS.DATA.junk[id] || id === 'freeze' ? `<img class="el-ico" src="img/icons/gameplay/bad_elements/bad_${id}.webp" alt="" draggable="false">` : '';
   // the glyphs are white, so off the liquid they sit on a chip of the element's colour; sized in em like the emoji it replaces
-  UI.elBadge = id => { const c = PS.DATA.elements[id]; return c ? `<span class="el-badge" style="background:${c.css}">${UI.elIco(id)}</span>` : ''; };
+  UI.elBadge = id => { const c = PS.DATA.elements[id] || PS.DATA.junk[id]; return c ? `<span class="el-badge" style="background:${c.css}">${UI.elIco(id)}</span>` : ''; };
   UI.ico = {
     coin: s => UI.art('coin', s || 26),
     gem: s => UI.art('diamond', s || 26),

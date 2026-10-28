@@ -36,11 +36,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
       return `<div class="${cls}" style="--k:${k};${layerBg(c)}">${first ? `<i${sp && k + run === n ? ' class="late"' : ''} style="--run:${run}">${iconOf(c)}</i>` : ''}</div>`;
     }).join('');
     return `<div class="bt-tube k-${t.kind}${o.glow ? ' closed' : ''}" style="--cap:${t.cap}${o.glow ? `;--glow:${o.glow}` : ''}"><div class="bt-liq">${layers}</div>` +
-      `${t.frozen ? `<div class="bt-ice">❄ ${t.frozen}</div>` : ''}${o.cork ? '<div class="bt-cork"></div>' : ''}</div>`;
+      `${t.frozen ? `<div class="bt-ice">${UI.elIco('freeze')} ${t.frozen}</div>` : ''}${o.cork ? '<div class="bt-cork"></div>' : ''}</div>`;
   };
 
   const INTENT = {
-    atk: [T('удар', 'attack'), '⚔️'], stone: [T('камни в колбы', 'stones in tubes'), '🪨'], spores: [T('слизь в очередь', 'slime in queue'), '🍄'], freeze: [T('заморозит колбу', 'freezes a tube'), '❄️'],
+    atk: [T('удар', 'attack'), '⚔️'], stone: [T('камни в колбы', 'stones in tubes'), UI.elIco('stone')], spores: [T('слизь в очередь', 'slime in queue'), '🍄'], freeze: [T('заморозит колбу', 'freezes a tube'), UI.elIco('freeze')],
     steal: [T('украдёт слой', 'steals a layer'), '🤏'], swap: [T('поменяет цвета', 'swaps colors'), '🔀'], shield: [T('щит', 'shield'), '🛡'], buff: [T('усилит удар', 'powers up'), '💪'], heal: [T('лечение', 'heal'), '💚'],
   };
   const INTENT_TIP = {
@@ -553,7 +553,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     relic(ev) { const r = UI.item('relics', ev.id); hitNum($('.bt-player'), r.icon, '#ffcb4f', true); return 150; },
     twist(ev) {
       if (ev.tubes) renderTubes(ev.tubes);
-      if (ev.twist === 'stonefall') { Snd.play('stone'); UI.toast(T('🪨 Камнепад: камень упал в колбу', '🪨 Rockfall: a stone dropped into a tube')); return 400; }
+      if (ev.twist === 'stonefall') { Snd.play('stone'); UI.toast(UI.elIco('stone') + ' ' + T('Камнепад: камень упал в колбу', 'Rockfall: a stone dropped into a tube')); return 400; }
       if (ev.twist === 'burn') { hitNum($('.bt-player'), T(`🔥 Поджог ${ev.dmg}×${ev.turns}`, `🔥 Burn ${ev.dmg}×${ev.turns}`), '#ff9a5a'); renderChips(); return 300; }
       if (ev.twist === 'frozenStart') { Snd.play('freeze'); return 300; }
       return 0;
@@ -863,7 +863,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const R = S.R, o = PS.Run.reviveOptions(R), now = UI.now();
     const seal = PS.Meta.sealActive(now);
     const gems = PS.Meta.profile.gems, lives = PS.Meta.profile.lives || 0;
-    const lifeBtn = o.free && lives > 0 ? `<button class="btn btn-cta" data-a="life">${T(`❤️ Воскреснуть жизнью · осталось ${lives}`, `❤️ Revive with a life · ${lives} left`)}</button>` : '';
+    const lifeBtn = o.free && lives > 0 ? `<button class="btn btn-cta" data-a="life">${T(`Воскреснуть ❤️ (есть ${lives})`, `Revive ❤️ (${lives} left)`)}</button>` : '';
     const freeBtn = !o.free ? '' : seal
       ? `<button class="btn btn-cta" data-a="free">${T('🔱 Воскреснуть бесплатно', '🔱 Revive for free')}</button>`
       : `<button class="btn btn-green btn-ad" data-a="free" ${UI.ads.online ? '' : 'disabled'}>${UI.ads.online ? T('Воскреснуть за рекламу', 'Revive (watch ad)') : T('Реклама недоступна', 'Ad unavailable')}</button>`;
@@ -924,7 +924,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     ['✨', T('Закрытие', 'Closing'), T('<p>Колба, полная одного цвета, <b>закрывается</b>: срабатывает эффект цвета, на её место приходят слои из очереди.</p><p>' + UI.elBadge('fire') + ' огонь — урон · ' + UI.elBadge('water') + ' вода — щит · ' + UI.elBadge('life') + ' жизнь — лечение. Долгое нажатие на что угодно — подробности.</p>', '<p>A tube full of one color <b>closes</b>: the color\'s effect fires and new layers drop in from the queue.</p><p>' + UI.elBadge('fire') + ' fire — damage · ' + UI.elBadge('water') + ' water — shield · ' + UI.elBadge('life') + ' life — heal. Long-press anything for details.</p>')],
     ['🔥', T('Комбо', 'Combo'), T('<p>Закрытия ход за ходом растят комбо: <b>×1,5 → ×2 → ×3</b>. Ход без закрытия его сбрасывает.</p><p>Если новые слои сами закрыли колбу — <b>каскад</b>, без траты хода.</p>', '<p>Closes turn after turn build a combo: <b>×1.5 → ×2 → ×3</b>. A turn without a close resets it.</p><p>If new layers close a tube on their own, that\'s a <b>cascade</b> — no turn spent.</p>')],
     ['⚔️', T('Враг', 'Enemy'), T('<p>Над врагом — его следующее действие и <b>через сколько ходов</b> оно наступит. Щит поглощает урон и сгорает после атаки.</p><p>Побитый босс может убежать и вернуться на следующей встрече с половиной здоровья. На последнем этапе острова он бьётся до конца.</p>', '<p>Above the enemy: its next move and <b>how many turns</b> until it happens. Shield blocks damage, then breaks after the attack.</p><p>A beaten boss may flee and come back next fight with half its HP. On the island\'s last stage it fights to the end.</p>')],
-    ['🪨', T('Мусор', 'Junk'), T('<p>🪨 Камень и 🫧 слизь льются только на такой же мусор или в пустую колбу.</p><p>Закрытие соседней колбы разбивает камни. Полная колба слизи даёт щит.</p>', '<p>🪨 Stone and 🫧 slime pour only onto the same junk or into an empty tube.</p><p>Closing a neighboring tube breaks stones. A full tube of slime gives a shield.</p>')],
+    [UI.elBadge('stone'), T('Мусор', 'Junk'), T(`<p>${UI.elBadge('stone')} Камень и ${UI.elBadge('slime')} слизь льются только на такой же мусор или в пустую колбу.</p><p>Закрытие соседней колбы разбивает камни. Полная колба слизи даёт щит.</p>`, `<p>${UI.elBadge('stone')} Stone and ${UI.elBadge('slime')} slime pour only onto the same junk or into an empty tube.</p><p>Closing a neighboring tube breaks stones. A full tube of slime gives a shield.</p>`)],
     ['🚰', T('Слив и зелья', 'Drain & potions'), T('<p><b>Слить</b> — нажми кнопку, затем колбу: она опустеет за 3 HP и ход. В <b>тупике</b> — даром.</p><p>Зелья на поясе — тап, чтобы выпить. Некоторые просят выбрать колбу.</p>', '<p><b>Drain</b>: tap the button, then a tube. It empties for 3 HP and a turn. At a <b>dead end</b> it\'s free.</p><p>Tap a potion on your belt to drink it. Some ask you to pick a tube.</p>')],
   ];
   function showRules() {

@@ -174,7 +174,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const F = b.field;
       const find = f => F.tubes.findIndex(f);
       let j = find(t => t.layers.some(x => JUNK[x]));
-      if (j >= 0 && !seen('junk')) steps.push({ key: 'junk', target: ctx.tubeEl(j), title: T('Мусор', 'Junk'), text: T('🪨 Камень и 🫧 слизь льются только на такой же мусор или в пустую колбу. Полная колба камней рассыпается, слизи — даёт щит. Закрытие соседней колбы разбивает камни.', '🪨 Stone and 🫧 slime pour only onto the same junk or into an empty tube. A full tube of stone crumbles; of slime, gives a shield. Closing a neighboring tube breaks stones.') });
+      if (j >= 0 && !seen('junk')) steps.push({ key: 'junk', target: ctx.tubeEl(j), title: T('Мусор', 'Junk'), text: T(`${UI.elBadge('stone')} Камень и ${UI.elBadge('slime')} слизь льются только на такой же мусор или в пустую колбу. Полная колба камней рассыпается, слизи — даёт щит. Закрытие соседней колбы разбивает камни.`, `${UI.elBadge('stone')} Stone and ${UI.elBadge('slime')} slime pour only onto the same junk or into an empty tube. A full tube of stone crumbles; of slime, gives a shield. Closing a neighboring tube breaks stones.`) });
       j = find(t => t.frozen > 0);
       if (j >= 0 && !seen('frozen')) steps.push({ key: 'frozen', target: ctx.tubeEl(j), title: T('Колба заморожена', 'Tube frozen'), text: T('Из неё и в неё нельзя лить, пока не оттает. Число — сколько ходов осталось.', 'No pouring in or out until it thaws. The number shows turns left.') });
       F.tubes.forEach((t, i) => {
