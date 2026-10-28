@@ -90,6 +90,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
     return isl ? (D().worlds || []).find(w => w.n === isl.world) || null : null;
   };
   UI.islandCount = () => (D().islands || []).length;
+  // Hand-drawn islands on a transparent background; islands past this use the generated SVG.
+  const ISLAND_PICS = 10;
+  UI.islandPic = n => (n <= ISLAND_PICS ? `img/islands/island_${n}.webp` : null);
 
   // ---------- art with graceful fallbacks (PS.Art is written by another module) ----------
   function fallbackIsland(n) {
@@ -527,6 +530,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       for (const part of n.data.split(CUR_RE)) {
         if (CUR[part]) {
           const img = document.createElement('img');
+    // One string test skips the per-text-node walk for the many inserts that hold none of these.
+    if (!CUR_RE.test(root.textContent)) return;
           img.className = 'cur-ico'; img.src = `img/icons/${CUR[part]}.webp`; img.alt = part; img.draggable = false;
           frag.appendChild(img);
         } else if (part) frag.appendChild(document.createTextNode(part));

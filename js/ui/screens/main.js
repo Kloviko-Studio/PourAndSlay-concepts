@@ -4,8 +4,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const UI = PS.UI, esc = UI.esc;
   const T = PS.T;
   const TIER = { easy: T('Лёгкий', 'Easy'), medium: T('Средний', 'Medium'), hard: T('Сложный', 'Hard') };
-  // Hand-drawn islands on a transparent background; islands past this use the generated SVG.
-  const ISLAND_IMGS = 10;
   // Clouds: picture, left / top (% of the screen), width (px), opacity.
   const CLOUDS = [
     [1, -14, 9, 170, .95], [4, 60, 20, 210, .8], [2, 74, 35, 120, .7],
@@ -133,6 +131,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const track = root.querySelector('.isl-track');
     track.style.transition = animate ? 'transform .35s cubic-bezier(.25,.9,.3,1)' : 'none';
     track.style.transform = `translateX(${-idx * 100}%)`;
+    // Only the island on screen and its neighbours (seen while swiping) are fetched; the rest load as you page to them.
+    track.querySelectorAll('.isl-slide').forEach((s, k) => {
+      const img = s.querySelector('img[data-src]');
+      if (img && Math.abs(k - idx) <= 1) { img.src = img.dataset.src; img.removeAttribute('data-src'); }
+    });
     if (changed && animate) PS.Snd.play('swipe');
     renderInfo();
     if (changed && animate) root.querySelector('.isl-card').animate([{ opacity: .3, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 220 });
@@ -200,9 +203,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
       let slides = '';
       for (let n = 1; n <= N; n++) {
         const locked = n > p.maxIsland;
-        slides += `<div class="isl-slide${locked ? ' locked' : ''}">${n <= ISLAND_IMGS ? `<img class="isl-img" src="img/islands/island_${n}.webp" alt="${esc(UI.island(n).name)}" draggable="false">` : `<div class="isl-art">${UI.islandArt(n)}</div>`}<div class="isl-lock">${UI.art('lock', 72)}</div></div>`;
+        const pic = UI.islandPic(n);
+        slides += `<div class="isl-slide${locked ? ' locked' : ''}">${pic ? `<img class="isl-img" data-src="${pic}" alt="${esc(UI.island(n).name)}" decoding="async" draggable="false">` : `<div class="isl-art">${UI.islandArt(n)}</div>`}<div class="isl-lock">${UI.art('lock', 72)}</div></div>`;
       }
-      slides += `<div class="isl-slide soon"><img class="isl-img" src="img/islands/comming_soon.webp" alt="${T('Скоро', 'Coming soon')}" draggable="false"></div>`;
+      slides += `<div class="isl-slide soon"><img class="isl-img" data-src="img/islands/comming_soon.webp" alt="${T('Скоро', 'Coming soon')}" decoding="async" draggable="false"></div>`;
       el.innerHTML = `${sky()}
         <div class="isl-view"><div class="isl-track">${slides}</div></div>
         <div class="isl-arrows"><button class="isl-nav" data-a="prev" aria-label="${T('Предыдущий остров', 'Previous island')}">${UI.ico.left}</button><button class="isl-nav" data-a="next" aria-label="${T('Следующий остров', 'Next island')}">${UI.ico.right}</button></div>

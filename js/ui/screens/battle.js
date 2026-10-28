@@ -153,7 +153,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const m = enemyMeta();
     if (!m) return;
     const mon = monEl();
-    mon.querySelector('.bt-mon-body').innerHTML = UI.enemyArt(m.e.id, { rage: S.vm.rage, patched: m.e.patched });
+    // Runs after every move; rebuilding an unchanged svg would re-parse it and re-attach the painted picture each time.
+    const art = UI.enemyArt(m.e.id, { rage: S.vm.rage, patched: m.e.patched }), body = mon.querySelector('.bt-mon-body');
+    if (body._art !== art) { body.innerHTML = art; body._art = art; }
     mon.classList.remove('dead', 'flee');
     mon.classList.toggle('gone', m.e && S.R.battle.status !== 'active' && S.R.battle.status !== 'lost');
     if (enter) Fx.animClass(mon, 'enter', 560);
