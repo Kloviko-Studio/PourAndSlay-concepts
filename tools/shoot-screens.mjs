@@ -77,6 +77,16 @@ await go('settings'); await shot('settings');
 await go('seal'); await shot('seal');
 await go('catalog'); await ev(`document.querySelector('[data-t=tubes]').click(); await W(1500); document.querySelectorAll('.cat-tubes .sec-title')[1].scrollIntoView(); await W(300);`); await shot('tubes');
 
+// Every catalog tab at full length for the content docs: the viewport grows to the list so one picture holds the whole tab.
+fs.mkdirSync(path.join(OUT, 'catalog'), { recursive: true });
+for (const t of await ev(`return [...document.querySelectorAll('.scr-catalog [data-t]')].map(b => b.dataset.t);`)) {
+  const h = await ev(`document.querySelector('.scr-catalog [data-t=${t}]').click(); await W(600); const s = document.querySelector('.scr-catalog'); s.scrollTop = 0; return Math.ceil(s.getBoundingClientRect().top + s.scrollHeight + 16);`);
+  await send('Emulation.setDeviceMetricsOverride', { width: 375, height: h, deviceScaleFactor: 1.5, mobile: true });
+  await ev(`await W(400); await Promise.all([...document.images].map(i => i.complete || new Promise(r => { i.onload = i.onerror = r; }))); await W(300);`);
+  await shot('catalog/' + t);
+}
+await send('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 2, mobile: true });
+
 // battle on island 3
 await ev(`PS.UI.startRun(3); await W(2500);`); await shot('battle');
 await ev(`document.querySelector('[data-a=build]').click(); await W(700);`); await shot('bag');

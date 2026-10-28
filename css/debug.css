@@ -1,26 +1,48 @@
 .scr-catalog { overflow-x: hidden; }
 .cat-tools { margin: 8px 0 0; }
 .cat-search { flex: 1; min-width: 0; font: inherit; color: var(--ink); background: #fff; border: 3px solid #fff; border-radius: 18px; padding: 8px 14px; box-shadow: var(--sh); }
-.cat-card { margin-top: 8px; }
+.cat-cards { display: flex; flex-direction: column; gap: 8px; }
+.cat-sub { margin: -4px 4px 8px; font-size: 13px; color: var(--ink2); text-shadow: 0 0 8px #fff; }
 .cat-card.later { opacity: .72; }
-.cat-head { display: flex; align-items: flex-start; gap: 10px; }
-.cat-ico { flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 26px; line-height: 1; }
-.cat-ico > svg { max-width: 32px; max-height: 32px; }
-.cat-mark { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; }
-.cat-mark svg { display: block; width: 20px; height: 20px; }
-.cat-mark .el-ico { width: 24px; height: 24px; }
-.cat-sw { width: 14px; height: 26px; border-radius: 5px; box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, .15); }
-.cat-art { flex: none; display: block; width: 52px; height: 52px; }
-.cat-art svg, .cat-art .art-fallback { width: 100%; height: 100%; }
-.cat-title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.cat-title b { font-size: 15px; overflow-wrap: anywhere; }
+.cat-card.r-rare { box-shadow: inset 0 0 0 3px #7ab8f0, var(--sh); }
+.cat-card.r-legendary, .cat-card.boss { box-shadow: inset 0 0 0 3px #ffb27a, var(--sh); }
+.cat-head { display: flex; align-items: center; gap: 12px; }
+.cat-ico { flex: none; display: grid; place-items: center; width: 48px; height: 48px; font-size: 36px; line-height: 1; }
+.cat-ico.big { width: 72px; height: 72px; }
+.cat-ico .item-ico, .cat-ico .cur-ico { width: 44px; height: 44px; }
+.cat-ico .el-badge { width: 40px; height: 40px; }
+.cat-art { flex: none; display: block; width: 100%; height: 100%; }
+.cat-art svg { width: 100%; height: 100%; }
+.cat-pic { flex: none; display: block; width: 84px; height: 62px; object-fit: contain; }
+.cat-ico:has(.cat-pic) { width: 84px; }
+.cat-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.cat-title b { font-size: 16px; line-height: 1.2; overflow-wrap: anywhere; }
 .cat-id { font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: var(--ink3); overflow-wrap: anywhere; }
 .cat-tags { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
-.cat-desc { margin: 6px 0 0; font-size: 13px; color: var(--ink2); }
-.cat-kvs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
-.cat-kv { display: inline-flex; gap: 6px; max-width: 100%; padding: 3px 8px; border-radius: 8px; font-size: 12px; background: var(--skyp); overflow-wrap: anywhere; }
+.cat-desc { margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; color: var(--ink2); }
+.cat-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 22px; line-height: 1; }
+.cat-strip .item-ico { width: 30px; height: 30px; }
+.cat-facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.cat-fact { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; max-width: 100%; min-height: 28px; padding: 3px 10px; border-radius: 14px; font-size: 13px; font-weight: 800; background: var(--skyp); overflow-wrap: anywhere; }
+.cat-fact i { font-style: normal; font-weight: 700; color: var(--ink3); margin-right: 2px; }
+.cat-fact .art-ico, .cat-fact .item-ico { width: 20px; height: 20px; }
+.cat-fact .el-badge { width: 22px; height: 22px; }
+.cat-step { display: inline-flex; align-items: center; gap: 2px; font-size: 16px; }
+.cat-step b { font-size: 13px; }
+.cat-step small { font-size: 11px; color: var(--ink3); margin-left: 2px; }
+.cat-arr { color: var(--ink3); font-weight: 900; }
+.cat-raw { margin-top: 8px; font-size: 12px; }
+.cat-raw summary { cursor: pointer; color: var(--ink3); font-weight: 800; }
+.cat-kvs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.cat-kv { display: inline-flex; gap: 6px; max-width: 100%; padding: 3px 8px; border-radius: 8px; font-size: 12px; background: rgba(212, 240, 247, .6); overflow-wrap: anywhere; }
 .cat-kv b { color: var(--ink3); font-weight: 800; }
 .cat-counts { flex: 1 0 100%; }
+.cat-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.cat-tile { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 6px 8px; border-radius: 20px; text-align: center; line-height: 1.2; }
+.cat-gimg { width: 56px; height: 56px; object-fit: contain; margin-bottom: 2px; }
+.cat-tile b { font-size: 13px; }
+.cat-tile span { font-size: 11px; color: var(--ink2); }
+.cat-tile code { font-size: 10px; color: var(--ink3); overflow-wrap: anywhere; }
 
 /* tube showcase in the catalog: battle tubes at a fixed layer height, wrapped into rows */
 .cat-tubes { --lh: 24px; margin-bottom: 14px; }
