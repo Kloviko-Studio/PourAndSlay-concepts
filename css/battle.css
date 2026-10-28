@@ -1,7 +1,18 @@
 /* Pour & Slay v2 — battle screen, in-run windows, tutorial layer (cloud pastel) */
 /* bars jump to their new value: no motion in battle until the final app */
 .scr-battle .bar-fill, .scr-battle .bar-ghost, .scr-battle .sbar-fill { transition: none; }
-.scr-battle { padding: calc(16px + var(--safe-t)) 16px calc(16px + var(--safe-b)); overflow: hidden; gap: 8px; --lh: 24px; }
+.scr-battle { padding: 0; overflow: hidden; gap: 0; --lh: 24px; }
+/* Two zones: the scene above ground where the enemy stands, and the ground the tubes are dug into.
+   Backgrounds come per world; until their pictures exist the scene uses the sky and the ground a flat earth tone. */
+.scr-battle { --scene: url(../img/sky/sky_day.webp) center 35% / cover; --lip: #ecd5a0; --earth: #b98a5e; --earth2: #7f5639; --pit: rgba(60, 32, 16, .28); }
+.scr-battle[data-world="2"] { --lip: #c9c1b6; --earth: #8d8478; --earth2: #5d554c; --pit: rgba(30, 26, 22, .3); }
+.scr-battle[data-world="3"] { --lip: #eef9fc; --earth: #9cc3d2; --earth2: #5f879a; --pit: rgba(20, 60, 80, .25); }
+.scr-battle[data-world="4"] { --scene: url(../img/sky/sky_night.webp) center 35% / cover; --lip: #93b15e; --earth: #5f4c70; --earth2: #392d47; --pit: rgba(15, 8, 25, .35); }
+.scr-battle[data-world="5"] { --scene: url(../img/sky/sky_night.webp) center 35% / cover; --lip: #7a665c; --earth: #5c3b32; --earth2: #2f1d18; --pit: rgba(20, 5, 0, .35); }
+.bt-scene { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 8px; padding: calc(16px + var(--safe-t)) 16px 0; background: var(--scene); }
+.bt-ground { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 22px 16px calc(16px + var(--safe-b));
+  background: linear-gradient(180deg, var(--lip) 0 12px, rgba(0, 0, 0, .12) 12px 15px, var(--earth) 15px, var(--earth2)); }
+.bt-ground > * { flex-shrink: 0; }
 .scr-battle > * { flex-shrink: 0; }
 
 /* ---------- top ---------- */
@@ -20,15 +31,14 @@
 /* ---------- enemy ---------- */
 .bt-enemy { display: flex; flex-direction: column; gap: 6px; flex: 0 1 auto; min-height: 0; }
 /* margin: room for the islet's hanging rocks, which sit below the arena box */
-.bt-arena { position: relative; height: clamp(96px, 22vh, 190px); margin-bottom: 16px; }
+/* the enemy's feet sink into the ground's top edge */
+.bt-arena { position: relative; height: clamp(120px, 30vh, 250px); margin-bottom: -6px; }
 .bt-mon { position: absolute; left: 50%; bottom: 2px; height: 100%; aspect-ratio: 1; transform: translateX(-50%); z-index: 2; }
 .bt-mon-body { position: relative; z-index: 1; width: 100%; height: 100%; }
 .bt-mon-body svg { width: 100%; height: 100%; overflow: visible; display: block; }
-/* grass islet the enemy stands on (from the approved battle mockup) */
-.bt-islet { position: absolute; left: 50%; bottom: -14%; width: 118%; transform: translateX(-50%); z-index: 0; pointer-events: none; overflow: visible; }
-.bt-mon-shadow { display: none; }
+.bt-mon-shadow { position: absolute; left: 18%; right: 18%; bottom: -5%; height: 12%; border-radius: 50%; background: radial-gradient(closest-side, rgba(50, 30, 20, .35), transparent); }
 .bt-mon.dead .bt-mon-body, .bt-mon.flee .bt-mon-body { opacity: 0; }
-.bt-mon.gone .bt-mon-body, .bt-mon.gone .bt-islet { opacity: 0; }
+.bt-mon.gone .bt-mon-body, .bt-mon.gone .bt-mon-shadow { opacity: 0; }
 .bt-mon.frozen svg { filter: saturate(.35) brightness(1.3) hue-rotate(150deg); }
 .bt-mon.buffed svg { filter: drop-shadow(0 0 10px #f0584a); }
 .bt-mon .bt-bubble { position: absolute; inset: -6px; border-radius: 50%; border: 3px solid #fff; display: none; pointer-events: none; z-index: 2;
@@ -59,7 +69,7 @@
 .bt-ename { display: flex; align-items: center; gap: 6px; font-family: var(--display); font-size: 24px; line-height: 28px; margin-bottom: 6px; min-width: 0; color: var(--ink); text-shadow: 0 0 8px rgba(255, 255, 255, .9); }
 .bt-ename .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
 .bt-ename .tag { height: 28px; padding: 0 10px; border: 3px solid #fff; font-family: var(--font); font-size: 12px; box-shadow: 0 3px 6px rgba(50, 110, 130, .18); text-shadow: none; }
-.bt-ehint { font-size: 11px; color: #8a4a12; text-align: right; margin-top: 2px; line-height: 1.2; text-shadow: 0 0 6px #fff; }
+.bt-ehint { font-size: 11px; color: #fff1b8; text-align: right; margin-top: 2px; line-height: 1.2; text-shadow: 0 1px 3px rgba(40, 20, 10, .8); }
 .bt-ehint:empty { display: none; }
 .bt-bar { position: relative; }
 .bt-mark { position: absolute; top: -3px; bottom: -3px; width: 4px; margin-left: -2px; border-radius: 2px; background: var(--cta3); box-shadow: 0 0 0 1px #fff; z-index: 2; }
@@ -81,8 +91,9 @@
 .bt-combo.hot { background: var(--butter); color: #8a4a12; box-shadow: 0 0 0 2px rgba(240, 127, 82, .5), 0 3px 6px rgba(50, 110, 130, .18); }
 
 /* ---------- field ---------- */
+/* a pit dug into the ground */
 .bt-field { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: space-evenly; gap: 6px; padding: 18px 6px 6px; margin: 0 -4px; border-radius: 28px;
-  background: rgba(255, 250, 243, .5); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .8), 0 6px 16px rgba(50, 110, 130, .15); position: relative; }
+  background: var(--pit); box-shadow: inset 0 6px 12px rgba(0, 0, 0, .25), 0 1px 0 rgba(255, 255, 255, .18); position: relative; }
 .bt-row { display: flex; justify-content: center; align-items: flex-end; gap: 12px; min-height: 0; }
 .bt-tw { position: relative; flex: 0 1 50px; min-width: 30px; container-type: inline-size; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
 .bt-tw.sel { transform: translateY(-14px); }
@@ -127,7 +138,7 @@
   background: url(../img/tubes/cork.webp) center / contain no-repeat; }
 .bt-ice { top: calc(var(--gt) * var(--s)); z-index: 2; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: #1d4e6b;
   background: linear-gradient(135deg, #eaf9fcdd, #9fdcf5b3); box-shadow: inset 0 0 8px #fff; }
-.bt-ttag { min-height: 14px; font-size: 12px; line-height: 14px; color: #8a4a12; font-weight: 900; }
+.bt-ttag { min-height: 14px; font-size: 12px; line-height: 14px; color: #fff1b8; font-weight: 900; text-shadow: 0 1px 3px rgba(40, 20, 10, .8); }
 
 /* ---------- queue ---------- */
 .bt-queue { height: 0; overflow: visible; }
@@ -143,6 +154,7 @@
 .bt-pot { position: relative; flex: 0 0 52px; width: 52px; height: 52px; border-radius: 26px; border: 3px solid #fff; font-size: 24px; display: grid; place-items: center; background: var(--puff);
   box-shadow: 0 5px 10px rgba(50, 110, 130, .25), inset 0 -4px 0 rgba(0, 0, 0, .06); }
 .bt-pot svg { display: block; }
+.bt-pot .item-ico { width: 40px; height: 40px; }
 .bt-pot.pt-undo, .bt-pot.pt-sleep { background: var(--lilac); }
 .bt-pot.pt-heal, .bt-pot.pt-firebomb { background: #ffd6d6; }
 .bt-pot.pt-flask, .bt-pot.pt-shake { background: var(--mint); }
@@ -154,7 +166,6 @@
 .bt-drain { flex: none; width: 56px; min-height: 56px; padding: 0; border-radius: 28px; }
 .bt-drain svg { display: block; flex: none; width: 22px; height: 22px; }
 .bt-drain.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); }
-.bt-pot .item-ico { width: 40px; height: 40px; }
 .bt-drain.stuck { box-shadow: 0 0 18px 4px #ffb27aaa; }
 .scr-battle.locked .bt-field, .scr-battle.locked .bt-bottom { cursor: progress; }
 
@@ -209,7 +220,7 @@
 @keyframes tutTap { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(4px, 10px) scale(.92); } }
 
 @media (max-height: 700px) {
-  .bt-arena { height: clamp(80px, 16vh, 120px); }
+  .bt-arena { height: clamp(90px, 18vh, 130px); }
   .bt-pot { flex-basis: 46px; width: 46px; height: 46px; }
   .bt-drain { width: 48px; min-height: 48px; }
 }

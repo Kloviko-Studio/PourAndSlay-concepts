@@ -101,11 +101,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const tubeEl = i => S && S.el.querySelector(`.bt-tw[data-i="${i}"]`);
   const monEl = () => $('.bt-mon');
 
-  // Grass islet under the enemy (approved battle mockup)
-  const ISLET = '<svg class="bt-islet" viewBox="22 134 146 50" aria-hidden="true"><defs><linearGradient id="isTuft" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a7cf7a"/><stop offset="1" stop-color="#6aa452"/></linearGradient><linearGradient id="isDirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c98a62"/><stop offset="1" stop-color="#8f5a44"/></linearGradient></defs><path d="M30 150q65 50 130 0z" fill="url(#isDirt)"/><path d="M70 168l-6 12 12-6zM118 172l4 10 6-12z" fill="#8f5a44"/><ellipse cx="95" cy="150" rx="68" ry="14" fill="url(#isTuft)"/><path d="M32 148l4-9 4 9M150 148l4-10 4 10M60 156l3-7 3 7M128 157l3-7 3 7" fill="#86c46a" stroke="#6aa452" stroke-width="1" stroke-linejoin="round"/><ellipse cx="95" cy="148" rx="54" ry="7" fill="rgba(60,40,60,.25)"/></svg>';
-
   function skeleton() {
     S.el.innerHTML = `
+      <div class="bt-scene">
       <div class="bt-top">
         <button class="btn-icon" data-a="pause" aria-label="${T('Пауза', 'Pause')}">${UI.ico.pause}</button>
         <div class="bt-sbar"></div>
@@ -114,15 +112,17 @@ var PS = globalThis.PS || (globalThis.PS = {});
       <div class="bt-enemy">
         <div class="bt-arena">
           <div class="bt-chips"></div>
-          <div class="bt-mon">${ISLET}<div class="bt-mon-body"></div><div class="bt-mon-shadow"></div><div class="bt-bubble"></div></div>
+          <div class="bt-mon"><div class="bt-mon-shadow"></div><div class="bt-mon-body"></div><div class="bt-bubble"></div></div>
           <div class="bt-intent"></div>
         </div>
+      </div>
+      </div>
+      <div class="bt-ground">
         <div class="bt-einfo">
           <div class="bt-ename"></div>
           <div class="bt-bar"><div class="bar bar-enemy"><div class="bar-ghost"></div><div class="bar-fill"></div><div class="bt-shieldbar"></div><span class="bar-label"></span></div></div>
           <div class="bt-ehint"></div>
         </div>
-      </div>
       <div class="bt-player">
         <span class="bt-heart">${UI.ico.heart(28)}</span>
         <div class="bar bar-hp"><div class="bar-ghost"></div><div class="bar-fill"></div><span class="bar-label"></span></div>
@@ -131,7 +131,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       </div>
       <div class="bt-field"><div class="bt-row" data-row="0"></div><div class="bt-row" data-row="1"></div></div>
       <div class="bt-queue"></div>
-      <div class="bt-bottom"><div class="bt-belt"></div><button class="btn btn-blue bt-drain" data-a="drain"></button></div>`;
+      <div class="bt-bottom"><div class="bt-belt"></div><button class="btn btn-blue bt-drain" data-a="drain"></button></div>
+      </div>`;
   }
 
   function renderTop() {
@@ -1019,6 +1020,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const w = UI.world(R.island) || {};
       UI.setTheme(w.theme === 'night' ? 'night' : 'day', w.palette);
       S = { el, R, sel: null, mode: null, busy: false, dead: false, vm: {}, lh: 24 };
+      el.dataset.world = w.n || 1;
       skeleton();
       el.addEventListener('click', e => {
         const tw = e.target.closest('.bt-tw');
