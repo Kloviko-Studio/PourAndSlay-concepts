@@ -66,17 +66,16 @@ test('vial accepts any colour while it has space, never closes', () => {
   assert.strictEqual(Fd.pourAmount(F, 1, 0), 0);
 });
 
-test('big cap 6, vial cap 2, isClosed, closableAfterEnemy', () => {
-  const F = Fd.create(Rng.make(1), { deck: ['fire', 'water', 'life'], slots: ['big', 'plain', 'vial'], cap: 4, filledMin: 5 });
-  assert.strictEqual(F.tubes.find(t => t.kind === 'big').cap, 6);
+test('vial cap 2, isClosed, closableAfterEnemy', () => {
+  const F = Fd.create(Rng.make(1), { deck: ['fire', 'water', 'life'], slots: ['amp', 'plain', 'vial'], cap: 4, filledMin: 5 });
   assert.strictEqual(F.tubes.find(t => t.kind === 'vial').cap, 2);
-  const G = mk([['a', 'a', 'a', 'a'], ['a', 'a', 'a', 'b'], { kind: 'big', cap: 6, layers: Array(6).fill('x') }, { kind: 'big', cap: 6, layers: Array(5).fill('x') }, ['stone', 'stone', 'stone', 'stone'], [], { kind: 'vial', cap: 2, layers: ['a', 'a'] }]);
+  const G = mk([['a', 'a', 'a', 'a'], ['a', 'a', 'a', 'b'], ['x', 'x', 'x', 'x'], ['x', 'x', 'x'], ['stone', 'stone', 'stone', 'stone'], [], { kind: 'vial', cap: 2, layers: ['a', 'a'] }]);
   assert.deepStrictEqual([0, 1, 2, 3, 4, 5, 6].map(i => Fd.isClosed(G, i)), [true, false, true, false, true, false, false]);
   assert.deepStrictEqual(Fd.closableAfterEnemy(G), [0, 2, 4]);
 });
 
 const DECKS = [['fire', 'water', 'life'], ['fire', 'water', 'life', 'poison'], ['fire', 'water', 'life', 'poison', 'ice']];
-const SLOTS = [['plain', 'plain', 'plain'], ['plain', 'sieve', 'big'], ['vial', 'amp', 'bomb', 'catalyst', 'plain'], ['plain'], ['vial']];
+const SLOTS = [['plain', 'plain', 'plain'], ['plain', 'sieve', 'amp'], ['vial', 'amp', 'bomb', 'catalyst', 'plain'], ['plain'], ['vial']];
 
 test('generation: never pre-closed, always has a move (1000 seeds x decks x slots)', () => {
   for (let seed = 1; seed <= 1000; seed++)

@@ -106,7 +106,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
     catalyst: { id: 'catalyst', name: 'Катализатор', icon: '⏩', unlock: 5, desc: 'Закрытие в ней не тратит ход.' },
     sieve: { id: 'sieve', name: 'Сито', icon: '🕸', unlock: 3, desc: 'Камень и слизь, налитые в неё, исчезают; такое переливание не тратит ход.' },
     bomb: { id: 'bomb', name: 'Бомба', icon: '💥', unlock: 7, targets: 2, desc: 'При закрытии сбивает верхний слой у двух соседних колб (соседи подсвечиваются).' },
-    big: { id: 'big', name: 'Большая', icon: '🫙', unlock: 10, cap: 6, mult: 1.5, desc: '6 слоёв вместо 4, эффект ×1,5.' },
     vial: { id: 'vial', name: 'Пробирка', icon: '🍶', unlock: 10, cap: 2, desc: '2 слоя любых цветов вперемешку, никогда не закрывается.' }
   };
 
@@ -267,7 +266,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     7: { elements: [], potions: ['firebomb'], mods: [], finds: [], tubes: ['bomb'], lab: [], relicRarity: null, note: 'Бомба и Огненная бомба' },
     8: { elements: ['dark'], potions: [], mods: [], finds: [], tubes: [], lab: [], relicRarity: 'legendary', note: 'Новая стихия: тьма' },
     9: { elements: ['mirror'], potions: [], mods: [], finds: [], tubes: [], lab: [], relicRarity: null, note: 'Новая стихия: зеркало' },
-    10: { elements: [], potions: [], mods: [], finds: [], tubes: ['big', 'vial'], lab: [], relicRarity: null, note: 'Большая колба и Пробирка' }
+    10: { elements: [], potions: [], mods: [], finds: [], tubes: ['vial'], lab: [], relicRarity: null, note: 'Пробирка' }
   };
 
   D.economy = {
@@ -277,7 +276,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     // [a, b] = a + b*i, i = island number; first = per island number (20 * i)
     coins: { reg: [4, 2], flee: [8, 3], kill: [15, 5], first: 20, hardMult: 1.25 },
     gems: { start: 30, first: 5, firstHard: 10, adGift: 2, adGiftPerDay: 3, questsAll: 5 },
-    revive: { hp: 0.5, gems: 20, perRun: 1 }, reroll: { gems: 7, mult: 2 }, skip: [5, 1],
+    // lives: stored free revives (daily gift); with a full stock the gift's coins are given instead
+    revive: { hp: 0.5, gems: 20, perRun: 1 }, lives: { max: 5 }, reroll: { gems: 7, mult: 2 }, skip: [5, 1],
     // A beaten boss leaves and comes back next encounter with returnHp of its max HP (and a plaster).
     boss: { returnHp: 0.5, rageAt: 0.33, rageTimer: 1 },
     enemyHeals: 3,
@@ -287,7 +287,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     scaleP: ['coinPacks', 'daily', 'quests']
   };
 
-  D.daily = [{ coins: 30 }, { coins: 50 }, { gems: 5 }, { coins: 80 }, { coins: 100 }, { coins: 120 }, { gems: 15 }];
+  D.daily = [{ coins: 30 }, { coins: 50 }, { gems: 5 }, { lives: 1, coins: 80 }, { coins: 100 }, { coins: 120 }, { gems: 15 }];
 
   // n = [a, b] -> a + b*i; scaleP: n additionally scaled for coin amounts. {color} filled from deck at generation.
   D.quests = [

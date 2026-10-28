@@ -463,6 +463,7 @@ body[data-theme="night"] .cloud { opacity: calc(var(--op) * .35); filter: bright
 .day.done::after { content: '✓'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 30px; line-height: 1; color: #4fae78; font-weight: 900; }
 .day.today { background: #fff3dc; box-shadow: 0 0 0 3px #ffb27a, 0 0 16px 4px rgba(255, 178, 122, .5); }
 .day.big { grid-column: span 2; }
+.daily-lives { margin-top: 8px; text-align: center; font-size: 14px; font-weight: 800; color: var(--ink2); }
 
 /* ---------- quests ---------- */
 .q-prog { margin-top: 6px; }

@@ -50,8 +50,6 @@ test('effect order: flat -> tube -> k -> vuln/mastery -> round half up', () => {
   B.enemy.frozen = 0; B.masteryPct = 0;
   // poison (2+1) * 1.5 = 4.5 rounds up to 5
   assert.strictEqual(Cb.effectValue(B, 'poison', 1.5, 'plain'), 5);
-  // big tube: 16 * 1.5 * 1 = 24
-  assert.strictEqual(Cb.effectValue(B, 'fire', 1, 'big'), 24);
   assert.strictEqual(Cb.effectValue(B, 'slime', 3), 3);
   assert.strictEqual(Cb.effectValue(B, 'water', 3), 18);
   assert.strictEqual(Cb.effectValue(B, 'mirror', 1), 4);

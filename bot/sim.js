@@ -188,7 +188,7 @@ function chooseBattleAction(B, br, recent, last) {
 // ---------- pick policy ----------
 const MOD_V = { tough: 7, apron: 6, caustic: 6, bubble: 5, prep: 4, thorns: 4, leech: 3, combo_master: 4, potion_pick: 5 };
 const COLOR_V = { fire: 10, water: 7, life: 6, poison: 6, lightning: 6, ice: 4, dark: 5, mirror: 3 };
-const TUBE_V = { amp: 7, catalyst: 6, sieve: 4, bomb: 4, big: 5, vial: 1, plain: 0 };
+const TUBE_V = { amp: 7, catalyst: 6, sieve: 4, bomb: 4, vial: 1, plain: 0 };
 const RELIC_V = { hot_crucible: 7, hourglass: 5, lucky_clover: 6, golden_stopper: 4, alchemist_heart: 4, stone_heart: 5, sponge: 4, blood_retort: 8,
   storm_rod: 7, trap: 6, mirror_shield: 7, crystal_ward: 6, frost_crown: 7, poison_ivy: 7, void_lens: 7, bandolier: 6, cascade_chute: 4,
   patient_mage: 5, philosopher_stone: 9, great_cauldron: 6, phoenix_feather: 8 };

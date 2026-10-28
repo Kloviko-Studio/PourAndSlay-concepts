@@ -1,7 +1,9 @@
 var PS = globalThis.PS || (globalThis.PS = {});
 (function () {
   'use strict';
-  const UI = PS.UI, esc = UI.esc, Fx = PS.Fx, Snd = PS.Snd;
+  const UI = PS.UI, esc = UI.esc, Snd = PS.Snd;
+  // Battle motion is parked until the final app (only the pour stays): effect calls stay in place but draw nothing.
+  const Fx = Object.assign({}, PS.Fx, { animClass() {}, floatNum() {}, bigPop() {}, vignette() { return Promise.resolve(); } });
   const T = PS.T;
   const D = () => PS.DATA;
   const Tut = () => PS.Tutorial || null;
@@ -16,11 +18,26 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const colorDef = c => D().elements[c] || D().junk[c] || { css: '#888888', icon: '?', name: c };
   const iconOf = c => UI.elIco(c) || colorDef(c).sym || colorDef(c).icon;
   function layerBg(c) {
-    const k = colorDef(c).css;
-    const dots = c === 'slime' ? 'radial-gradient(circle at 22% 70%, #ffffff40 0 2.5px, #0000 3px), radial-gradient(circle at 68% 35%, #ffffff38 0 3px, #0000 3.5px), ' : '';
-    return dots + k;
+    const tex = D().elements[c] || D().junk[c] ? `;background-image:url(img/texture/tubes/liquid_${c}.webp)` : '';
+    return `background-color:${colorDef(c).css}${tex}`;
   }
   const turnsTxt = n => n + ' ' + T.pl(n, ['ход', 'хода', 'ходов'], ['turn', 'turns']);
+  // One tube's glass, liquid, ice and cork; the catalog's tube showcase draws with it too.
+  // o.fill: the last n layers rise in and their run's icon fades in after them; o.cork / o.glow: a closed tube.
+  UI.tubeHtml = function (t, o) {
+    o = o || {};
+    const n = t.layers.length, sp = o.fill || 0;
+    // Equal neighbours read as one body of liquid: one icon at the middle of each run (carried by its bottom layer).
+    let run = 0;
+    const layers = t.layers.map((c, k) => {
+      if (k === 0 || c !== t.layers[k - 1]) { run = 1; while (t.layers[k + run] === c) run++; }
+      const first = k === 0 || c !== t.layers[k - 1];
+      const cls = 'bt-layer' + (k === n - 1 ? ' top' : '') + (sp && k >= n - sp ? ' fill' : '');
+      return `<div class="${cls}" style="--k:${k};${layerBg(c)}">${first ? `<i${sp && k + run === n ? ' class="late"' : ''} style="--run:${run}">${iconOf(c)}</i>` : ''}</div>`;
+    }).join('');
+    return `<div class="bt-tube k-${t.kind}${o.glow ? ' closed' : ''}" style="--cap:${t.cap}${o.glow ? `;--glow:${o.glow}` : ''}"><div class="bt-liq">${layers}</div>` +
+      `${t.frozen ? `<div class="bt-ice">❄ ${t.frozen}</div>` : ''}${o.cork ? '<div class="bt-cork"></div>' : ''}</div>`;
+  };
 
   const INTENT = {
     atk: [T('удар', 'attack'), '⚔️'], stone: [T('камни в колбы', 'stones in tubes'), '🪨'], spores: [T('слизь в очередь', 'slime in queue'), '🍄'], freeze: [T('заморозит колбу', 'freezes a tube'), '❄️'],
@@ -222,9 +239,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     c.querySelector('.cv').textContent = '×' + kfmt(k);
   }
 
-  // opts: {fill: {tube, n}, drop: tubeIdx | 'all'}
-  function renderTubes(tubes, opts) {
-    opts = opts || {};
+  // fill: {tube, n} — the last n layers of that tube rise in and its top run's icon fades in after them
+  function renderTubes(tubes, fill) {
     const B = S.R.battle;
     if (!B) return;
     tubes = tubes || B.field.tubes;
@@ -239,19 +255,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const w = document.createElement('div');
         w.className = 'bt-tw' + (bombN[i] ? ' bomb-n' : '');
         w.dataset.i = i;
-        const n = t.layers.length;
-        const fresh = opts.drop === 'all' || opts.drop === i;
-        const sp = opts.fill && opts.fill.tube === i ? opts.fill.n : 0;
-        // Equal neighbours read as one body of liquid: one icon at the middle of each run (carried by its bottom layer).
-        let run = 0;
-        const layers = t.layers.map((c, k) => {
-          if (k === 0 || c !== t.layers[k - 1]) { run = 1; while (t.layers[k + run] === c) run++; }
-          const first = k === 0 || c !== t.layers[k - 1];
-          const cls = 'bt-layer' + (k === n - 1 ? ' top' : '') + (fresh ? ' drop' : '') + (sp && k >= n - sp ? ' fill' : '');
-          return `<div class="${cls}" style="background:${layerBg(c)}">${first ? `<i${sp && k + run === n ? ' class="late"' : ''} style="--run:${run}">${iconOf(c)}</i>` : ''}</div>`;
-        }).join('');
         const td = D().tubes[t.kind] || {};
-        w.innerHTML = `<div class="bt-tube k-${t.kind}" style="--cap:${t.cap}"><div class="bt-liq">${layers}</div>${t.frozen ? `<div class="bt-ice">❄ ${t.frozen}</div>` : ''}</div>
+        w.innerHTML = UI.tubeHtml(t, { fill: fill && fill.tube === i ? fill.n : 0 }) + `
           <div class="bt-ttag"${t.kind !== 'plain' ? ` data-tip="<b>${esc(td.name)}</b><br>${esc(td.desc)}"` : ''}>${t.kind !== 'plain' ? td.icon : ''}</div>`;
         host.appendChild(w);
       });
@@ -350,15 +355,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
       if (icons.length) icons[icons.length - 1].classList.add('gone');
       await sleep(200);
     }
-    renderTubes(ev.tubes, ev.swallow ? {} : { fill: { tube: ev.to, n: ev.n } });
-    await sleep(ev.swallow ? 0 : 260);
-  }
-
-  async function animDrainTube(i) {
-    const w = tubeEl(i);
-    if (!w) return;
-    w.querySelector('.bt-liq').classList.add('drain');
-    await sleep(240);
+    renderTubes(ev.tubes, ev.swallow ? null : { tube: ev.to, n: ev.n });
+    if (!ev.swallow) await sleep(260);
   }
 
   function hitNum(el, text, color, big) { if (el) Fx.floatNum(el, text, color, big); }
@@ -373,7 +371,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       S.flyFrom = null;
       renderTop();
       renderMonster(true);
-      renderEnemyBars(); renderIntent(); renderPlayer(); renderTubes(B.field.tubes, { drop: 'all' }); renderQueue(); renderBelt(); fit();
+      renderEnemyBars(); renderIntent(); renderPlayer(); renderTubes(B.field.tubes); renderQueue(); renderBelt(); fit();
       if (ev.boss) { Fx.bigPop(ev.final ? T('Босс!', 'Boss!') : T(`Босс · встреча ${ev.encounter + 1}`, `Boss · fight ${ev.encounter + 1}`), '#ff9a8a'); Snd.play('hurt'); return 900; }
       Snd.play('drop');
       return 550;
@@ -458,8 +456,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     poison_tick() { Snd.play('poison'); return 120; },
     burn_tick() { hitNum($('.bt-player .bar'), '🔥', '#ff9a5a'); return 150; },
     refill: async ev => {
-      await animDrainTube(ev.tube);
-      renderTubes(ev.tubes, { drop: ev.tube });
+      renderTubes(ev.tubes);
       if (ev.queue) renderQueue(ev.queue);
       Snd.play('drop');
       await sleep(380);
@@ -509,7 +506,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         case 'steal':
           if (ev.target) {
             const from = tubeEl(ev.target.tube);
-            renderTubes(ev.tubes, ev.target.refilled != null ? { drop: ev.target.refilled } : null);
+            renderTubes(ev.tubes);
             await Fx.fly(from, mon, colorDef(ev.target.color).css, { size: 18 });
           } else renderTubes(ev.tubes);
           Snd.play('bad');
@@ -535,8 +532,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     async drain(ev) {
       S.mode = null;
       Snd.play('pour');
-      await animDrainTube(ev.tube);
-      renderTubes(ev.tubes, ev.refilled ? { drop: ev.tube } : null);
+      renderTubes(ev.tubes);
       renderBelt();
       if (ev.free) hitNum($('.bt-drain'), T('даром', 'free'), '#ffe08a');
       await sleep(200);
@@ -547,7 +543,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       Snd.play('buy');
       hitNum($('.bt-belt'), p.icon, '#fff', true);
       if (ev.id === 'undo') { renderAll(); Fx.bigPop(T('↶ Отмена', '↶ Undo')); return 500; }
-      if (ev.tubes) renderTubes(ev.tubes, ev.id === 'shake' || ev.id === 'flask' ? { drop: ev.tube } : null);
+      if (ev.tubes) renderTubes(ev.tubes);
       if (ev.id === 'flask') fit();
       if (ev.id === 'sleep') { S.vm.timer += D().potions.sleep.delay; renderIntent(); hitNum($('.bt-intent'), '💤 +' + D().potions.sleep.delay, '#c9d6ff'); }
       if (ev.id === 'combo') Fx.bigPop(T('✨ Следующее — ×2', '✨ Next one ×2'));
@@ -866,13 +862,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function showRevive() {
     const R = S.R, o = PS.Run.reviveOptions(R), now = UI.now();
     const seal = PS.Meta.sealActive(now);
-    const gems = PS.Meta.profile.gems;
+    const gems = PS.Meta.profile.gems, lives = PS.Meta.profile.lives || 0;
+    const lifeBtn = o.free && lives > 0 ? `<button class="btn btn-cta" data-a="life">${T(`❤️ Воскреснуть жизнью · осталось ${lives}`, `❤️ Revive with a life · ${lives} left`)}</button>` : '';
     const freeBtn = !o.free ? '' : seal
       ? `<button class="btn btn-cta" data-a="free">${T('🔱 Воскреснуть бесплатно', '🔱 Revive for free')}</button>`
       : `<button class="btn btn-green btn-ad" data-a="free" ${UI.ads.online ? '' : 'disabled'}>${UI.ads.online ? T('Воскреснуть за рекламу', 'Revive (watch ad)') : T('Реклама недоступна', 'Ad unavailable')}</button>`;
     const html = `<div class="ov-hero">💀</div><h2 class="ov-title">${T('Ты пал!', 'You fell!')}</h2>
       <p class="ov-text">${o.free ? T(`Воскресни с ${Math.round(D().economy.revive.hp * 100)}% HP — поле останется как было. Воскрешение — одно за попытку.`, `Revive with ${Math.round(D().economy.revive.hp * 100)}% HP — the field stays as it was. One revive per run.`) : T('Воскрешение в этой попытке уже использовано.', 'Revive already used this run.')}</p>
-      <div class="ov-actions col">${freeBtn}
+      <div class="ov-actions col">${lifeBtn}${freeBtn}
         ${o.gemsPrice != null ? `<button class="btn btn-gem${gems < o.gemsPrice ? ' disabled' : ''}" data-a="gems">${T('Воскреснуть', 'Revive')} 💎${o.gemsPrice}</button>` : ''}
         <button class="btn ${o.free ? 'btn-ghost' : 'btn-cta'}" data-a="giveup">${o.free ? T('Сдаться', 'Give up') : T('К итогам', 'Results')}</button></div>
       ${seal || !o.free ? '' : `<button class="bt-seal-link" data-a="seal">${T('🔱 С Печатью алхимика — без рекламы', '🔱 Alchemist\'s Seal: no ads')}</button>`}`;
@@ -887,6 +884,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const evs = PS.Run.revive(R, src);
       save(); track(evs);
       play(evs);
+    };
+    const lb = card.querySelector('[data-a=life]');
+    if (lb) lb.onclick = () => {
+      if (done || !PS.Meta.useLife()) return;
+      revive('life');
     };
     const fb = card.querySelector('[data-a=free]');
     if (fb) fb.onclick = async () => {

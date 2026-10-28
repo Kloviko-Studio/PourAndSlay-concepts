@@ -304,7 +304,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const R = {
       v: 1, island: n, ctx: U().clone(ctx), rng: Rg().make(ctx.seed), phase: 'battle',
       stages: null, stage: 0, hp: 0, maxHp: 0, deck: {}, mods: {}, relics: [], slots: [], potions: [], beltSize: 0, filter: false,
-      boss: null, boosters, coins: 0, gemsSpent: 0, revives: { free: 0, gems: 0 }, phoenixUsed: false, rerolls: 0,
+      boss: null, boosters, coins: 0, gemsSpent: 0, revives: { free: 0, gems: 0, life: 0 }, phoenixUsed: false, rerolls: 0,
       offer: null, battle: null, best: 0, firstClear: false,
       stats: { closes: {}, junkCloses: 0, kills: 0, bossReached: 0, maxCombo: 0, potionsUsed: 0, stagesCleared: 0, turns: 0, dmgDealt: 0 },
     };
@@ -414,8 +414,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     return ev;
   }
 
-  // One revive per attempt from any source (ad, gems or Phoenix Feather), so gems cannot buy a win outright.
-  const revivesLeft = R => D().economy.revive.perRun - R.revives.free - R.revives.gems - (R.phoenixUsed ? 1 : 0);
+  // One revive per attempt from any source (ad, a stored life, gems or Phoenix Feather), so gems cannot buy a win outright.
+  const revivesLeft = R => D().economy.revive.perRun - R.revives.free - R.revives.gems - (R.revives.life || 0) - (R.phoenixUsed ? 1 : 0);
 
   function reviveOptions(R) {
     const ok = R.phase === 'revive' && revivesLeft(R) > 0;
@@ -425,9 +425,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function revive(R, source) {
     const ev = [], o = reviveOptions(R);
     if (R.phase !== 'revive') return ev;
-    if (source === 'free' ? !o.free : (source !== 'gems' || o.gemsPrice == null)) return ev;
+    // 'life' spends a stored life from the profile; the caller takes it, the run only counts the revive
+    if (source === 'free' || source === 'life' ? !o.free : (source !== 'gems' || o.gemsPrice == null)) return ev;
     if (source === 'gems') R.gemsSpent += o.gemsPrice;
-    R.revives[source]++;
+    R.revives[source] = (R.revives[source] || 0) + 1;
     const B = R.battle;
     B.status = 'active';
     B.player.hp = Math.max(1, U().round(B.player.maxHp * D().economy.revive.hp));

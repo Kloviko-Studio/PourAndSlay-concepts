@@ -51,7 +51,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
       catalyst: { name: 'Catalyst', desc: 'Closing in it doesn\'t use a turn.' },
       sieve: { name: 'Sieve', desc: 'Stone and slime poured into it vanish; that pour doesn\'t use a turn.' },
       bomb: { name: 'Bomb', desc: 'On closing, knocks the top layer off two neighbouring tubes (neighbours are highlighted).' },
-      big: { name: 'Big Tube', desc: '6 layers instead of 4, effect ×1.5.' },
       vial: { name: 'Vial', desc: '2 layers of any colors mixed, never closes.' }
     },
     rarity: {

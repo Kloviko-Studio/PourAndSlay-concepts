@@ -1,4 +1,6 @@
 /* Pour & Slay v2 — battle screen, in-run windows, tutorial layer (cloud pastel) */
+/* bars jump to their new value: no motion in battle until the final app */
+.scr-battle .bar-fill, .scr-battle .bar-ghost, .scr-battle .sbar-fill { transition: none; }
 .scr-battle { padding: calc(16px + var(--safe-t)) 16px calc(16px + var(--safe-b)); overflow: hidden; gap: 8px; --lh: 24px; }
 .scr-battle > * { flex-shrink: 0; }
 
@@ -22,13 +24,10 @@
 .bt-mon { position: absolute; left: 50%; bottom: 2px; height: 100%; aspect-ratio: 1; transform: translateX(-50%); z-index: 2; }
 .bt-mon-body { position: relative; z-index: 1; width: 100%; height: 100%; }
 .bt-mon-body svg { width: 100%; height: 100%; overflow: visible; display: block; }
-.bt-mon .eyes { transform-box: fill-box; transform-origin: center; animation: btBlink 4.2s infinite; }
 /* grass islet the enemy stands on (from the approved battle mockup) */
 .bt-islet { position: absolute; left: 50%; bottom: -14%; width: 118%; transform: translateX(-50%); z-index: 0; pointer-events: none; overflow: visible; }
 .bt-mon-shadow { display: none; }
-.bt-mon.hurt .bt-mon-body { animation: btFlash .3s; }
-.bt-mon.dead .bt-mon-body, .bt-mon.flee .bt-mon-body { animation: btFade .5s forwards; }
-.bt-mon.enter .bt-mon-body { animation: fadein .3s; }
+.bt-mon.dead .bt-mon-body, .bt-mon.flee .bt-mon-body { opacity: 0; }
 .bt-mon.gone .bt-mon-body, .bt-mon.gone .bt-islet { opacity: 0; }
 .bt-mon.frozen svg { filter: saturate(.35) brightness(1.3) hue-rotate(150deg); }
 .bt-mon.buffed svg { filter: drop-shadow(0 0 10px #f0584a); }
@@ -65,7 +64,7 @@
 .bt-bar { position: relative; }
 .bt-mark { position: absolute; top: -3px; bottom: -3px; width: 4px; margin-left: -2px; border-radius: 2px; background: var(--cta3); box-shadow: 0 0 0 1px #fff; z-index: 2; }
 .bt-mark.rage { background: var(--alarm); }
-.bt-bar .bt-shieldbar { position: absolute; right: 0; top: 0; bottom: 0; background: #7ab8f0cc; border-left: 2px solid #fff; transition: width .3s; }
+.bt-bar .bt-shieldbar { position: absolute; right: 0; top: 0; bottom: 0; background: #7ab8f0cc; border-left: 2px solid #fff; }
 
 /* ---------- player ---------- */
 .bt-player { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
@@ -85,40 +84,48 @@
 .bt-field { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: space-evenly; gap: 6px; padding: 18px 6px 6px; margin: 0 -4px; border-radius: 28px;
   background: rgba(255, 250, 243, .5); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .8), 0 6px 16px rgba(50, 110, 130, .15); position: relative; }
 .bt-row { display: flex; justify-content: center; align-items: flex-end; gap: 12px; min-height: 0; }
-.bt-tw { position: relative; flex: 0 1 50px; min-width: 30px; container-type: inline-size; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
-  transition: transform .12s ease-out; }
+.bt-tw { position: relative; flex: 0 1 50px; min-width: 30px; container-type: inline-size; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
 .bt-tw.sel { transform: translateY(-14px); }
+/* wings, arrows and the fuse reach past the tube's box; keep them over the neighbouring glass */
+.bt-tw:has(> .k-amp, > .k-catalyst, > .k-bomb) { z-index: 1; }
 .bt-tw.sel .bt-tube { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 7px rgba(255, 150, 90, .9)) drop-shadow(0 8px 8px rgba(200, 90, 50, .25)); }
 .bt-tw.hint .bt-tube { animation: btHint 1s infinite; }
 .bt-tw.bomb-n .bt-tube { filter: drop-shadow(0 0 4px #ffb27acc) drop-shadow(0 4px 5px rgba(50, 110, 130, .2)); }
-.bt-tw.wiggle { animation: wig .3s; }
-/* The glass is img/icons/gameplay/tube.webp (256x641, trimmed to the drawing); --s maps its pixels onto the tube, whose box is the
-   212px-wide body. The rim and round bottom keep their shape and only the straight middle stretches to the capacity. */
-.bt-tube { --s: calc(100cqw / 212); position: relative; width: 100%; height: calc(var(--cap) * var(--lh) + 100 * var(--s) + 4px);
-  filter: drop-shadow(0 4px 5px rgba(50, 110, 130, .2)); transition: filter .2s; }
-.bt-tube::before { content: ''; position: absolute; z-index: 3; pointer-events: none; top: 0; bottom: 0; left: calc(-22 * var(--s)); right: calc(-22 * var(--s));
-  border-style: solid; border-width: calc(67 * var(--s)) 0 calc(115 * var(--s)); border-image: url(../img/icons/gameplay/tube.webp) 67 0 115 fill stretch; }
-.bt-tube.k-amp::before, .bt-tube.k-catalyst::before, .bt-tube.k-bomb::before, .bt-tube.k-big::before { filter: drop-shadow(0 0 1.5px #ffc94a) drop-shadow(0 0 1.5px #ffc94a); }
-.bt-tube.k-sieve::before { filter: drop-shadow(0 0 1.5px #9fb2bd) drop-shadow(0 0 1.5px #9fb2bd); }
-.bt-tube.k-vial::before { filter: drop-shadow(0 0 1.5px var(--lilac)) drop-shadow(0 0 1.5px var(--lilac)); }
+/* The glass is a drawing from img/icons/gameplay/tubes (256px wide, trimmed to the art). Its numbers are image pixels, measured per file:
+   --gw body width (the tube's box), --gl/--gr overhang (rim, wings, fuse), --gt rim bottom, --gst top slice (rim plus any side decoration,
+   so it never stretches), --gs bottom slice holding the round end, --wl/--wr walls, --gb glass under the hollow. --s maps them onto the tube; the rim and bottom keep their shape, only the straight middle stretches. */
+.bt-tube { --glass: url(../img/icons/gameplay/tubes/tube_plain.webp); --gw: 212; --gl: 22; --gr: 22; --gt: 67; --gst: var(--gt); --gs: 95; --wl: 38; --wr: 38; --gb: 33;
+  --s: calc(100cqw / var(--gw)); position: relative; width: 100%; height: calc(var(--cap) * var(--lh) + (var(--gt) + var(--gb)) * var(--s) + 4px);
+  filter: drop-shadow(0 4px 5px rgba(50, 110, 130, .2)); }
+.bt-tube.k-vial { --glass: url(../img/icons/gameplay/tubes/tube_vial.webp); --gw: 210; --gl: 23; --gr: 23; --gt: 71; --gs: 90; --wl: 42; --wr: 43; --gb: 36; }
+.bt-tube.k-amp { --glass: url(../img/icons/gameplay/tubes/tube_amp.webp); --gw: 252; --gl: 66; --gr: 66; --gt: 100; --gst: 205; --gs: 107; --wl: 54; --wr: 54; --gb: 46; }
+.bt-tube.k-catalyst { --glass: url(../img/icons/gameplay/tubes/tube_catalyst.webp); --gw: 189; --gl: 98; --gr: 97; --gt: 61; --gst: 170; --gs: 84; --wl: 39; --wr: 39; --gb: 35; }
+.bt-tube.k-bomb { --glass: url(../img/icons/gameplay/tubes/tube_bomb.webp); --gw: 198; --gl: 19; --gr: 167; --gt: 151; --gst: 200; --gs: 90; --wl: 43; --wr: 42; --gb: 40; }
+.bt-tube.k-sieve { --glass: url(../img/icons/gameplay/tubes/tube_sieve.webp); --gw: 200; --gl: 29; --gr: 27; --gt: 89; --gst: 115; --gs: 85; --wl: 40; --wr: 41; --gb: 35; }
+.bt-tube::before { content: ''; position: absolute; z-index: 3; pointer-events: none; top: 0; bottom: 0;
+  left: calc(var(--gl) * var(--s) * -1); right: calc(var(--gr) * var(--s) * -1);
+  border-style: solid; border-width: calc(var(--gst) * var(--s)) 0 calc(var(--gs) * var(--s)); border-image: var(--glass) var(--gst) 0 var(--gs) fill stretch; }
 /* the hollow of the drawn glass, tucked a pixel under its walls */
-.bt-liq { position: absolute; left: calc(37 * var(--s)); right: calc(37 * var(--s)); bottom: calc(32 * var(--s)); height: calc(var(--cap) * var(--lh));
-  display: flex; flex-direction: column-reverse; overflow: hidden; border-radius: 0 0 999px 999px; }
-.bt-layer { height: var(--lh); flex: none; position: relative; }
-.bt-layer i { position: absolute; z-index: 1; left: 50%; bottom: calc(var(--run) * var(--lh) / 2); transform: translate(-50%, 50%);
-  font-style: normal; display: flex; font-size: min(14px, calc(var(--lh) * .55)); line-height: 1; filter: drop-shadow(0 1px 1px rgba(40, 50, 60, .35)); }
-.bt-layer i .el-ico { width: min(24px, calc(var(--lh) * .8)); height: min(24px, calc(var(--lh) * .8)); }
-.bt-layer.drop { animation: fadein .2s; }
+.bt-liq, .bt-ice { position: absolute; left: calc((var(--wl) - 1) * var(--s)); right: calc((var(--wr) - 1) * var(--s)); bottom: calc((var(--gb) - 1) * var(--s)); border-radius: 0 0 999px 999px; }
+.bt-liq { height: calc(var(--cap) * var(--lh)); display: flex; flex-direction: column-reverse; overflow: hidden; }
+/* one painted texture per liquid, laid out as if drawn on the whole column (--k: layer from the bottom) so a run shows no seams */
+.bt-layer { height: var(--lh); flex: none; position: relative;
+  background-size: auto calc(6 * var(--lh)); background-position: 50% calc((var(--k) + 1 - var(--cap)) * var(--lh)); }
+/* the pour, the one motion kept in battle */
 .bt-layer.out { height: 0; transition: height .2s ease-in; }
 .bt-layer.fill { animation: btFill .24s ease-out; }
 .bt-layer i { transition: opacity .15s; }
 .bt-layer i.gone { opacity: 0; }
 .bt-layer i.late { animation: fadein .25s .2s backwards; }
-.bt-liq.drain .bt-layer { animation: btFade .2s forwards; }
+.bt-layer i { position: absolute; z-index: 1; left: 50%; bottom: calc(var(--run) * var(--lh) / 2); transform: translate(-50%, 50%);
+  font-style: normal; display: flex; font-size: min(14px, calc(var(--lh) * .55)); line-height: 1; filter: drop-shadow(0 1px 1px rgba(40, 50, 60, .35)); }
+.bt-layer i .el-ico { width: min(24px, calc(var(--lh) * .8)); height: min(24px, calc(var(--lh) * .8)); }
 .bt-tube.closed { filter: drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 4px var(--glow)); }
-.bt-cork { position: absolute; top: calc(67 * var(--s) - 15px); left: 50%; width: 26px; height: 17px; margin-left: -13px; border-radius: 5px 5px 7px 7px; z-index: 5;
-  background: linear-gradient(90deg, #c98a62, #e8b58a 45%, #c98a62); animation: fadein .2s; }
-.bt-ice { position: absolute; top: calc(67 * var(--s)); left: calc(37 * var(--s)); right: calc(37 * var(--s)); bottom: calc(32 * var(--s)); border-radius: 0 0 999px 999px; z-index: 2; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: #1d4e6b;
+/* cork.webp is 128x101 and its tapered body is as wide as the hollow when the cork is as wide as the tube. It sits under the glass
+   (z-index below ::before), so the rim covers its middle and only the cap above it and the plug inside the neck show. */
+.bt-cork { position: absolute; z-index: 2; left: 0; width: 100%; aspect-ratio: 128 / 101; top: calc(var(--gt) * var(--s) - 55cqw);
+  background: url(../img/icons/gameplay/tubes/cork.webp) center / contain no-repeat; }
+.bt-ice { top: calc(var(--gt) * var(--s)); z-index: 2; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: #1d4e6b;
   background: linear-gradient(135deg, #eaf9fcdd, #9fdcf5b3); box-shadow: inset 0 0 8px #fff; }
 .bt-ttag { min-height: 14px; font-size: 12px; line-height: 14px; color: #8a4a12; font-weight: 900; }
 
@@ -147,7 +154,7 @@
 .bt-drain { flex: none; width: 56px; min-height: 56px; padding: 0; border-radius: 28px; }
 .bt-drain svg { display: block; flex: none; width: 22px; height: 22px; }
 .bt-drain.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); }
-.bt-drain.stuck { animation: glow 1.2s infinite; }
+.bt-drain.stuck { box-shadow: 0 0 18px 4px #ffb27aaa; }
 .scr-battle.locked .bt-field, .scr-battle.locked .bt-bottom { cursor: progress; }
 
 /* ---------- windows (pick after stage, revive, build, rules) ---------- */
@@ -195,10 +202,7 @@
 .tut-bubble .btn { margin-top: 10px; width: 100%; }
 
 /* ---------- keyframes ---------- */
-@keyframes btBlink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
-@keyframes btFade { to { opacity: 0; } }
 @keyframes btFill { from { height: 0; } }
-@keyframes btFlash { 40% { filter: brightness(1.6); } }
 @keyframes btHint { 50% { filter: drop-shadow(0 0 8px var(--peach2)) drop-shadow(0 0 3px var(--peach)); } }
 @keyframes tutRing { 50% { box-shadow: 0 0 0 6px #fff, 0 0 26px var(--cta3), 0 0 0 9999px rgba(40, 90, 110, .45); } }
 @keyframes tutTap { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(4px, 10px) scale(.92); } }

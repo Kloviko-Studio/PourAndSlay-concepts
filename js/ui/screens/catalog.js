@@ -161,7 +161,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     { id: 'icons', label: T('Все иконки', 'All icons'), raw: () => ({ ui: UI_ICONS().map(e => ({ name: e.name, desc: e.desc, group: e.group })), data: DATA_ICONS().map(e => ({ id: e.id, icon: e.icon, group: e.group })) }), list: () => UI_ICONS().concat(DATA_ICONS()) },
     { id: 'elements', label: T('Стихии', 'Elements'), raw: () => D().elements, list: () => fromMap(D().elements, (e, it) => { e.icon = `<span class="cat-mark" style="background:${esc(it.css)}">${UI.elIco(e.id)}</span>`; return e; }) },
     { id: 'junk', label: T('Мусор', 'Junk'), raw: () => D().junk, list: () => fromMap(D().junk) },
-    { id: 'tubes', label: T('Колбы', 'Tubes'), raw: () => D().tubes, list: () => fromMap(D().tubes) },
+    { id: 'tubes', label: T('Колбы', 'Tubes'), raw: () => D().tubes, list: () => fromMap(D().tubes), showcase: tubeShowcase },
     { id: 'potions', label: T('Зелья', 'Potions'), raw: () => ({ potions: D().potions, potionStart: D().potionStart }), list: () => fromMap(D().potions, e => { e.params.inStartBelt = (D().potionStart || []).indexOf(e.id) >= 0; return e; }) },
     { id: 'mods', label: T('Моды', 'Mods'), raw: () => D().mods, list: () => fromMap(D().mods) },
     { id: 'finds', label: T('Находки', 'Finds'), raw: () => D().finds, list: () => fromMap(D().finds) },
@@ -275,6 +275,33 @@ var PS = globalThis.PS || (globalThis.PS = {});
     </div>`;
   }
 
+  // Every tube kind and state the battle can draw, in its real markup, for checking the art side by side.
+  function tubeShowcase() {
+    const els = Object.keys(D().elements), kinds = Object.keys(D().tubes);
+    const tube = (kind, layers, o, label) => `<div class="cat-tube"><div class="bt-tw${o && o.cls ? ' ' + o.cls : ''}">` +
+      UI.tubeHtml({ kind, cap: kind === 'vial' ? 2 : 4, layers, frozen: o && o.frozen }, o) + `</div><span class="tiny dim">${esc(label)}</span></div>`;
+    const name = k => (D().tubes[k] || {}).name || k;
+    const glow = c => (D().elements[c] || D().junk[c]).css;
+    const full = c => [c, c, c, c];
+    const rows = [
+      [T('Пустые', 'Empty'), kinds.map(k => tube(k, [], null, name(k)))],
+      [T('Закрыты пробкой', 'Corked'), kinds.filter(k => k !== 'vial').map((k, i) => tube(k, full(els[i]), { cork: true, glow: glow(els[i]) }, name(k)))
+        .concat(tube('vial', ['stone', 'fire'], null, T('Пробирка не закрывается', 'A vial never closes')))],
+      [T('Полные, без пробки', 'Full, open'), kinds.map((k, i) => tube(k, k === 'vial' ? ['slime', 'water'] : ['fire', 'water', 'life', els[3 + i % 5]], null, name(k)))],
+      [T('Наполовину', 'Half full'), kinds.map((k, i) => tube(k, k === 'vial' ? [els[i]] : [els[i], els[i + 1]], null, name(k)))],
+      [T('Слияние слоёв', 'Merged runs'), [
+        tube('plain', ['fire'], null, '1'), tube('plain', ['water', 'water'], null, '2'), tube('plain', ['life', 'life', 'life'], null, '3'),
+        tube('plain', ['poison', 'poison', 'lightning', 'lightning'], null, '2 + 2'), tube('plain', ['ice', 'dark', 'dark', 'dark'], null, '1 + 3'),
+        tube('plain', ['mirror', 'fire', 'mirror', 'fire'], null, '1 · 1 · 1 · 1')]],
+      [T('Все жидкости', 'All liquids'), els.concat(Object.keys(D().junk)).map(c => tube('plain', full(c), null, (D().elements[c] || D().junk[c]).name))],
+      [T('Состояния', 'States'), [
+        tube('plain', ['fire', 'water'], { cls: 'sel' }, T('выбрана', 'selected')), tube('plain', ['life', 'life'], { cls: 'hint' }, T('подсказка', 'hint')),
+        tube('plain', ['water', 'fire', 'fire'], { cls: 'bomb-n' }, T('сосед бомбы', 'bomb neighbour')), tube('plain', ['dark', 'ice'], { frozen: 2 }, T('заморожена', 'frozen')),
+        tube('vial', ['ice'], { frozen: 1 }, T('Пробирка во льду', 'frozen vial')), tube('plain', full('fire'), { glow: glow('fire') }, T('закрытие без пробки', 'close glow'))]],
+    ];
+    return `<div class="cat-tubes">${rows.map(([title, cells]) => `<div class="sec-title">${title}</div><div class="cat-tube-row">${cells.join('')}</div>`).join('')}</div>`;
+  }
+
   UI.screen('catalog', {
     chrome: { tabs: false },
     mount(el, params) {
@@ -312,7 +339,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
           if (e.group !== g) { g = e.group; if (g) html += `<div class="sec-title">${esc(g)}</div>`; }
           html += card(e);
         });
-        $('list').innerHTML = html || `<p class="center dim">${T('Ничего не найдено', 'Nothing found')}</p>`;
+        const extra = cat(tab).showcase && !query ? cat(tab).showcase() : '';
+        $('list').innerHTML = extra + (html || `<p class="center dim">${T('Ничего не найдено', 'Nothing found')}</p>`);
       }
 
       el.querySelector('[data-a=back]').onclick = () => { PS.Snd.play('select'); UI.go('settings', { back }); };

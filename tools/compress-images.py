@@ -5,12 +5,13 @@ from PIL import Image
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / 'img'
 # Longest on-screen width (CSS px) x 3 for dense phone screens; the first matching glob wins, unmatched files keep their size.
-MAX_W = [('icons/gameplay/tube*', 256), ('islands/*', 1024), ('sky/cloud_*', 768), ('icons/*', 256), ('texture/*', 512)]
+# Tubes with wings, arrows or a fuse spend part of the width on them, so they get more pixels to keep the glass itself sharp.
+MAX_W = [('icons/gameplay/tubes/cork*', 128), ('icons/gameplay/tubes/tube_amp*', 384), ('icons/gameplay/tubes/tube_catalyst*', 384), ('icons/gameplay/tubes/tube_bomb*', 384), ('icons/gameplay/tubes/*', 256), ('texture/tubes/*', 384), ('islands/*', 1024), ('sky/cloud_*', 768), ('icons/*', 256), ('texture/*', 512)]
 # Smooth gradients band and fine paper grain washes out at lower quality.
-QUALITY = [('sky/sky_*', 92), ('texture/*', 96)]
+QUALITY = [('sky/sky_*', 92), ('texture/tubes/*', 85), ('texture/*', 96)]
 DEFAULT_Q = 85
 # Cropped to the drawn shape so CSS can map the image edges onto the element; faint alpha noise around the art is ignored.
-TRIM = ['icons/gameplay/tube*']
+TRIM = ['icons/gameplay/tubes/*']
 
 def pick(rules, rel, default):
     return next((v for pat, v in rules if fnmatch.fnmatch(rel.as_posix(), pat)), default)

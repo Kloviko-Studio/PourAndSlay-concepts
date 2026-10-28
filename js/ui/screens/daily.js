@@ -9,6 +9,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     mount(el) {
       function render() {
         const now = UI.now(), d = PS.Meta.daily(now), P = PS.Meta.P();
+        const lives = PS.Meta.profile.lives || 0, max = PS.DATA.economy.lives.max;
+        const amount = x => x.lives ? `${x.lives} ❤️` : x.coins ? `${UI.fmt(x.coins)} 🪙` : `${x.gems} 💎`;
         const days = PS.DATA.daily;
         // d.day is the next day to claim; once claimed today, the highlighted day is the one just taken.
         const today = d.canClaim ? d.day : (d.day + days.length - 1) % days.length;
@@ -16,15 +18,19 @@ var PS = globalThis.PS || (globalThis.PS = {});
           const done = i < today || (i === today && !d.canClaim);
           // Claimed days show what was actually received; P may have grown since.
           const got = done && (PS.Meta.profile.daily.got || {})[i];
-          const v = got ? (got.coins ? `${UI.fmt(got.coins)} 🪙` : `${got.gems} 💎`) : r.coins ? `${UI.fmt(Math.round(r.coins * P))} 🪙` : `${r.gems} 💎`;
+          // a lives day pays its coins instead while the stock is full
+          const life = got ? !!got.lives : r.lives && lives < max;
+          const v = got ? amount(got) : life ? `${r.lives} ❤️` : r.coins ? `${UI.fmt(Math.round(r.coins * P))} 🪙` : `${r.gems} 💎`;
+          const ico = life ? '❤️' : r.gems ? (i === days.length - 1 ? '💎💎' : '💎') : (i >= 4 ? '💰' : '🪙');
           return `<div class="day${done ? ' done' : ''}${i === today && d.canClaim ? ' today' : ''}${i === days.length - 1 ? ' big' : ''}">
-            <span class="d-n">${T('День', 'Day')} ${i + 1}</span><span class="d-ico">${r.gems ? (i === days.length - 1 ? '💎💎' : '💎') : (i >= 4 ? '💰' : '🪙')}</span><span class="d-v ${r.gems ? 'c-gem' : 'c-gold'}">${v}</span></div>`;
+            <span class="d-n">${T('День', 'Day')} ${i + 1}</span><span class="d-ico">${ico}</span><span class="d-v ${life ? 'c-hp' : r.gems ? 'c-gem' : 'c-gold'}">${v}</span></div>`;
         }).join('');
-        const rw = d.reward, rwText = rw.coins ? `${UI.fmt(rw.coins)} 🪙` : `${rw.gems} 💎`;
+        const rwText = amount(d.reward);
         el.innerHTML = `
           <div class="scr-head"><button class="btn-icon" data-a="back" aria-label="${T('Назад', 'Back')}">${UI.ico.left}</button><h1>🎁 ${T('Подарок дня', 'Daily Gift')}</h1></div>
           <div class="panel"><div class="daily-grid">${cells}</div>
-            <p class="small dim center" style="margin-top:10px">${T('Цикл 7 дней. Пропуск дня не сбрасывает цикл.', "7-day cycle. Missing a day won't reset it.")}</p></div>
+            <p class="small dim center" style="margin-top:10px">${T('Цикл 7 дней. Пропуск дня не сбрасывает цикл.', "7-day cycle. Missing a day won't reset it.")}</p>
+            <div class="daily-lives" data-tip="${T(`<b>Жизни</b><br>Бесплатное воскрешение без рекламы. Копятся до ${max}; воскреснуть можно по-прежнему один раз за попытку.`, `<b>Lives</b><br>A free revive, no ad. Stack up to ${max}; still one revive per run.`)}">❤️ ${T('Жизни', 'Lives')}: <b>${lives} / ${max}</b></div></div>
           <div class="spacer"></div>
           ${d.canClaim ? `
             <div class="center" style="margin:14px 0 10px"><div class="muted small">${T('Сегодня', 'Today')}</div><div class="res-coins" data-rw>${rwText}${d.autoDouble ? ` <span class="tag tag-gold">${T('×2 Печать', '×2 Seal')}</span>` : ''}</div></div>
@@ -44,7 +50,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           PS.Snd.play('win');
           if (out.coins) UI.flyCurrency(from, 'coins', 8);
           if (out.gems) UI.flyCurrency(from, 'gems', 6);
-          PS.Fx.bigPop(out.coins ? `+${UI.fmt(out.coins)} 🪙` : `+${out.gems} 💎`);
+          PS.Fx.bigPop('+' + amount(out));
           render();
         };
         on('claim', () => claim(false));

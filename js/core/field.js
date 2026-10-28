@@ -2,7 +2,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 (function () {
   'use strict';
   const R = () => PS.Rng;
-  const KIND_CAP = { big: 6, vial: 2 };
+  const KIND_CAP = { vial: 2 };
   const LAYER_WEIGHT = 4;
   const isJunk = c => c === 'stone' || c === 'slime';
   const top = t => (t.layers.length ? t.layers[t.layers.length - 1] : null);

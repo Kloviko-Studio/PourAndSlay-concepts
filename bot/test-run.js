@@ -179,6 +179,13 @@ test('revive: one per attempt from any source; give up loses', () => {
   assert.strictEqual(R.gemsSpent, 20);
   kill(R);
   assert.deepStrictEqual(Run.reviveOptions(R), { free: false, gemsPrice: null }, 'a gem revive also uses the one revive');
+
+  ({ R } = Run.create(ctxOf(), 3, []));
+  kill(R);
+  Run.revive(R, 'life');
+  assert.strictEqual(R.phase, 'battle', 'a stored life revives');
+  kill(R);
+  assert.deepStrictEqual(Run.reviveOptions(R), { free: false, gemsPrice: null }, 'a life also uses the one revive');
 });
 
 test('phoenix feather uses the one revive', () => {

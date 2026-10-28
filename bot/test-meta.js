@@ -141,6 +141,20 @@ assert.strictEqual(M.daily(T0 + 40 * DAY).reward.coins, 30 * D.islands[2].P, 'co
 M.profile.seal.until = T0 + 100 * DAY;
 assert.deepStrictEqual(M.claimDaily(T0 + 40 * DAY), { coins: 60 * D.islands[2].P }, 'seal doubles automatically');
 
+// lives: day 4 gives a stored revive, capped; a full stock gets the day's coins instead
+p = fresh(T0);
+M.profile.daily.day = 3;
+assert.deepStrictEqual(M.claimDaily(T0), { lives: 1 });
+assert.strictEqual(M.profile.lives, 1);
+M.profile.daily.day = 3; M.profile.lives = D.economy.lives.max - 1;
+assert.deepStrictEqual(M.claimDaily(T0 + DAY, true), { lives: 1 }, 'doubling stops at the cap');
+M.profile.daily.day = 3;
+assert.deepStrictEqual(M.claimDaily(T0 + 2 * DAY), { coins: 80 }, 'full stock pays coins');
+assert.strictEqual(M.useLife(), true);
+assert.strictEqual(M.profile.lives, D.economy.lives.max - 1);
+M.profile.lives = 0;
+assert.strictEqual(M.useLife(), false);
+
 // quests
 p = fresh(T0);
 let ql = M.quests(T0);

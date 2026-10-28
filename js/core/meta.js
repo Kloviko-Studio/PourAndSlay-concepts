@@ -24,7 +24,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   function defaults(now) {
     return {
-      v: 2, coins: 0, gems: D().economy.gems.start, lab: {}, maxIsland: 1, cleared: {}, best: {}, seen: {},
+      v: 2, coins: 0, gems: D().economy.gems.start, lives: 0, lab: {}, maxIsland: 1, cleared: {}, best: {}, seen: {},
       daily: { day: 0, last: null, got: {} }, quests: { date: null, list: [], bonusClaimed: false },
       adGift: { date: null, used: 0 }, seal: { until: 0 }, noAds: false, starter: { offeredAt: 0, bought: false },
       lastInterstitial: 0, lastRewardedOrPurchase: 0, sessions: 0,
@@ -49,6 +49,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const R = p.activeRun;
     if (R && R.boss && R.boss.maxHp == null && D().bosses[R.boss.id] && islandOf(R.island)) {
       R.boss.maxHp = U.round(D().bosses[R.boss.id].hp * islandOf(R.island).M);
+    }
+    // The Big tube was cut (a 6-layer tube shrank every row): saved runs keep the tube as a plain one of the same height.
+    if (R) {
+      if (Array.isArray(R.slots)) R.slots = R.slots.map(k => (k === 'big' ? 'plain' : k));
+      const tubes = R.battle && R.battle.field && R.battle.field.tubes;
+      if (tubes) tubes.forEach(t => { if (t.kind === 'big') t.kind = 'plain'; });
     }
     // the "colors" section became "elements"; keep what was already seen in the collection
     Object.keys(p.seen || {}).forEach(k => { if (k.indexOf('colors:') === 0) p.seen['elements:' + k.slice(7)] = p.seen[k]; });
@@ -186,7 +192,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     return {
       day: p.daily.day,
       canClaim: p.daily.last !== U.dayKey(now),
-      reward: r.coins ? { coins: Math.round(r.coins * Meta.P()) } : { gems: r.gems },
+      reward: r.lives && p.lives < D().economy.lives.max ? { lives: r.lives } : r.coins ? { coins: Math.round(r.coins * Meta.P()) } : { gems: r.gems },
       autoDouble: Meta.sealActive(now),
     };
   };
@@ -196,6 +202,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const k = (double || d.autoDouble) ? 2 : 1, out = {};
     if (d.reward.coins) { out.coins = d.reward.coins * k; p.coins += out.coins; }
     if (d.reward.gems) { out.gems = d.reward.gems * k; p.gems += out.gems; }
+    if (d.reward.lives) { out.lives = Math.min(d.reward.lives * k, D().economy.lives.max - p.lives); p.lives += out.lives; }
     if (double && !d.autoDouble) p.lastRewardedOrPurchase = now;
     if (d.day === 0) p.daily.got = {};
     p.daily.got[d.day] = out;
@@ -203,6 +210,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
     p.daily.day = (p.daily.day + 1) % D().daily.length;
     Meta.save();
     return out;
+  };
+
+  Meta.useLife = function () {
+    const p = P_();
+    if (!(p.lives > 0)) return false;
+    p.lives--;
+    Meta.save();
+    return true;
   };
 
   // Quests
