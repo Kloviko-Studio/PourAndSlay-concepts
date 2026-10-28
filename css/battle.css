@@ -154,6 +154,7 @@
 .bt-drain { flex: none; width: 56px; min-height: 56px; padding: 0; border-radius: 28px; }
 .bt-drain svg { display: block; flex: none; width: 22px; height: 22px; }
 .bt-drain.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); }
+.bt-pot .item-ico { width: 40px; height: 40px; }
 .bt-drain.stuck { box-shadow: 0 0 18px 4px #ffb27aaa; }
 .scr-battle.locked .bt-field, .scr-battle.locked .bt-bottom { cursor: progress; }
 

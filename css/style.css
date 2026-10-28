@@ -91,6 +91,12 @@ body[data-screen="main"] #topbar { position: absolute; left: 0; right: 0; top: 0
 /* 🪙 / 💎 swapped for the painted icon: sized by the surrounding text */
 .cur-ico { display: inline-block; width: 1.2em; height: 1.2em; vertical-align: -.25em; object-fit: contain; }
 .el-ico { display: inline-block; width: 1.2em; height: 1.2em; vertical-align: -.25em; flex: none; }
+.item-ico { display: inline-block; width: 1.4em; height: 1.4em; vertical-align: -.35em; flex: none; object-fit: contain; }
+.card-ico .item-ico, .boost-ico .item-ico { width: 42px; height: 42px; }
+.tube-ico { object-fit: contain; }
+.q-claimed .card-ico { position: relative; }
+.q-claimed .card-ico .cur-ico { opacity: .45; }
+.q-check { position: absolute; right: -5px; bottom: -5px; width: 22px; height: 22px; border-radius: 11px; background: #7cc463; border: 2px solid #fff; display: grid; place-items: center; }
 .el-badge { display: inline-grid; place-items: center; width: 1.45em; height: 1.45em; border-radius: 50%; vertical-align: -.35em; box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .12); }
 .el-badge .el-ico { width: 1.05em; height: 1.05em; vertical-align: 0; }
 .pill b { flex: none; min-width: 20px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 900; }

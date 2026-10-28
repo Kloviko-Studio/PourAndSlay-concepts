@@ -29,7 +29,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
               : q.done ? `<button class="btn btn-sm btn-cta q-claim" data-claim="${i}">${T('Забрать', 'Claim')}<b>+${reward} 🪙</b></button>`
               : `<span class="q-reward">+${reward} 🪙</span>`;
             return `<div class="card${q.done && !q.claimed ? ' q-done' : ''}${q.claimed ? ' q-claimed' : ''}">
-              <div class="card-ico">${q.claimed ? '✅' : q.done ? '🎉' : '📜'}</div>
+              <div class="card-ico">${q.done && !q.claimed ? '🎉' : '📜'}${q.claimed ? `<span class="q-check">${UI.ico.check(12)}</span>` : ''}</div>
               <div class="card-body"><div class="card-title" style="font-size:15px">${esc(questText(q))}</div>
                 <div class="bar q-prog"><div class="bar-fill" style="width:${pct}%"></div><div class="bar-label">${Math.min(q.progress, q.target)} / ${q.target}</div></div></div>
               <div class="card-side">${side}</div></div>`;

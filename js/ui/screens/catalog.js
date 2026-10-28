@@ -79,26 +79,16 @@ var PS = globalThis.PS || (globalThis.PS = {});
       [svg('close'), T('Крестик', 'Close'), T('Закрыть окно', 'Close a window'), G.ui],
       [`<span class="cat-mark" style="background:#7cc463">${svg('check', 18)}</span>`, T('Галочка (SVG)', 'Check (SVG)'), T('Выбранный буст, выполненное', 'Picked boost, done state'), G.ui],
       ['✓', T('Галочка', 'Check mark'), T('«Пройден» у острова, полученное задание, выбранный буст', '"Cleared" island tag, claimed quest, picked boost'), G.ui],
-      ['👑', T('Корона (эмодзи)', 'Crown (emoji)'), T('Метка «Финал» у последнего острова', '"Finale" tag on the last island'), G.ui],
-      ['🔒', T('Замок (эмодзи)', 'Lock (emoji)'), T('«Пройди остров N», закрытые улучшения лаборатории', '"Clear island N", locked lab upgrades'), G.ui],
       ['⏳', T('Песочные часы', 'Hourglass'), T('Таймер заданий, стартового набора, подарка', 'Quest, starter pack and gift timers'), G.ui],
-      ['☁️', T('Облако', 'Cloud'), T('Слайд «Скоро новые острова»', '"New islands coming soon" slide'), G.ui],
-      ['🛒', T('Тележка', 'Cart'), T('Заголовок «Магазин»', 'Shop header'), G.ui],
-      ['⚗️', T('Колба алхимика', 'Alembic'), T('Заголовок «Лаборатория», окно «Продолжить забег?», подсказка о лаборатории', 'Lab header, "Continue run?" window, lab hint'), G.ui],
-      ['📖', T('Книга', 'Book'), T('Заголовок «Коллекция», кнопка «Как играть»', 'Collection header, "How to play" button'), G.ui],
       ['💰', T('Мешок монет', 'Money bag'), T('Дни 5–6 подарка (награда больше)', 'Gift days 5–6 (bigger reward)'), G.ui],
-      ['📜', T('Свиток', 'Scroll'), T('Заголовок «Задания», невыполненное задание', 'Quests header, unfinished quest'), G.ui],
       ['🎉', T('Хлопушка', 'Party popper'), T('Задание выполнено, награду можно забрать', 'Quest done, reward ready'), G.ui],
-      ['✅', T('Зелёная галочка', 'Green check'), T('Награда за задание получена', 'Quest reward claimed'), G.ui],
       ['🎬', T('Хлопушка кино', 'Clapper'), T('Награда за рекламу, окно рекламы', 'Rewarded ad, ad window'), G.ui],
       ['📺', T('Телевизор', 'TV'), T('Реклама между забегами', 'Ad between runs'), G.ui],
       ['🗂', T('Картотека', 'Card index'), T('Заголовок «Каталог»', 'Catalog header'), G.ui],
       ['🔓', T('Открытый замок', 'Open lock'), T('Раздел «Открытия» каталога', 'Catalog "Unlocks" section'), G.ui],
       ['🏝', T('Остров', 'Island'), T('Запасная иконка острова', 'Fallback island icon'), G.ui],
-      ['🏺', T('Амфора', 'Amphora'), T('Открытие новых реликвий', 'New relics unlocked'), G.ui],
       ['❔', T('Вопрос', 'Question'), T('Неизвестный предмет', 'Unknown item'), G.ui],
       ['👾', T('Монстрик', 'Space invader'), T('Запасной рисунок врага', 'Fallback enemy picture'), G.ui],
-      ['⚙', T('Шестерёнка (эмодзи)', 'Gear (emoji)'), T('Заголовок «Настройки», кнопка в паузе', 'Settings header, pause menu button'), G.set],
       ['🔊', T('Динамик', 'Speaker'), T('Звук', 'Sound'), G.set],
       ['🎵', T('Нота', 'Note'), T('Музыка', 'Music'), G.set],
       ['📳', T('Вибрация', 'Vibration'), T('Вибрация', 'Vibration'), G.set],
@@ -108,16 +98,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
       ['📄', T('Документ', 'Page'), T('Политика конфиденциальности', 'Privacy policy'), G.set],
       ['✉️', T('Конверт', 'Envelope'), T('Поддержка', 'Support'), G.set],
       ['🗑', T('Корзина', 'Bin'), T('Сбросить прогресс', 'Reset progress'), G.set],
-      ['🪶', T('Перо', 'Feather'), T('Перк Печати: бесплатное воскрешение', 'Seal perk: free revive'), G.set],
       ['🚫', T('Запрет', 'No entry'), T('Перк Печати и товар «Без рекламы»', 'Seal perk and "No ads" item'), G.set],
       [svg('heart', 28), T('Сердце', 'Heart'), T('HP игрока в бою', 'Player HP in battle'), G.bt],
       [svg('shield', 22), T('Щит', 'Shield'), T('Щит игрока в бою', 'Player shield in battle'), G.bt],
       [svg('drop'), T('Капля', 'Drop'), T('Кнопка «Слить»', 'Drain button'), G.bt],
       [svg('pause'), T('Пауза', 'Pause'), T('Кнопка паузы', 'Pause button'), G.bt],
       [svg('bag'), T('Сумка', 'Bag'), T('Кнопка «Сборка»', 'Build button'), G.bt],
-      [svg('undo'), T('Отмена (SVG)', 'Undo (SVG)'), T('Зелье «Отмена» на поясе', 'Undo potion on the belt'), G.bt],
-      [svg('heal'), T('Лечение (SVG)', 'Heal (SVG)'), T('Зелье «Лечение» на поясе', 'Heal potion on the belt'), G.bt],
-      [svg('crown', 22), T('Корона (SVG)', 'Crown (SVG)'), T('Метка «Босс» у имени врага', '"Boss" tag by the enemy name'), G.bt],
       ['⚔️', T('Мечи', 'Swords'), T('Намерение врага: удар; страница правил «Враг»', 'Enemy intent: attack; "Enemy" rules page'), G.bt],
       ['🍄', T('Гриб', 'Mushroom'), T('Намерение: слизь в очередь', 'Intent: slime into the queue'), G.bt],
       ['🤏', T('Щепотка', 'Pinch'), T('Намерение: украдёт слой', 'Intent: steal a layer'), G.bt],
@@ -127,28 +113,23 @@ var PS = globalThis.PS || (globalThis.PS = {});
       ['💚', T('Зелёное сердце', 'Green heart'), T('Намерение: враг лечится', 'Intent: enemy heals'), G.bt],
       ['😡', T('Злость', 'Angry face'), T('Статус: ярость врага', 'Status: enemy rage'), G.bt],
       ['🔥', T('Огонь (статус)', 'Fire (status)'), T('Статус: поджог игрока', 'Status: burn on the player'), G.bt],
-      ['💤', T('Сон', 'Sleep'), T('Всплывающее число: зелье сна', 'Floating number: sleep potion'), G.bt],
       ['⇄', T('Обмен', 'Swap'), T('Всплывающее: цвета поменялись', 'Floating: colours swapped'), G.bt],
-      ['🧪', T('Пробирка', 'Test tube'), T('Страница правил «Переливание»', '"Pouring" rules page'), G.win],
       ['✨', T('Искры', 'Sparkles'), T('Правила «Закрытие», комбо ×2, новое открытие', '"Closing" rules, combo ×2, new unlock'), G.win],
       ['🚰', T('Кран', 'Tap'), T('Правила «Слив и зелья»', '"Drain & potions" rules'), G.win],
       ['🎒', T('Рюкзак', 'Backpack'), T('Окно «Сборка»', 'Build window'), G.win],
-      ['🔱', T('Трезубец', 'Trident'), T('Кнопка «Воскреснуть бесплатно» (Печать)', '"Revive for free" button (Seal)'), G.win],
       ['💀', T('Череп', 'Skull'), T('Окно «Ты пал!»', '"You fell!" window'), G.win],
       ['❤️', T('Сердце (эмодзи)', 'Heart (emoji)'), T('HP в окне выбора после этапа', 'HP in the after-stage pick'), G.win],
-      ['🍀', T('Клевер', 'Clover'), T('Подпись: сработал Клевер', 'Label: Clover triggered'), G.win],
-      ['💠', T('Камень философа', 'Diamond with dot'), T('Подпись: сработал Философский камень', "Label: Philosopher's Stone triggered"), G.win],
       ['👆', T('Палец', 'Pointing hand'), T('Подсказки обучения', 'Tutorial hints'), G.win],
     ].map(([icon, name, desc, group], i) => ({ id: 'ui_' + (i + 1), name, icon, desc, island: null, st: { later: false, label: /<svg/.test(icon) ? 'SVG' : 'emoji' }, params: {}, group }));
   };
   // Item icons straight from the data, so this list follows any rename or new item.
   const DATA_ICONS = () => [
-    ['junk', T('Мусор', 'Junk')], ['tubes', T('Колбы', 'Tubes')], ['potions', T('Зелья', 'Potions')],
+    ['junk', T('Мусор', 'Junk')], ['tubes', T('Колбы', 'Tubes')],
     ['mods', T('Моды', 'Mods')], ['finds', T('Находки', 'Finds')], ['relics', T('Реликвии', 'Relics')], ['boosters', T('Бустеры', 'Boosts')],
     ['lab', T('Лаборатория', 'Lab')], ['worlds', T('Миры', 'Worlds')], ['shop', T('Магазин', 'Shop')],
   ].flatMap(([k, group]) => {
     const src = k === 'shop' ? D().shop.products.concat(D().shop.coinPacks) : Array.isArray(D()[k]) ? D()[k] : Object.keys(D()[k]).map(id => Object.assign({ id }, D()[k][id]));
-    return src.filter(it => it.icon && !PAINTED.test(it.icon)).map(it => ({
+    return src.filter(it => it.icon && !PAINTED.test(it.icon) && !UI.hasItemArt(k, it.id)).map(it => ({
       id: it.id || String(it.n), name: it.name || it.id, icon: it.icon, desc: it.desc || '', island: null, st: { later: false, label: 'emoji' }, params: {}, group: T(`Данные: ${group}`, `Data: ${group}`),
     }));
   });
@@ -158,15 +139,16 @@ var PS = globalThis.PS || (globalThis.PS = {});
     { id: 'elements', label: T('Стихии', 'Elements'), raw: () => D().elements, list: () => fromMap(D().elements, (e, it) => { e.icon = `<span class="cat-mark" style="background:${esc(it.css)}">${UI.elIco(e.id)}</span>`; return e; }) },
     { id: 'junk', label: T('Мусор', 'Junk'), raw: () => D().junk, list: () => fromMap(D().junk, (e, it) => { e.icon = `<span class="cat-mark" style="background:${esc(it.css)}">${UI.elIco(e.id)}</span>`; return e; }) },
     { id: 'tubes', label: T('Колбы', 'Tubes'), raw: () => D().tubes, list: () => fromMap(D().tubes), showcase: tubeShowcase },
-    { id: 'potions', label: T('Зелья', 'Potions'), raw: () => ({ potions: D().potions, potionStart: D().potionStart }), list: () => fromMap(D().potions, e => { e.params.inStartBelt = (D().potionStart || []).indexOf(e.id) >= 0; return e; }) },
-    { id: 'mods', label: T('Моды', 'Mods'), raw: () => D().mods, list: () => fromMap(D().mods) },
-    { id: 'finds', label: T('Находки', 'Finds'), raw: () => D().finds, list: () => fromMap(D().finds) },
+    { id: 'potions', label: T('Зелья', 'Potions'), raw: () => ({ potions: D().potions, potionStart: D().potionStart }), list: () => fromMap(D().potions, e => { e.icon = UI.item('potions', e.id).icon; e.params.inStartBelt = (D().potionStart || []).indexOf(e.id) >= 0; return e; }) },
+    { id: 'mods', label: T('Моды', 'Mods'), raw: () => D().mods, list: () => fromMap(D().mods, e => { e.icon = UI.item('mods', e.id).icon; }) },
+    { id: 'finds', label: T('Находки', 'Finds'), raw: () => D().finds, list: () => fromMap(D().finds, e => { e.icon = UI.item('finds', e.id).icon; }) },
     {
       id: 'relics', label: T('Реликвии', 'Relics'), raw: () => ({ relics: D().relics, rarity: D().rarity }),
       list: () => {
         const R = D().rarity || {}, order = Object.keys(R);
         return fromMap(D().relics, (e, it) => {
           const r = R[it.rarity] || {};
+          e.icon = UI.item('relics', e.id).icon;
           e.island = r.unlock || 1; e.group = r.name || it.rarity;
           e.rank = order.indexOf(it.rarity);
           e.params = params(it, { rarity: 1 });
@@ -176,7 +158,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       },
     },
     { id: 'rarity', label: T('Редкость', 'Rarity'), raw: () => D().rarity, list: () => fromMap(D().rarity) },
-    { id: 'boosters', label: T('Бустеры', 'Boosts'), raw: () => D().boosters, list: () => fromMap(D().boosters) },
+    { id: 'boosters', label: T('Бустеры', 'Boosts'), raw: () => D().boosters, list: () => fromMap(D().boosters, e => { e.icon = UI.item('boosters', e.id).icon; }) },
     {
       id: 'lab', label: T('Лаборатория', 'Lab'), raw: () => D().lab,
       list: () => fromMap(D().lab, (e, it) => { e.params.totalCost = it.costs.reduce((s, c) => s + c, 0); return e; }),

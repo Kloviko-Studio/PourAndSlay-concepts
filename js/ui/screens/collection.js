@@ -16,7 +16,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (kind === 'relics') {
       return Object.keys(D.relics || {}).map(id => {
         const r = D.relics[id], rar = (D.rarity || {})[r.rarity] || {};
-        return { key: 'relicRarity:' + r.rarity, island: rar.unlock || 1, icon: r.icon, name: r.name, desc: r.desc, cls: 'r-' + r.rarity, sub: rar.name };
+        return { key: 'relicRarity:' + r.rarity, island: rar.unlock || 1, icon: UI.item('relics', id).icon, name: r.name, desc: r.desc, cls: 'r-' + r.rarity, sub: rar.name };
       }).sort((a, b) => a.island - b.island);
     }
     if (kind === 'enemies') {
@@ -34,7 +34,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const src = D[kind] || {};
     return Object.keys(src).filter(id => !src[id].later).map(id => {
       const it = src[id];
-      return { key: kind + ':' + id, island: it.unlock || 1, icon: kind === 'elements' ? UI.elBadge(id) : it.icon || '❔', name: it.name, desc: it.desc, cls: '' };
+      return { key: kind + ':' + id, island: it.unlock || 1, icon: UI.item(kind, id).icon, name: it.name, desc: it.desc, cls: '' };
     }).sort((a, b) => a.island - b.island);
   }
 

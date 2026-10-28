@@ -158,7 +158,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (enter) Fx.animClass(mon, 'enter', 560);
     const encs = S.R.boss ? S.R.boss.encounters : 1;
     const heals = m.e.cycle.some(c => c.t === 'heal') ? Math.max(0, D().economy.enemyHeals - (m.e.heals || 0)) : null;
-    $('.bt-ename').innerHTML = `${m.boss ? `<span class="tag tag-hard" data-tip="<b>${esc(m.def.name || m.e.name)}</b><br>${esc(m.def.desc || '')}">${UI.ico.crown(16)} ${T('Босс', 'Boss')}</span>` : ''}
+    $('.bt-ename').innerHTML = `${m.boss ? `<span class="tag tag-hard" data-tip="<b>${esc(m.def.name || m.e.name)}</b><br>${esc(m.def.desc || '')}">${UI.inlineArt('main_screen/boss')} ${T('Босс', 'Boss')}</span>` : ''}
       ${m.boss && encs > 1 ? `<span class="tag">${T(`встреча ${m.enc + 1}/${encs}`, `fight ${m.enc + 1}/${encs}`)}</span>` : ''}
       ${heals != null ? `<span class="tag" data-tip="${T(`Враг лечится не больше ${D().economy.enemyHeals} раз за бой`, `Enemy heals at most ${D().economy.enemyHeals} times per fight`)}">💚 ${heals}</span>` : ''}`;
   }
@@ -255,7 +255,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const w = document.createElement('div');
         w.className = 'bt-tw' + (bombN[i] ? ' bomb-n' : '');
         w.dataset.i = i;
-        const td = D().tubes[t.kind] || {};
+        const td = UI.item('tubes', t.kind);
         w.innerHTML = UI.tubeHtml(t, { fill: fill && fill.tube === i ? fill.n : 0 }) + `
           <div class="bt-ttag"${t.kind !== 'plain' ? ` data-tip="<b>${esc(td.name)}</b><br>${esc(td.desc)}"` : ''}>${t.kind !== 'plain' ? td.icon : ''}</div>`;
         host.appendChild(w);
@@ -295,7 +295,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     // Same potions stack into one icon; a tap uses the first copy in the belt.
     beltStacks(list).forEach(g => {
       const p = UI.item('potions', g.id);
-      html += `<button class="bt-pot pt-${g.id}${g.id === armedId ? ' armed' : ''}" data-pot="${g.idx}" data-tip="<b>${esc(p.icon + ' ' + p.name)}${g.n > 1 ? ' ×' + g.n : ''}</b><br>${esc(p.desc)}" aria-label="${esc(p.name)}">${UI.ico[g.id] && (g.id === 'undo' || g.id === 'heal') ? UI.ico[g.id] : p.icon}${g.n > 1 ? `<span class="bt-pot-n">${g.n}</span>` : ''}</button>`;
+      html += `<button class="bt-pot pt-${g.id}${g.id === armedId ? ' armed' : ''}" data-pot="${g.idx}" data-tip="<b>${esc(p.icon + ' ' + p.name)}${g.n > 1 ? ' ×' + g.n : ''}</b><br>${esc(p.desc)}" aria-label="${esc(p.name)}">${p.icon}${g.n > 1 ? `<span class="bt-pot-n">${g.n}</span>` : ''}</button>`;
     });
     for (let i = list.length; i < (R.beltSize || 3); i++) html += `<div class="bt-pot empty" aria-label="${T('Пустой слот пояса', 'Empty belt slot')}">+</div>`;
     $('.bt-belt').innerHTML = html;
@@ -471,7 +471,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     },
     turn(ev) {
       if (ev.free) {
-        const why = { sieve: T('Сито', 'Sieve'), catalyst: T('Катализатор', 'Catalyst'), lucky_clover: T('🍀 Клевер', '🍀 Clover'), philosopher_stone: T('💠 Камень', '💠 Stone'), dead_end: T('Тупик', 'Dead end') }[ev.reason] || '';
+        const why = { sieve: T('Сито', 'Sieve'), catalyst: T('Катализатор', 'Catalyst'), lucky_clover: UI.item('relics', 'lucky_clover').icon + ' ' + T('Клевер', 'Clover'), philosopher_stone: UI.item('relics', 'philosopher_stone').icon + ' ' + T('Камень', 'Stone'), dead_end: T('Тупик', 'Dead end') }[ev.reason] || '';
         hitNum($('.bt-field'), `${T('Ход бесплатно', 'Free turn')}${why ? ' · ' + why : ''}`, '#ffe08a');
         return 120;
       }
@@ -778,7 +778,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
             desc = T(`${c.name} +${c.boost[key]} (шаг ${lvl + 1}/${f.cap || 3}). Сейчас: ${colorValue(o.color)}.`, `${c.name} +${c.boost[key]} (step ${lvl + 1}/${f.cap || 3}). Now: ${colorValue(o.color)}.`);
           }
         }
-        if (o.tube) { const t = D().tubes[o.tube]; icon = t.icon; name = `${f.name}: ${t.name}`; desc = t.desc; }
+        if (o.tube) { const t = it('tubes', o.tube); icon = t.icon; name = `${f.name}: ${t.name}`; desc = t.desc; }
         break;
       }
       case 'relic': {
@@ -794,7 +794,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         icon = UI.elBadge(o.id); name = c.name; desc = lvl ? T(`Усиления (${lvl}) пропадут.`, `Empowers (${lvl}) will be lost.`) : T('Без усилений.', 'No empowers.');
         break;
       }
-      case 'tube': { const t = D().tubes[o.id]; icon = t.icon; name = T(`Слот ${o.slot + 1}: ${t.name}`, `Slot ${o.slot + 1}: ${t.name}`); desc = t.desc; break; }
+      case 'tube': { const t = it('tubes', o.id); icon = t.icon; name = T(`Слот ${o.slot + 1}: ${t.name}`, `Slot ${o.slot + 1}: ${t.name}`); desc = t.desc; break; }
     }
     return `<button class="card${cls}" data-opt="${i}" data-tip="<b>${esc(name)}</b><br>${esc(desc)}"><span class="card-ico">${icon}</span>
       <span class="card-body">${tags ? `<span class="tags">${tags}</span>` : ''}<span class="card-title">${esc(name)}</span><span class="card-desc">${esc(desc)}</span></span>
@@ -811,7 +811,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       relic: [T('Реликвия босса', 'Boss relic'), T('Сильный пассивный эффект до конца острова', 'Strong passive effect for the rest of the island')],
       potion_pick: [T('Выбери зелье', 'Pick a potion'), T('Зелье ляжет в пояс', 'It goes on your belt')],
       replace_color: [T('Колода полна', 'Deck full'), pend ? T(`Какую стихию заменить на ${UI.elBadge(pend)} ${esc(D().elements[pend].name)}?`, `Which element to swap for ${UI.elBadge(pend)} ${esc(D().elements[pend].name)}?`) : T('Какую стихию заменить?', 'Which element to replace?')],
-      replace_tube: [T('Слоты заняты', 'Slots full'), pend ? T(`Какую колбу заменить на ${D().tubes[pend].icon} ${esc(D().tubes[pend].name)}?`, `Which tube to swap for ${D().tubes[pend].icon} ${esc(D().tubes[pend].name)}?`) : T('Какую колбу заменить?', 'Which tube to replace?')],
+      replace_tube: [T('Слоты заняты', 'Slots full'), pend ? T(`Какую колбу заменить на ${UI.item('tubes', pend).icon} ${esc(D().tubes[pend].name)}?`, `Which tube to swap for ${UI.item('tubes', pend).icon} ${esc(D().tubes[pend].name)}?`) : T('Какую колбу заменить?', 'Which tube to replace?')],
     };
     const [title, subt] = titles[off.kind] || [T('Выбор', 'Choose'), ''];
     const price = PS.Run.rerollPrice(R);
@@ -920,9 +920,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   const RULES = [
-    ['🧪', T('Переливание', 'Pouring'), T('<p>Тапни колбу, затем куда лить. Льётся весь верхний одноцветный блок — <b>на такой же цвет</b> или <b>в пустую колбу</b>.</p><p>Каждое переливание — ход.</p>', '<p>Tap a tube, then where to pour. The whole same-color top block pours — <b>onto the same color</b> or <b>into an empty tube</b>.</p><p>Every pour is a turn.</p>')],
+    [UI.item('tubes', 'plain').icon, T('Переливание', 'Pouring'), T('<p>Тапни колбу, затем куда лить. Льётся весь верхний одноцветный блок — <b>на такой же цвет</b> или <b>в пустую колбу</b>.</p><p>Каждое переливание — ход.</p>', '<p>Tap a tube, then where to pour. The whole same-color top block pours — <b>onto the same color</b> or <b>into an empty tube</b>.</p><p>Every pour is a turn.</p>')],
     ['✨', T('Закрытие', 'Closing'), T('<p>Колба, полная одного цвета, <b>закрывается</b>: срабатывает эффект цвета, на её место приходят слои из очереди.</p><p>' + UI.elBadge('fire') + ' огонь — урон · ' + UI.elBadge('water') + ' вода — щит · ' + UI.elBadge('life') + ' жизнь — лечение. Долгое нажатие на что угодно — подробности.</p>', '<p>A tube full of one color <b>closes</b>: the color\'s effect fires and new layers drop in from the queue.</p><p>' + UI.elBadge('fire') + ' fire — damage · ' + UI.elBadge('water') + ' water — shield · ' + UI.elBadge('life') + ' life — heal. Long-press anything for details.</p>')],
-    ['🔥', T('Комбо', 'Combo'), T('<p>Закрытия ход за ходом растят комбо: <b>×1,5 → ×2 → ×3</b>. Ход без закрытия его сбрасывает.</p><p>Если новые слои сами закрыли колбу — <b>каскад</b>, без траты хода.</p>', '<p>Closes turn after turn build a combo: <b>×1.5 → ×2 → ×3</b>. A turn without a close resets it.</p><p>If new layers close a tube on their own, that\'s a <b>cascade</b> — no turn spent.</p>')],
+    [UI.item('mods', 'combo_master').icon, T('Комбо', 'Combo'), T('<p>Закрытия ход за ходом растят комбо: <b>×1,5 → ×2 → ×3</b>. Ход без закрытия его сбрасывает.</p><p>Если новые слои сами закрыли колбу — <b>каскад</b>, без траты хода.</p>', '<p>Closes turn after turn build a combo: <b>×1.5 → ×2 → ×3</b>. A turn without a close resets it.</p><p>If new layers close a tube on their own, that\'s a <b>cascade</b> — no turn spent.</p>')],
     ['⚔️', T('Враг', 'Enemy'), T('<p>Над врагом — его следующее действие и <b>через сколько ходов</b> оно наступит. Щит поглощает урон и сгорает после атаки.</p><p>Побитый босс может убежать и вернуться на следующей встрече с половиной здоровья. На последнем этапе острова он бьётся до конца.</p>', '<p>Above the enemy: its next move and <b>how many turns</b> until it happens. Shield blocks damage, then breaks after the attack.</p><p>A beaten boss may flee and come back next fight with half its HP. On the island\'s last stage it fights to the end.</p>')],
     [UI.elBadge('stone'), T('Мусор', 'Junk'), T(`<p>${UI.elBadge('stone')} Камень и ${UI.elBadge('slime')} слизь льются только на такой же мусор или в пустую колбу.</p><p>Закрытие соседней колбы разбивает камни. Полная колба слизи даёт щит.</p>`, `<p>${UI.elBadge('stone')} Stone and ${UI.elBadge('slime')} slime pour only onto the same junk or into an empty tube.</p><p>Closing a neighboring tube breaks stones. A full tube of slime gives a shield.</p>`)],
     ['🚰', T('Слив и зелья', 'Drain & potions'), T('<p><b>Слить</b> — нажми кнопку, затем колбу: она опустеет за 3 HP и ход. В <b>тупике</b> — даром.</p><p>Зелья на поясе — тап, чтобы выпить. Некоторые просят выбрать колбу.</p>', '<p><b>Drain</b>: tap the button, then a tube. It empties for 3 HP and a turn. At a <b>dead end</b> it\'s free.</p><p>Tap a potion on your belt to drink it. Some ask you to pick a tube.</p>')],
@@ -970,12 +970,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const m = UI.item('mods', id);
       return itemTile(m.icon, m.name, m.cap ? `${R.mods[id]}/${m.cap}` : '×' + R.mods[id], `<b>${m.name}</b><br>${m.desc}`);
     }).join('');
-    const finds = R.filter ? itemTile(d.finds.filter.icon, d.finds.filter.name, '', `<b>${d.finds.filter.name}</b><br>${d.finds.filter.desc}`) : '';
+    const finds = R.filter ? itemTile(UI.item('finds', 'filter').icon, d.finds.filter.name, '', `<b>${d.finds.filter.name}</b><br>${d.finds.filter.desc}`) : '';
     const relics = R.relics.map(id => {
       const r = UI.item('relics', id), rr = d.rarity[r.rarity] || {};
       return itemTile(r.icon, r.name, esc(rr.name || ''), `<b>${r.name}</b><br>${r.desc}`, ' r-' + r.rarity);
     }).join('');
-    const tubes = R.slots.map(k => { const t = d.tubes[k]; return itemTile(t.icon, t.name, '', `<b>${t.name}</b><br>${t.desc}`); }).join('');
+    const tubes = R.slots.map(k => { const t = UI.item('tubes', k); return itemTile(t.icon, t.name, '', `<b>${t.name}</b><br>${t.desc}`); }).join('');
     const pots = beltStacks(beltList()).map(g => { const p = UI.item('potions', g.id); return itemTile(p.icon, p.name, g.n > 1 ? '×' + g.n : '', `<b>${p.name}</b><br>${p.desc}`); }).join('');
     const empty = t => `<div class="bt-empty">${t}</div>`;
     UI.overlay(`<button class="btn-icon ov-x" data-close>✕</button><h2 class="ov-title">🎒 ${T('Сборка', 'Build')}</h2>

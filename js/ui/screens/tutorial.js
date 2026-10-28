@@ -168,7 +168,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         }
         if (st === 1 && !seen('combo')) steps.push({ key: 'combo', target: '.bt-combo', title: T('Комбо', 'Combo'), text: T('Закрывай колбы ход за ходом — эффект растёт: ×1,5 → ×2 → ×3. Ход без закрытия сбрасывает комбо.', 'Close tubes turn after turn and effects grow: ×1.5 → ×2 → ×3. A turn without a close resets the combo.') });
         if (st === 2 && !seen('drain')) steps.push({ key: 'drain', target: '.bt-drain', title: T('Слить колбу', 'Drain a tube'), text: T('Нажми «Слить», затем колбу — она опустеет. Стоит 3 HP и ход. Если ходов нет (тупик) — даром.', 'Tap “Drain”, then a tube to empty it. Costs 3 HP and a turn. Free when you\'re out of moves (dead end).') });
-        if (st === 2 && !seen('potions')) steps.push({ key: 'potions', target: '.bt-belt', title: T('Зелья', 'Potions'), text: T('Тапни зелье, чтобы выпить. ↶ Отмена откатит последний ход, ❤ вылечит. Долгое нажатие — описание.', 'Tap a potion to drink it. ↶ Undo takes back your last turn, ❤ heals. Long-press for details.') });
+        if (st === 2 && !seen('potions')) steps.push({ key: 'potions', target: '.bt-belt', title: T('Зелья', 'Potions'), text: T(`Тапни зелье, чтобы выпить. ${UI.item('potions', 'undo').icon} Отмена откатит последний ход, ${UI.item('potions', 'heal').icon} Лечение вылечит. Долгое нажатие — описание.`, `Tap a potion to drink it. ${UI.item('potions', 'undo').icon} Undo takes back your last turn, ${UI.item('potions', 'heal').icon} Heal restores HP. Long-press for details.`) });
         if (b.enemy.boss && !seen('boss')) steps.push({ key: 'boss', target: '.bt-einfo', title: T('Босс!', 'Boss!'), text: T('Хозяин острова: сильнее обычных врагов и действует хитрее. Победи его, чтобы пройти остров.', 'The island\'s master: tougher and trickier than regular enemies. Beat it to clear the island.') });
       }
       const F = b.field;
@@ -184,7 +184,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           if (cd && !steps.some(s => s.key === 'color_' + c)) steps.push({ key: 'color_' + c, target: ctx.tubeEl(i), title: T(`Новая стихия: ${UI.elBadge(c)} ${esc(cd.name)}`, `New element: ${UI.elBadge(c)} ${esc(cd.name)}`), text: esc(cd.desc) });
         }
         if (t.kind !== 'plain' && !seen('tube_' + t.kind)) {
-          const td = D().tubes[t.kind];
+          const td = D().tubes[t.kind] && UI.item('tubes', t.kind);
           if (td && !steps.some(s => s.key === 'tube_' + t.kind)) steps.push({ key: 'tube_' + t.kind, target: ctx.tubeEl(i), title: T(`Особая колба: ${td.icon} ${esc(td.name)}`, `Special tube: ${td.icon} ${esc(td.name)}`), text: esc(td.desc) });
         }
       });

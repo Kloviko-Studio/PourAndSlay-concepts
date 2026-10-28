@@ -51,7 +51,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const it = src && src[id];
     if (!it) return { id, kind: k, icon: '❔', name: String(id), desc: '' };
     const el = k === 'elements' || k === 'junk' ? id : k === 'lab' && it.per && it.per.color;
-    return Object.assign({ kind: k, id, icon: '❔', name: String(id), desc: '' }, it, el && (PS.DATA.elements[el] || PS.DATA.junk[el]) ? { icon: UI.elBadge(el) } : null);
+    const art = ITEM_ART[k] || k === 'tubes' ? [k, id] : REUSE_ART[k + ':' + id];
+    const painted = el && (PS.DATA.elements[el] || PS.DATA.junk[el]) ? UI.elBadge(el) : art ? UI.itemIco(art[0], art[1]) : null;
+    return Object.assign({ kind: k, id, icon: '❔', name: String(id), desc: '' }, it, painted ? { icon: painted } : null);
   };
   // Meta.newUnlocks gives {kind, id}; relicRarity is a pseudo-item, so it gets its own label.
   UI.unlockLabel = function (u) {
@@ -63,7 +65,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     }
     if (u.kind === 'relicRarity') {
       const names = { common: T('Обычные реликвии', 'Common relics'), rare: T('Редкие реликвии', 'Rare relics'), legendary: T('Легендарные реликвии', 'Legendary relics') };
-      return { icon: '🏺', name: names[u.id] || T('Реликвии', 'Relics'), desc: T('Новые реликвии в наградах за босса.', 'New relics in boss rewards.') };
+      const sample = Object.keys(D().relics || {}).find(id => D().relics[id].rarity === u.id);
+      return { icon: sample ? UI.item('relics', sample).icon : '🏺', name: names[u.id] || T('Реликвии', 'Relics'), desc: T('Новые реликвии в наградах за босса.', 'New relics in boss rewards.') };
     }
     const it = UI.item(u.kind, u.id);
     return { icon: it.icon, name: it.name, desc: it.desc, kind: it.kind, id: it.id };
@@ -126,11 +129,17 @@ var PS = globalThis.PS || (globalThis.PS = {});
   UI.elIco = id => PS.DATA.elements[id] ? `<img class="el-ico" src="img/icons/gameplay/elements/element_${id}.webp" alt="" draggable="false">`
     : PS.DATA.junk[id] || id === 'freeze' ? `<img class="el-ico" src="img/icons/gameplay/bad_elements/bad_${id}.webp" alt="" draggable="false">` : '';
   // the glyphs are white, so off the liquid they sit on a chip of the element's colour; sized in em like the emoji it replaces
+  // painted item icons: img/icons/gameplay/<kind>/<prefix>_<id>; boosts that copy a mod or find borrow its picture
+  const ITEM_ART = { potions: 'potion', mods: 'mod', finds: 'find', relics: 'relic' };
+  // special tubes are told apart by their glass, so the glass itself is their icon
+  const REUSE_ART = { 'boosters:booster_potion': ['mods', 'potion_pick'], 'boosters:booster_flask': ['finds', 'extra_slot'] };
+  UI.hasItemArt = (kind, id) => !!(ITEM_ART[kind] || REUSE_ART[kind + ':' + id] || kind === 'tubes');
+  UI.itemIco = (kind, id) => kind === 'tubes' ? `<img class="item-ico tube-ico" src="img/tubes/tube_${id}.webp" alt="" draggable="false">`
+    : `<img class="item-ico" src="img/icons/gameplay/${kind}/${ITEM_ART[kind]}_${id}.webp" alt="" draggable="false">`;
   UI.elBadge = id => { const c = PS.DATA.elements[id] || PS.DATA.junk[id]; return c ? `<span class="el-badge" style="background:${c.css}">${UI.elIco(id)}</span>` : ''; };
   UI.ico = {
     coin: s => UI.art('coin', s || 26),
     gem: s => UI.art('diamond', s || 26),
-    crown: s => `<svg width="${s || 22}" height="${s || 22}" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l-1-9 5 4 4-6 4 6 5-4-1 9z" fill="#ffd36b" stroke="#e8a93a" stroke-width="1.5" stroke-linejoin="round"/><rect x="4" y="17" width="16" height="3" rx="1.5" fill="#e8a93a"/><circle cx="12" cy="13" r="1.4" fill="#f0584a"/></svg>`,
     check: s => `<svg width="${s || 14}" height="${s || 14}" viewBox="0 0 24 24" ${stroke(4, '#fff')} aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>`,
     left: `<svg width="18" height="18" viewBox="0 0 24 24" ${stroke(3)} aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>`,
     right: `<svg width="18" height="18" viewBox="0 0 24 24" ${stroke(3)} aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>`,
@@ -140,8 +149,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
     heart: s => `<svg width="${s || 28}" height="${s || 28}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-8.5-5.3-8.5-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8.5 2.8C20.5 15.7 12 21 12 21z" fill="#ff8f8f" stroke="#fff" stroke-width="2.2"/><ellipse cx="8" cy="9.5" rx="2" ry="1.2" fill="#fff" opacity=".8"/></svg>`,
     shield: s => `<svg width="${s || 13}" height="${s || 13}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5z" fill="#5aa2ea"/></svg>`,
     drop: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 5 6 8 6 12a6 6 0 0 1-12 0c0-4 3-7 6-12z" fill="#fff"/></svg>',
-    undo: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6b4fb0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>',
-    heal: '<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 2.5h5M10.5 2.5v5l-5 8a4 4 0 0 0 3.4 6h6.2a4 4 0 0 0 3.4-6l-5-8v-5" fill="#fff" stroke="#e05a6a" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 15.5h10l1 1.5a3 3 0 0 1-2.6 4.5H8.6A3 3 0 0 1 6 17z" fill="#ff8f8f"/><path d="M12 15.8s-2.2-1.4-2.2-2.9a1.2 1.2 0 0 1 2.2-.7 1.2 1.2 0 0 1 2.2.7c0 1.5-2.2 2.9-2.2 2.9z" fill="#fff"/></svg>',
   };
   const ICO = UI.ico;
   const icoCoin = UI.art('coin', 28), icoGem = UI.art('diamond', 28);
@@ -500,11 +507,18 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (p && p.activeRun) UI.go('battle', { run: p.activeRun, resumed: true });
   };
 
-  // Copy, data, toasts and pop-ups write coins, gems and the gift as 🪙 / 💎 / 🎁; swap them for the painted icons wherever they get rendered.
-  const CUR = { '🪙': 'coin', '💎': 'diamond', '🎁': 'present' }, CUR_RE = /(🪙|💎|🎁)/u;
+  // Copy, data, toasts and pop-ups write these as emoji; swap them for the painted icons wherever they get rendered.
+  // 👑 stays out: the Frost Crown relic uses it too, so the boss and finale tags place the art themselves.
+  const CUR = {
+    '🪙': 'main_screen/coin', '💎': 'main_screen/diamond', '🎁': 'main_screen/present', '🔱': 'main_screen/seal', '🔒': 'main_screen/lock',
+    '⚗': 'main_screen/laboratory', '🛒': 'main_screen/market', '📖': 'main_screen/collection', '⚙': 'main_screen/settings', '📜': 'main_screen/tasks',
+    '💤': 'gameplay/potions/potion_sleep',
+  };
+  const CUR_RE = new RegExp(`(${Object.keys(CUR).join('|')})️?`, 'u');
+  UI.inlineArt = path => `<img class="cur-ico" src="img/icons/${path}.webp" alt="" draggable="false">`;
   function swapCurrency(root) {
     const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode: n => CUR_RE.test(n.data) && !n.parentElement.closest('select, textarea') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,
+      acceptNode: n => CUR_RE.test(n.data) && !n.parentElement.closest('select, textarea, pre') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,
     });
     const hits = [];
     while (walk.nextNode()) hits.push(walk.currentNode);
@@ -513,7 +527,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       for (const part of n.data.split(CUR_RE)) {
         if (CUR[part]) {
           const img = document.createElement('img');
-          img.className = 'cur-ico'; img.src = `img/icons/main_screen/${CUR[part]}.webp`; img.alt = part; img.draggable = false;
+          img.className = 'cur-ico'; img.src = `img/icons/${CUR[part]}.webp`; img.alt = part; img.draggable = false;
           frag.appendChild(img);
         } else if (part) frag.appendChild(document.createTextNode(part));
       }

@@ -13,7 +13,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const perks = [
           ['🪙', T(`+${Math.round(((S.coinsMult || 1.5) - 1) * 100)}% монет за попытки`, `+${Math.round(((S.coinsMult || 1.5) - 1) * 100)}% coins from runs`)],
           ['🎁', T(`Ежедневная награда ×${S.dailyMult || 2} без рекламы`, `Daily Gift ×${S.dailyMult || 2}, no ads`)],
-          ['🪶', T('Бесплатное воскрешение без рекламы, 1 раз за попытку', 'Free revive without ads, once per run')],
+          [UI.item('relics', 'phoenix_feather').icon, T('Бесплатное воскрешение без рекламы, 1 раз за попытку', 'Free revive without ads, once per run')],
           ['🚫', T('Нет рекламы между забегами', 'No ads between runs')],
         ];
         el.innerHTML = `
