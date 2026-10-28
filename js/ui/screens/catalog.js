@@ -68,7 +68,103 @@ var PS = globalThis.PS || (globalThis.PS = {});
     return p;
   }
 
+  // Every icon still drawn as emoji or inline SVG; the painted ones in img/icons (coins, gems, tabs, top bar…) are already final and left out.
+  const PAINTED = /🪙|💎/u;
+  const svg = (k, s) => { const v = UI.ico[k]; return typeof v === 'function' ? v(s) : v; };
+  const onLayer = (k, bg) => `<span class="cat-mark" style="background:${bg}">${UI.ico.mark[k]}</span>`;
+  const UI_ICONS = () => {
+    const G = { ui: T('Интерфейс', 'Interface'), set: T('Настройки и Печать', 'Settings & Seal'), bt: T('Бой', 'Battle'), win: T('Окна и подсказки', 'Windows & hints') };
+    return [
+      [svg('left'), T('Стрелка назад / влево', 'Back / left arrow'), T('Кнопка «назад» в шапке экранов, листание островов', 'Back button on screen headers, island pager'), G.ui],
+      [svg('right'), T('Стрелка вправо', 'Right arrow'), T('Листание островов, строки настроек', 'Island pager, settings rows'), G.ui],
+      [svg('close'), T('Крестик', 'Close'), T('Закрыть окно', 'Close a window'), G.ui],
+      [`<span class="cat-mark" style="background:#7cc463">${svg('check', 18)}</span>`, T('Галочка (SVG)', 'Check (SVG)'), T('Выбранный буст, выполненное', 'Picked boost, done state'), G.ui],
+      ['✓', T('Галочка', 'Check mark'), T('«Пройден» у острова, полученное задание, выбранный буст', '"Cleared" island tag, claimed quest, picked boost'), G.ui],
+      ['👑', T('Корона (эмодзи)', 'Crown (emoji)'), T('Метка «Финал» у последнего острова', '"Finale" tag on the last island'), G.ui],
+      ['🔒', T('Замок (эмодзи)', 'Lock (emoji)'), T('«Пройди остров N», закрытые улучшения лаборатории', '"Clear island N", locked lab upgrades'), G.ui],
+      ['⏳', T('Песочные часы', 'Hourglass'), T('Таймер заданий, стартового набора, подарка', 'Quest, starter pack and gift timers'), G.ui],
+      ['☁️', T('Облако', 'Cloud'), T('Слайд «Скоро новые острова»', '"New islands coming soon" slide'), G.ui],
+      ['🛒', T('Тележка', 'Cart'), T('Заголовок «Магазин»', 'Shop header'), G.ui],
+      ['⚗️', T('Колба алхимика', 'Alembic'), T('Заголовок «Лаборатория», окно «Продолжить забег?», подсказка о лаборатории', 'Lab header, "Continue run?" window, lab hint'), G.ui],
+      ['📖', T('Книга', 'Book'), T('Заголовок «Коллекция», кнопка «Как играть»', 'Collection header, "How to play" button'), G.ui],
+      ['🎁', T('Подарок (эмодзи)', 'Gift (emoji)'), T('Заголовок «Подарок дня», перк Печати', 'Daily Gift header, Seal perk'), G.ui],
+      ['💰', T('Мешок монет', 'Money bag'), T('Дни 5–6 подарка (награда больше)', 'Gift days 5–6 (bigger reward)'), G.ui],
+      ['📜', T('Свиток', 'Scroll'), T('Заголовок «Задания», невыполненное задание', 'Quests header, unfinished quest'), G.ui],
+      ['🎉', T('Хлопушка', 'Party popper'), T('Задание выполнено, награду можно забрать', 'Quest done, reward ready'), G.ui],
+      ['✅', T('Зелёная галочка', 'Green check'), T('Награда за задание получена', 'Quest reward claimed'), G.ui],
+      ['🎬', T('Хлопушка кино', 'Clapper'), T('Награда за рекламу, окно рекламы', 'Rewarded ad, ad window'), G.ui],
+      ['📺', T('Телевизор', 'TV'), T('Реклама между забегами', 'Ad between runs'), G.ui],
+      ['🗂', T('Картотека', 'Card index'), T('Заголовок «Каталог»', 'Catalog header'), G.ui],
+      ['🔓', T('Открытый замок', 'Open lock'), T('Раздел «Открытия» каталога', 'Catalog "Unlocks" section'), G.ui],
+      ['🏝', T('Остров', 'Island'), T('Запасная иконка острова', 'Fallback island icon'), G.ui],
+      ['🏺', T('Амфора', 'Amphora'), T('Открытие новых реликвий', 'New relics unlocked'), G.ui],
+      ['❔', T('Вопрос', 'Question'), T('Неизвестный предмет', 'Unknown item'), G.ui],
+      ['👾', T('Монстрик', 'Space invader'), T('Запасной рисунок врага', 'Fallback enemy picture'), G.ui],
+      ['⚙', T('Шестерёнка (эмодзи)', 'Gear (emoji)'), T('Заголовок «Настройки», кнопка в паузе', 'Settings header, pause menu button'), G.set],
+      ['🔊', T('Динамик', 'Speaker'), T('Звук', 'Sound'), G.set],
+      ['🎵', T('Нота', 'Note'), T('Музыка', 'Music'), G.set],
+      ['📳', T('Вибрация', 'Vibration'), T('Вибрация', 'Vibration'), G.set],
+      ['🌐', T('Глобус', 'Globe'), T('Язык', 'Language'), G.set],
+      ['♻️', T('Переработка', 'Recycle'), T('Восстановить покупки', 'Restore purchases'), G.set],
+      ['🛡', T('Щит (настройки)', 'Shield (settings)'), T('Реклама и приватность', 'Ads & privacy'), G.set],
+      ['📄', T('Документ', 'Page'), T('Политика конфиденциальности', 'Privacy policy'), G.set],
+      ['✉️', T('Конверт', 'Envelope'), T('Поддержка', 'Support'), G.set],
+      ['🗑', T('Корзина', 'Bin'), T('Сбросить прогресс', 'Reset progress'), G.set],
+      ['🪶', T('Перо', 'Feather'), T('Перк Печати: бесплатное воскрешение', 'Seal perk: free revive'), G.set],
+      ['🚫', T('Запрет', 'No entry'), T('Перк Печати и товар «Без рекламы»', 'Seal perk and "No ads" item'), G.set],
+      [svg('heart', 28), T('Сердце', 'Heart'), T('HP игрока в бою', 'Player HP in battle'), G.bt],
+      [svg('shield', 22), T('Щит', 'Shield'), T('Щит игрока в бою', 'Player shield in battle'), G.bt],
+      [svg('drop'), T('Капля', 'Drop'), T('Кнопка «Слить»', 'Drain button'), G.bt],
+      [svg('pause'), T('Пауза', 'Pause'), T('Кнопка паузы', 'Pause button'), G.bt],
+      [svg('bag'), T('Сумка', 'Bag'), T('Кнопка «Сборка»', 'Build button'), G.bt],
+      [svg('undo'), T('Отмена (SVG)', 'Undo (SVG)'), T('Зелье «Отмена» на поясе', 'Undo potion on the belt'), G.bt],
+      [svg('heal'), T('Лечение (SVG)', 'Heal (SVG)'), T('Зелье «Лечение» на поясе', 'Heal potion on the belt'), G.bt],
+      [svg('crown', 22), T('Корона (SVG)', 'Crown (SVG)'), T('Метка «Босс» у имени врага', '"Boss" tag by the enemy name'), G.bt],
+      [onLayer('fire', '#f07a52'), T('Метка огня', 'Fire mark'), T('Значок на слое огня в колбе', 'Mark on fire layers in tubes'), G.bt],
+      [onLayer('water', '#5aa2ea'), T('Метка воды', 'Water mark'), T('Значок на слое воды', 'Mark on water layers'), G.bt],
+      [onLayer('life', '#6fbb57'), T('Метка жизни', 'Life mark'), T('Значок на слое жизни', 'Mark on life layers'), G.bt],
+      ['⚔️', T('Мечи', 'Swords'), T('Намерение врага: удар; страница правил «Враг»', 'Enemy intent: attack; "Enemy" rules page'), G.bt],
+      ['🪨', T('Камень', 'Rock'), T('Намерение: камни в колбы; камнепад; правила «Мусор»', 'Intent: stones in tubes; rockfall; "Junk" rules'), G.bt],
+      ['🍄', T('Гриб', 'Mushroom'), T('Намерение: слизь в очередь', 'Intent: slime into the queue'), G.bt],
+      ['❄️', T('Снежинка', 'Snowflake'), T('Намерение: заморозка колбы; враг заморожен', 'Intent: freeze a tube; enemy frozen'), G.bt],
+      ['🤏', T('Щепотка', 'Pinch'), T('Намерение: украдёт слой', 'Intent: steal a layer'), G.bt],
+      ['🔀', T('Перемешать', 'Shuffle'), T('Намерение: поменяет цвета', 'Intent: swap colours'), G.bt],
+      ['🛡', T('Щит (враг)', 'Shield (enemy)'), T('Намерение и статус: щит врага; +щит', 'Intent and status: enemy shield; +shield'), G.bt],
+      ['💪', T('Бицепс', 'Biceps'), T('Намерение и статус: усиленный удар ×2', 'Intent and status: next hit ×2'), G.bt],
+      ['💚', T('Зелёное сердце', 'Green heart'), T('Намерение: враг лечится', 'Intent: enemy heals'), G.bt],
+      ['☠', T('Череп', 'Skull'), T('Статус: яд на враге', 'Status: poison on the enemy'), G.bt],
+      ['😡', T('Злость', 'Angry face'), T('Статус: ярость врага', 'Status: enemy rage'), G.bt],
+      ['🔥', T('Огонь (статус)', 'Fire (status)'), T('Статус: поджог игрока', 'Status: burn on the player'), G.bt],
+      ['⚡', T('Молния (число)', 'Bolt (number)'), T('Всплывающее число: таймер врага отодвинут', 'Floating number: enemy timer delayed'), G.bt],
+      ['💤', T('Сон', 'Sleep'), T('Всплывающее число: зелье сна', 'Floating number: sleep potion'), G.bt],
+      ['⇄', T('Обмен', 'Swap'), T('Всплывающее: цвета поменялись', 'Floating: colours swapped'), G.bt],
+      ['🧪', T('Пробирка', 'Test tube'), T('Страница правил «Переливание»', '"Pouring" rules page'), G.win],
+      ['✨', T('Искры', 'Sparkles'), T('Правила «Закрытие», комбо ×2, новое открытие', '"Closing" rules, combo ×2, new unlock'), G.win],
+      ['🚰', T('Кран', 'Tap'), T('Правила «Слив и зелья»', '"Drain & potions" rules'), G.win],
+      ['🫧', T('Пузыри', 'Bubbles'), T('Слизь в правилах и подсказках', 'Slime in rules and hints'), G.win],
+      ['🎒', T('Рюкзак', 'Backpack'), T('Окно «Сборка»', 'Build window'), G.win],
+      ['🔱', T('Трезубец', 'Trident'), T('Кнопка «Воскреснуть бесплатно» (Печать)', '"Revive for free" button (Seal)'), G.win],
+      ['💀', T('Череп', 'Skull'), T('Окно «Ты пал!»', '"You fell!" window'), G.win],
+      ['❤️', T('Сердце (эмодзи)', 'Heart (emoji)'), T('HP в окне выбора после этапа', 'HP in the after-stage pick'), G.win],
+      ['🍀', T('Клевер', 'Clover'), T('Подпись: сработал Клевер', 'Label: Clover triggered'), G.win],
+      ['💠', T('Камень философа', 'Diamond with dot'), T('Подпись: сработал Философский камень', "Label: Philosopher's Stone triggered"), G.win],
+      ['👆', T('Палец', 'Pointing hand'), T('Подсказки обучения', 'Tutorial hints'), G.win],
+    ].map(([icon, name, desc, group], i) => ({ id: 'ui_' + (i + 1), name, icon, desc, island: null, st: { later: false, label: /<svg/.test(icon) ? 'SVG' : 'emoji' }, params: {}, group }));
+  };
+  // Item icons straight from the data, so this list follows any rename or new item.
+  const DATA_ICONS = () => [
+    ['colors', T('Цвета', 'Colors')], ['junk', T('Мусор', 'Junk')], ['tubes', T('Колбы', 'Tubes')], ['potions', T('Зелья', 'Potions')],
+    ['mods', T('Моды', 'Mods')], ['finds', T('Находки', 'Finds')], ['relics', T('Реликвии', 'Relics')], ['boosters', T('Бустеры', 'Boosts')],
+    ['lab', T('Лаборатория', 'Lab')], ['worlds', T('Миры', 'Worlds')], ['shop', T('Магазин', 'Shop')],
+  ].flatMap(([k, group]) => {
+    const src = k === 'shop' ? D().shop.products.concat(D().shop.coinPacks) : Array.isArray(D()[k]) ? D()[k] : Object.keys(D()[k]).map(id => Object.assign({ id }, D()[k][id]));
+    return src.filter(it => it.icon && !PAINTED.test(it.icon)).map(it => ({
+      id: it.id || String(it.n), name: it.name || it.id, icon: it.icon, desc: it.desc || '', island: null, st: { later: false, label: 'emoji' }, params: {}, group: T(`Данные: ${group}`, `Data: ${group}`),
+    }));
+  });
+
   const CATS = [
+    { id: 'icons', label: T('Все иконки', 'All icons'), raw: () => ({ ui: UI_ICONS().map(e => ({ name: e.name, desc: e.desc, group: e.group })), data: DATA_ICONS().map(e => ({ id: e.id, icon: e.icon, group: e.group })) }), list: () => UI_ICONS().concat(DATA_ICONS()) },
     { id: 'colors', label: T('Цвета', 'Colors'), raw: () => D().colors, list: () => fromMap(D().colors, (e, it) => { e.icon = `<span class="cat-sw" style="background:${esc(it.css)}"></span>${it.icon}`; return e; }) },
     { id: 'junk', label: T('Мусор', 'Junk'), raw: () => D().junk, list: () => fromMap(D().junk) },
     { id: 'tubes', label: T('Колбы', 'Tubes'), raw: () => D().tubes, list: () => fromMap(D().tubes) },
