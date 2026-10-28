@@ -25,7 +25,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           <div class="scr-head"><button class="btn-icon" data-a="back" aria-label="${T('Назад', 'Back')}">${UI.ico.left}</button><h1>📜 ${T('Задания', 'Quests')}</h1><span class="tag">⏳ <span data-t>${UI.hhmm(UI.msToMidnight())}</span></span></div>
           <div class="cards">${list.map((q, i) => {
             const pct = Math.min(100, q.progress / q.target * 100);
-            const side = q.claimed ? `<span class="tag tag-ok">✓ +${reward} 🪙</span>`
+            const side = q.claimed ? `<span class="tag tag-ok">${UI.ico.check(12, 'currentColor')} +${reward} 🪙</span>`
               : q.done ? `<button class="btn btn-sm btn-cta q-claim" data-claim="${i}">${T('Забрать', 'Claim')}<b>+${reward} 🪙</b></button>`
               : `<span class="q-reward">+${reward} 🪙</span>`;
             return `<div class="card${q.done && !q.claimed ? ' q-done' : ''}${q.claimed ? ' q-claimed' : ''}">

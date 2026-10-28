@@ -16,7 +16,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   // ---------- content helpers ----------
   const colorDef = c => D().elements[c] || D().junk[c] || { css: '#888888', icon: '?', name: c };
-  const iconOf = c => UI.elIco(c) || colorDef(c).sym || colorDef(c).icon;
+  const iconOf = c => UI.elIco(c);
   function layerBg(c) {
     const tex = D().elements[c] || D().junk[c] ? `;background-image:url(img/texture/tubes/liquid_${c}.webp)` : '';
     return `background-color:${colorDef(c).css}${tex}`;
@@ -40,8 +40,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
   };
 
   const INTENT = {
-    atk: [T('удар', 'attack'), '⚔️'], stone: [T('камни в колбы', 'stones in tubes'), UI.elIco('stone')], spores: [T('слизь в очередь', 'slime in queue'), '🍄'], freeze: [T('заморозит колбу', 'freezes a tube'), UI.elIco('freeze')],
-    steal: [T('украдёт слой', 'steals a layer'), '🤏'], swap: [T('поменяет цвета', 'swaps colors'), '🔀'], shield: [T('щит', 'shield'), '🛡'], buff: [T('усилит удар', 'powers up'), '💪'], heal: [T('лечение', 'heal'), '💚'],
+    atk: [T('удар', 'attack'), UI.intentIco('atk')], stone: [T('камни в колбы', 'stones in tubes'), UI.intentIco('stone')], spores: [T('слизь в очередь', 'slime in queue'), UI.intentIco('spores')], freeze: [T('заморозит колбу', 'freezes a tube'), UI.intentIco('freeze')],
+    steal: [T('украдёт слой', 'steals a layer'), UI.intentIco('steal')], swap: [T('поменяет цвета', 'swaps colors'), UI.intentIco('swap')], shield: [T('щит', 'shield'), UI.intentIco('shield')], buff: [T('усилит удар', 'powers up'), UI.intentIco('buff')], heal: [T('лечение', 'heal'), UI.intentIco('heal')],
   };
   const INTENT_TIP = {
     atk: T('Ударит по тебе. Щит поглощает урон и сгорает после атаки.', 'Hits you. Shield blocks the damage, then breaks.'), stone: T('Положит камни в колбы. Камни разбиваются, когда закрываешь соседнюю колбу.', 'Drops stones into tubes. Stones break when you close a neighboring tube.'),
@@ -126,7 +126,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       <div class="bt-player">
         <span class="bt-heart">${UI.ico.heart(28)}</span>
         <div class="bar bar-hp"><div class="bar-ghost"></div><div class="bar-fill"></div><span class="bar-label"></span></div>
-        <span class="bt-shield" data-tip="${T('<b>Щит</b><br>Поглощает урон от атаки врага и сгорает после неё.', '<b>Shield</b><br>Blocks damage from the enemy attack, then breaks.')}">${UI.ico.shield(13)}<b>0</b></span>
+        <span class="bt-shield" data-tip="${T('<b>Щит</b><br>Поглощает урон от атаки врага и сгорает после неё.', '<b>Shield</b><br>Blocks damage from the enemy attack, then breaks.')}">${UI.ico.shield(20)}<b>0</b></span>
         <div class="bt-combo" data-tip="${T('<b>Комбо</b><br>Закрытия подряд усиливают эффект: ×1,5 → ×2 → ×3. Ход без закрытия сбрасывает комбо.', '<b>Combo</b><br>Back-to-back closes boost effects: ×1.5 → ×2 → ×3. A turn without a close resets the combo.')}"><div class="cl">${T('комбо', 'combo')}</div><div class="cv">×1</div></div>
       </div>
       <div class="bt-field"><div class="bt-row" data-row="0"></div><div class="bt-row" data-row="1"></div></div>
@@ -518,7 +518,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           Snd.play('zap');
           await Fx.shake($('.bt-field'), 10);
           renderTubes(ev.tubes);
-          if (ev.target) hitNum($('.bt-field'), `${UI.elBadge(ev.target.a) || iconOf(ev.target.a)} ⇄ ${UI.elBadge(ev.target.b) || iconOf(ev.target.b)}`, '#ffe08a', true);
+          if (ev.target) hitNum($('.bt-field'), `${UI.elBadge(ev.target.a) || iconOf(ev.target.a)} ${UI.inlineArt('gameplay/intents/intent_swap')} ${UI.elBadge(ev.target.b) || iconOf(ev.target.b)}`, '#ffe08a', true);
           break;
         case 'spores':
           Snd.play('poison');
@@ -759,7 +759,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   // ---------- windows ----------
   function cardHtml(o, i, off) {
     const R = S.R;
-    let icon = '❔', name = '', desc = '', tags = '', cls = '', side = '';
+    let icon = '', name = '', desc = '', tags = '', cls = '', side = '';
     const it = (k, id) => UI.item(k, id);
     switch (o.type) {
       case 'mod': {
@@ -924,7 +924,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   const RULES = [
     [UI.item('tubes', 'plain').icon, T('Переливание', 'Pouring'), T('<p>Тапни колбу, затем куда лить. Льётся весь верхний одноцветный блок — <b>на такой же цвет</b> или <b>в пустую колбу</b>.</p><p>Каждое переливание — ход.</p>', '<p>Tap a tube, then where to pour. The whole same-color top block pours — <b>onto the same color</b> or <b>into an empty tube</b>.</p><p>Every pour is a turn.</p>')],
-    ['✨', T('Закрытие', 'Closing'), T('<p>Колба, полная одного цвета, <b>закрывается</b>: срабатывает эффект цвета, на её место приходят слои из очереди.</p><p>' + UI.elBadge('fire') + ' огонь — урон · ' + UI.elBadge('water') + ' вода — щит · ' + UI.elBadge('life') + ' жизнь — лечение. Долгое нажатие на что угодно — подробности.</p>', '<p>A tube full of one color <b>closes</b>: the color\'s effect fires and new layers drop in from the queue.</p><p>' + UI.elBadge('fire') + ' fire — damage · ' + UI.elBadge('water') + ' water — shield · ' + UI.elBadge('life') + ' life — heal. Long-press anything for details.</p>')],
+    [UI.inlineArt('ui/rule_close'), T('Закрытие', 'Closing'), T('<p>Колба, полная одного цвета, <b>закрывается</b>: срабатывает эффект цвета, на её место приходят слои из очереди.</p><p>' + UI.elBadge('fire') + ' огонь — урон · ' + UI.elBadge('water') + ' вода — щит · ' + UI.elBadge('life') + ' жизнь — лечение. Долгое нажатие на что угодно — подробности.</p>', '<p>A tube full of one color <b>closes</b>: the color\'s effect fires and new layers drop in from the queue.</p><p>' + UI.elBadge('fire') + ' fire — damage · ' + UI.elBadge('water') + ' water — shield · ' + UI.elBadge('life') + ' life — heal. Long-press anything for details.</p>')],
     [UI.item('mods', 'combo_master').icon, T('Комбо', 'Combo'), T('<p>Закрытия ход за ходом растят комбо: <b>×1,5 → ×2 → ×3</b>. Ход без закрытия его сбрасывает.</p><p>Если новые слои сами закрыли колбу — <b>каскад</b>, без траты хода.</p>', '<p>Closes turn after turn build a combo: <b>×1.5 → ×2 → ×3</b>. A turn without a close resets it.</p><p>If new layers close a tube on their own, that\'s a <b>cascade</b> — no turn spent.</p>')],
     ['⚔️', T('Враг', 'Enemy'), T('<p>Над врагом — его следующее действие и <b>через сколько ходов</b> оно наступит. Щит поглощает урон и сгорает после атаки.</p><p>Побитый босс может убежать и вернуться на следующей встрече с половиной здоровья. На последнем этапе острова он бьётся до конца.</p>', '<p>Above the enemy: its next move and <b>how many turns</b> until it happens. Shield blocks damage, then breaks after the attack.</p><p>A beaten boss may flee and come back next fight with half its HP. On the island\'s last stage it fights to the end.</p>')],
     [UI.elBadge('stone'), T('Мусор', 'Junk'), T(`<p>${UI.elBadge('stone')} Камень и ${UI.elBadge('slime')} слизь льются только на такой же мусор или в пустую колбу.</p><p>Закрытие соседней колбы разбивает камни. Полная колба слизи даёт щит.</p>`, `<p>${UI.elBadge('stone')} Stone and ${UI.elBadge('slime')} slime pour only onto the same junk or into an empty tube.</p><p>Closing a neighboring tube breaks stones. A full tube of slime gives a shield.</p>`)],
@@ -981,7 +981,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const tubes = R.slots.map(k => { const t = UI.item('tubes', k); return itemTile(t.icon, t.name, '', `<b>${t.name}</b><br>${t.desc}`); }).join('');
     const pots = beltStacks(beltList()).map(g => { const p = UI.item('potions', g.id); return itemTile(p.icon, p.name, g.n > 1 ? '×' + g.n : '', `<b>${p.name}</b><br>${p.desc}`); }).join('');
     const empty = t => `<div class="bt-empty">${t}</div>`;
-    UI.overlay(`<button class="btn-icon ov-x" data-close>✕</button><h2 class="ov-title">🎒 ${T('Сборка', 'Build')}</h2>
+    UI.overlay(`<button class="btn-icon ov-x" data-close>${UI.ico.close}</button><h2 class="ov-title">🎒 ${T('Сборка', 'Build')}</h2>
       <div class="tiny dim center">${T('Долгое нажатие — подробности', 'Long-press for details')}</div>
       <div class="bt-sec">${T('Стихии', 'Elements')}</div><div class="bt-items">${deck}</div>
       <div class="bt-sec">${T('Бонусы', 'Bonuses')}</div>${mods || finds ? `<div class="bt-items">${mods}${finds}</div>` : empty(T('Пока нет — бери их после этапов.', 'None yet — pick them up after stages.'))}

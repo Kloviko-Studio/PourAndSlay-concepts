@@ -35,14 +35,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
             <div class="card-side">${UI.ads.online ? `<button class="btn btn-sm btn-green btn-ad" data-a="gift" ${giftLeft > 0 ? '' : 'disabled'}>${giftLeft > 0 ? T('Смотреть', 'Watch') : T('Завтра', 'Tomorrow')}</button>` : `<span class="tag">${T('Нет сети', 'Offline')}</span>`}</div></div>
           <div class="sec-title" data-focus="gems">${T('Кристаллы', 'Gems')}</div>
           <div class="shop-grid">${gems.map(g => `<div class="panel tight prod">${best[g.id] ? `<span class="tag tag-new p-bonus">${best[g.id]}</span>` : ''}
-            <span class="p-ico">${g.icon || '💎'}</span><span class="p-amt">${UI.fmt(g.gems)}</span><span class="p-name">${esc(g.name)}</span>
+            <span class="p-ico">${UI.shopIco(g.id)}</span><span class="p-amt">${UI.fmt(g.gems)}</span><span class="p-name">${esc(g.name)}</span>
             <button class="btn btn-sm btn-cta" data-buy="${g.id}">${esc(g.price)}</button></div>`).join('')}</div>
           <div class="sec-title" data-focus="coins">${T('Монеты за кристаллы', 'Coins for gems')}</div>
           <div class="shop-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">${D.shop.coinPacks.map(c => `<div class="panel tight prod">
-            <span class="p-ico">${c.icon || '🪙'}</span><span class="p-amt coin">${UI.fmt(PS.Meta.coinPackAmount ? PS.Meta.coinPackAmount(c.id) : c.coins)}</span><span class="p-name">${esc(c.name || '')}</span>
+            <span class="p-ico">${UI.shopIco(c.id)}</span><span class="p-amt coin">${UI.fmt(PS.Meta.coinPackAmount ? PS.Meta.coinPackAmount(c.id) : c.coins)}</span><span class="p-name">${esc(c.name || '')}</span>
             <button class="btn btn-sm btn-gem" data-pack="${c.id}"><span class="price">${UI.ico.gem(18)}${c.gems}</span></button></div>`).join('')}</div>
           <div class="sec-title">${T('Прочее', 'Other')}</div>
-          <div class="card"><div class="card-ico">🚫</div><div class="card-body"><div class="card-title">${esc(noAds.name || T('Без рекламы', 'No Ads'))}</div><div class="card-desc">${esc(noAds.desc || '')}</div></div>
+          <div class="card"><div class="card-ico">${UI.shopIco('no_ads')}</div><div class="card-body"><div class="card-title">${esc(noAds.name || T('Без рекламы', 'No Ads'))}</div><div class="card-desc">${esc(noAds.desc || '')}</div></div>
             <div class="card-side">${p.noAds ? `<span class="tag tag-ok">${T('Куплено', 'Owned')}</span>` : `<button class="btn btn-sm btn-cta" data-buy="no_ads">${esc(noAds.price)}</button>`}</div></div>
           <div class="center tiny dim" style="margin:14px 0 4px">${T('Демо: покупки начисляются сразу, без оплаты', 'Demo: purchases are instant and free')}</div>`;
 

@@ -50,7 +50,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         el.querySelector('[data-total]').innerHTML = UI.ico.gem(18) + t;
         el.querySelectorAll('[data-b]').forEach(b => {
           b.classList.toggle('on', !!picked[b.dataset.b]);
-          b.querySelector('.boost-chk').textContent = picked[b.dataset.b] ? '✓' : '';
+          b.querySelector('.boost-chk').innerHTML = picked[b.dataset.b] ? UI.ico.check(14) : '';
         });
         const short = t > p.gems;
         go.className = 'btn btn-lg btn-block ' + (short ? 'btn-gem' : 'btn-cta');

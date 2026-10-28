@@ -277,11 +277,8 @@ PS.Art = (function () {
   // Forehead spot above the right eye of each boss; a returning boss wears a plaster there.
   var PLASTER_AT = { slime_king: [110, 52, -30], ancient_golem: [84, 22, -25], ice_queen: [80, 29, -30], mycelium_mother: [94, 57, -25], lava_serpent: [124, 18, -20], trickster: [112, 32, -30] };
   function plaster(at) {
-    function strip(rot) {
-      return '<g transform="rotate(' + rot + ')"><rect x="-17" y="-5.5" width="34" height="11" rx="5.5" fill="#f4c99a" stroke="#b07a4a" stroke-width="1.5"/>' +
-        '<rect x="-5.5" y="-4" width="11" height="8" rx="2" fill="#fbe3c6"/><g fill="#b07a4a" opacity=".55"><circle cx="-11" cy="-1.5" r=".9"/><circle cx="-11" cy="1.8" r=".9"/><circle cx="11" cy="-1.5" r=".9"/><circle cx="11" cy="1.8" r=".9"/></g></g>';
-    }
-    return '<g class="plaster" transform="translate(' + at[0] + ' ' + at[1] + ')">' + strip(at[2]) + strip(at[2] + 90) + '</g>';
+    // The painted X sits square in its picture, so it is turned to keep the old strips' tilt.
+    return '<image class="plaster" href="img/mobs/plaster.webp" x="-18" y="-18" width="36" height="36" transform="translate(' + at[0] + ' ' + at[1] + ') rotate(' + (at[2] + 45) + ')"/>';
   }
   function boss(id, opts) {
     var f = B[id];

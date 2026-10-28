@@ -79,11 +79,11 @@
 /* ---------- player ---------- */
 .bt-player { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
 .bt-heart { display: flex; line-height: 0; flex: none; }
-.bt-heart svg { display: block; }
+.bt-heart .art-ico { display: block; }
 .bt-player .bar { flex: 1; }
 .bt-shield { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 28px; padding: 0 10px; border-radius: 14px; font-weight: 900; font-size: 13px; flex: none;
   background: var(--skyp); border: 3px solid #fff; color: var(--ink); box-shadow: 0 3px 6px rgba(50, 110, 130, .18); transition: filter .2s, opacity .2s; }
-.bt-shield svg { display: block; }
+.bt-shield .art-ico { display: block; }
 .bt-shield.zero { filter: grayscale(.7); opacity: .6; }
 .bt-combo { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border-radius: 14px; background: rgba(255, 250, 243, .85); border: 3px solid #fff; box-shadow: 0 3px 6px rgba(50, 110, 130, .18); flex: none; white-space: nowrap; color: var(--ink2); }
 .bt-combo .cl { font-size: 12px; font-weight: 900; }
@@ -167,7 +167,7 @@
 .bt-pot.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); }
 .bt-pot-n { position: absolute; right: -6px; top: -6px; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px; background: var(--cta); border: 3px solid #fff; color: #fff; font-size: 12px; font-weight: 900; line-height: 18px; text-align: center; pointer-events: none; }
 .bt-drain { flex: none; width: 56px; min-height: 56px; padding: 0; border-radius: 28px; }
-.bt-drain svg { display: block; flex: none; width: 22px; height: 22px; }
+.bt-drain .art-ico { width: 34px; height: 34px; }
 .bt-drain.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); }
 .bt-drain.stuck { box-shadow: 0 0 18px 4px #ffb27aaa; }
 .scr-battle.locked .bt-field, .scr-battle.locked .bt-bottom { cursor: progress; }
@@ -211,7 +211,7 @@
 /* only the ring pulses, as an opacity change on its own layer: animating the 9999px backdrop shadow repainted the whole screen every frame */
 .tut-ring::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 6px #fff, 0 0 26px var(--cta3); opacity: 0; animation: tutRing 1.2s ease-in-out infinite; }
 .tut-ring.soft { box-shadow: 0 0 0 4px #fff, 0 0 18px var(--cta3), 0 0 0 9999px rgba(40, 90, 110, .2); }
-.tut-hand { position: absolute; font-size: 38px; line-height: 1; filter: drop-shadow(0 3px 2px rgba(40, 90, 110, .5)); animation: tutTap 1s ease-in-out infinite; transition: left .25s, top .25s; }
+.tut-hand { position: absolute; font-size: 34px; line-height: 1; filter: drop-shadow(0 3px 2px rgba(40, 90, 110, .5)); animation: tutTap 1s ease-in-out infinite; transition: left .25s, top .25s; }
 .tut-bubble { position: absolute; left: 16px; right: 16px; max-width: 420px; margin: 0 auto; padding: 14px 16px; border-radius: 28px; pointer-events: auto; text-align: left;
   background: var(--puff); border: 3px solid #fff; color: var(--ink); box-shadow: 0 8px 18px rgba(60, 120, 140, .25), 0 12px 30px rgba(40, 90, 110, .25); animation: rise .3s cubic-bezier(.3, 1.4, .6, 1); }
 .tut-bubble .tt { font-family: var(--display); font-size: 22px; line-height: 26px; margin-bottom: 3px; }

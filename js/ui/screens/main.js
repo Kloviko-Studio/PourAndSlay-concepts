@@ -46,7 +46,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const isl = UI.island(n), w = UI.world(n) || {}, st = islandState(n);
       UI.setTheme(w.theme === 'night' ? 'night' : 'day', w.palette);
       const tags = [];
-      if (st.cleared) tags.push(`<span class="tag tag-ok">✓ ${T('Пройден', 'Cleared')}</span>`);
+      if (st.cleared) tags.push(`<span class="tag tag-ok">${UI.ico.check(12, 'currentColor')} ${T('Пройден', 'Cleared')}</span>`);
       if (isl.final) tags.push(`<span class="tag tag-hard">${UI.inlineArt('main_screen/boss')} ${T('Финал', 'Finale')}</span>`);
       const R = p.activeRun;
       const cur = st.runHere ? (R.stage || 0) + 1 : 0;

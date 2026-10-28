@@ -23,20 +23,21 @@ var PS = globalThis.PS || (globalThis.PS = {});
       }
       function render() {
         const now = UI.now(), seal = PS.Meta.sealActive(now);
-        const sw = (k, label, ico) => `<div class="set-row"><span>${ico}</span><span class="grow">${label}</span><button class="switch${p.settings[k] !== false ? ' on' : ''}" data-sw="${k}" aria-label="${label}"></button></div>`;
+        const ico = name => UI.pic('settings/' + name, 30);
+        const sw = (k, label, name) => `<div class="set-row">${ico(name)}<span class="grow">${label}</span><button class="switch${p.settings[k] !== false ? ' on' : ''}" data-sw="${k}" aria-label="${label}"></button></div>`;
         el.innerHTML = `
           <div class="scr-head"><button class="btn-icon" data-a="back" aria-label="${T('Назад', 'Back')}">${UI.ico.left}</button><h1>⚙ ${T('Настройки', 'Settings')}</h1></div>
           <div class="panel">
-            ${sw('sound', T('Звук', 'Sound'), '🔊')}${sw('music', T('Музыка', 'Music'), '🎵')}${sw('vibro', T('Вибрация', 'Vibration'), '📳')}
-            <div class="set-row"><span>🌐</span><span class="grow">${T('Язык', 'Language')}</span><select class="inp" data-a="lang" aria-label="${T('Язык', 'Language')}"><option value="en"${T.lang() === 'en' ? ' selected' : ''}>English</option><option value="ru"${T.lang() === 'ru' ? ' selected' : ''}>Русский</option><option disabled>Українська — ${T('скоро', 'soon')}</option><option disabled>Español — ${T('скоро', 'soon')}</option></select></div>
+            ${sw('sound', T('Звук', 'Sound'), 'sound')}${sw('music', T('Музыка', 'Music'), 'music')}${sw('vibro', T('Вибрация', 'Vibration'), 'vibration')}
+            <div class="set-row">${ico('language')}<span class="grow">${T('Язык', 'Language')}</span><select class="inp" data-a="lang" aria-label="${T('Язык', 'Language')}"><option value="en"${T.lang() === 'en' ? ' selected' : ''}>English</option><option value="ru"${T.lang() === 'ru' ? ' selected' : ''}>Русский</option><option disabled>Українська — ${T('скоро', 'soon')}</option><option disabled>Español — ${T('скоро', 'soon')}</option></select></div>
           </div>
           <div class="gap"></div>
           <div class="panel">
-            <button class="set-row" style="width:100%" data-a="restore"><span>♻️</span><span class="grow" style="text-align:left">${T('Восстановить покупки', 'Restore purchases')}</span><span class="dim">›</span></button>
-            <button class="set-row" style="width:100%" data-a="privacy"><span>🛡</span><span class="grow" style="text-align:left">${T('Реклама и приватность', 'Ads & privacy')}</span><span class="dim">›</span></button>
-            <button class="set-row" style="width:100%" data-a="policy"><span>📄</span><span class="grow" style="text-align:left">${T('Политика конфиденциальности', 'Privacy policy')}</span><span class="dim">›</span></button>
-            <button class="set-row" style="width:100%" data-a="support"><span>✉️</span><span class="grow" style="text-align:left">${T('Поддержка', 'Support')}</span><span class="dim">›</span></button>
-            <button class="set-row c-bad" style="width:100%" data-a="reset"><span>🗑</span><span class="grow" style="text-align:left">${T('Сбросить прогресс', 'Reset progress')}</span><span class="dim">›</span></button>
+            <button class="set-row" style="width:100%" data-a="restore">${ico('restore')}<span class="grow" style="text-align:left">${T('Восстановить покупки', 'Restore purchases')}</span><span class="dim">›</span></button>
+            <button class="set-row" style="width:100%" data-a="privacy">${ico('privacy')}<span class="grow" style="text-align:left">${T('Реклама и приватность', 'Ads & privacy')}</span><span class="dim">›</span></button>
+            <button class="set-row" style="width:100%" data-a="policy">${ico('policy')}<span class="grow" style="text-align:left">${T('Политика конфиденциальности', 'Privacy policy')}</span><span class="dim">›</span></button>
+            <button class="set-row" style="width:100%" data-a="support">${ico('support')}<span class="grow" style="text-align:left">${T('Поддержка', 'Support')}</span><span class="dim">›</span></button>
+            <button class="set-row c-bad" style="width:100%" data-a="reset">${ico('reset')}<span class="grow" style="text-align:left">${T('Сбросить прогресс', 'Reset progress')}</span><span class="dim">›</span></button>
           </div>
           <div class="sec-title">${T('Отладка', 'Debug')}</div>
           <div class="panel debug">
