@@ -37,8 +37,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const n = idx + 1, card = root.querySelector('.isl-card'), act = root.querySelector('.main-actions'), head = root.querySelector('.isl-head'), side = root.querySelector('.side-wrap');
     const soon = n > total();
     const p = P();
+    // Arrows flank the whole card, so they never crowd the ends of the stage strip.
     const nav = (label, inner) => `<div class="isl-row"><button class="isl-nav" data-a="prev" aria-label="${T('Предыдущий остров', 'Previous island')}"${idx <= 0 ? ' disabled' : ''}>${UI.ico.left}</button>
-      <span class="lft">${label}</span><button class="isl-nav" data-a="next" aria-label="${T('Следующий остров', 'Next island')}"${idx >= total() ? ' disabled' : ''}>${UI.ico.right}</button></div>${inner}`;
+      <div class="isl-mid"><span class="lft">${label}</span>${inner}</div><button class="isl-nav" data-a="next" aria-label="${T('Следующий остров', 'Next island')}"${idx >= total() ? ' disabled' : ''}>${UI.ico.right}</button></div>`;
     if (soon) {
       UI.setTheme('night');
       head.innerHTML = `<h2 class="isl-name">${T('Новые острова', 'New islands')}</h2><div class="isl-meta">${T('Скоро', 'Coming soon')}</div>`;

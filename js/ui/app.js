@@ -157,7 +157,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     for (let k = 1; k <= S; k++) {
       const boss = bossAt.indexOf(k) >= 0;
       const passed = cur ? k < cur : k <= best;
-      marks += `<i class="sbar-mark${boss ? ' boss' : ''}${passed ? ' passed' : ''}${k === cur ? ' cur' : ''}" style="left:${pos(k)}">${boss ? ICO.crown(18) : ''}</i>`;
+      marks += `<i class="sbar-mark${boss ? ' boss' : ''}${passed ? ' passed' : ''}${k === cur ? ' cur' : ''}" style="left:${pos(k)}">${boss ? UI.art('boss', 20) : ''}</i>`;
     }
     // The record is the faded part of the line; a separate flag only collided with labels above the strip.
     const pin = cur ? `<b class="sbar-pin" style="left:${pos(cur)}"></b>` : '';
@@ -214,13 +214,13 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const seal = has(PS.Meta, 'sealActive') && PS.Meta.sealActive(now);
     const days = seal && has(PS.Meta, 'sealDaysLeft') ? PS.Meta.sealDaysLeft(now) : 0;
     bar.innerHTML = `
-      <button class="tb-seal${seal ? ' on' : ''}" data-act="seal" aria-label="${T('Печать алхимика', "Alchemist's Seal")}">
-        <span class="tb-seal-ico">${UI.art('seal', 28)}</span><span class="tb-seal-txt">${seal ? days + T(' дн.', 'd') : T('Печать', 'Seal')}</span></button>
+      <button class="tb-round tb-seal${seal ? ' on' : ''}" data-act="seal" aria-label="${T('Печать алхимика', "Alchemist's Seal")}${seal ? T(`, осталось ${days} дн.`, `, ${days} days left`) : ''}">
+        ${UI.art('seal', 30)}${seal ? `<span class="tb-days">${days}${T(' дн.', 'd')}</span>` : ''}</button>
       <div class="tb-mid">
         <button class="pill pill-coin" data-act="coins" aria-label="${T(`Монеты: ${fmt(p.coins)}. Магазин`, `Coins: ${fmt(p.coins)}. Shop`)}"><span class="pill-ico">${icoCoin}</span><b data-cur="coins">${fmt(p.coins)}</b></button>
         <button class="pill pill-gem" data-act="gems" aria-label="${T(`Кристаллы: ${fmt(p.gems)}. Магазин`, `Gems: ${fmt(p.gems)}. Shop`)}"><span class="pill-ico">${icoGem}</span><b data-cur="gems">${fmt(p.gems)}</b></button>
       </div>
-      <button class="pill tb-gear" data-act="settings" aria-label="${T('Настройки', 'Settings')}">${UI.art('settings', 30)}</button>`;
+      <button class="tb-round tb-gear" data-act="settings" aria-label="${T('Настройки', 'Settings')}">${UI.art('settings', 30)}</button>`;
     bar.querySelector('[data-act=seal]').onclick = () => { PS.Snd.play('select'); UI.go('seal', { back: UI.current() }); };
     bar.querySelector('[data-act=coins]').onclick = () => { PS.Snd.play('select'); UI.go('shop', { focus: 'coins' }); };
     bar.querySelector('[data-act=gems]').onclick = () => { PS.Snd.play('select'); UI.go('shop', { focus: 'gems' }); };
