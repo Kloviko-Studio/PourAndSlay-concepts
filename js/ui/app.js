@@ -500,8 +500,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (p && p.activeRun) UI.go('battle', { run: p.activeRun, resumed: true });
   };
 
-  // Copy, data, toasts and pop-ups write coins and gems as 🪙 / 💎; swap them for the painted icons wherever they get rendered.
-  const CUR = { '🪙': 'coin', '💎': 'diamond' }, CUR_RE = /(🪙|💎)/u;
+  // Copy, data, toasts and pop-ups write coins, gems and the gift as 🪙 / 💎 / 🎁; swap them for the painted icons wherever they get rendered.
+  const CUR = { '🪙': 'coin', '💎': 'diamond', '🎁': 'present' }, CUR_RE = /(🪙|💎|🎁)/u;
   function swapCurrency(root) {
     const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode: n => CUR_RE.test(n.data) && !n.parentElement.closest('select, textarea') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,

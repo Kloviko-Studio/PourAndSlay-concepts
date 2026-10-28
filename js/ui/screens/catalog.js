@@ -86,7 +86,6 @@ var PS = globalThis.PS || (globalThis.PS = {});
       ['🛒', T('Тележка', 'Cart'), T('Заголовок «Магазин»', 'Shop header'), G.ui],
       ['⚗️', T('Колба алхимика', 'Alembic'), T('Заголовок «Лаборатория», окно «Продолжить забег?», подсказка о лаборатории', 'Lab header, "Continue run?" window, lab hint'), G.ui],
       ['📖', T('Книга', 'Book'), T('Заголовок «Коллекция», кнопка «Как играть»', 'Collection header, "How to play" button'), G.ui],
-      ['🎁', T('Подарок (эмодзи)', 'Gift (emoji)'), T('Заголовок «Подарок дня», перк Печати', 'Daily Gift header, Seal perk'), G.ui],
       ['💰', T('Мешок монет', 'Money bag'), T('Дни 5–6 подарка (награда больше)', 'Gift days 5–6 (bigger reward)'), G.ui],
       ['📜', T('Свиток', 'Scroll'), T('Заголовок «Задания», невыполненное задание', 'Quests header, unfinished quest'), G.ui],
       ['🎉', T('Хлопушка', 'Party popper'), T('Задание выполнено, награду можно забрать', 'Quest done, reward ready'), G.ui],
