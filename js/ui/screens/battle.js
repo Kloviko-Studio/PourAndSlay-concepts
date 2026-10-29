@@ -120,39 +120,38 @@ var PS = globalThis.PS || (globalThis.PS = {});
       <div class="bt-scene">
       <div class="bt-top">
         <button class="btn-icon" data-a="pause" aria-label="${T('Пауза', 'Pause')}">${UI.ico.pause}</button>
-        <div class="bt-sbar"></div>
+        <div class="bt-stage"></div>
         <button class="btn-icon" data-a="build" aria-label="${T('Сборка', 'Build')}">${UI.ico.bag}</button>
       </div>
       <div class="bt-enemy">
         <div class="bt-arena">
-          <div class="bt-chips"></div>
           <div class="bt-mon"><div class="bt-mon-shadow"></div><div class="bt-mon-body"></div><div class="bt-bubble"></div></div>
-          <div class="bt-intent"></div>
         </div>
+        <div class="bt-chips"></div>
+        <div class="bt-enemy-hud"><div class="bt-portrait" aria-hidden="true"></div>
+        <div class="bt-einfo">
+          <div class="bt-ename"></div><div class="bt-ehint"></div>
+          <div class="bt-bar"><div class="bar bar-enemy"><div class="bar-ghost"></div><div class="bar-fill"></div><div class="bt-shieldbar"></div><span class="bar-label"></span></div></div>
+        </div><div class="bt-intent"></div></div>
       </div>
       </div>
       <div class="bt-ground">
-        <div class="bt-einfo">
-          <div class="bt-ename"></div>
-          <div class="bt-bar"><div class="bar bar-enemy"><div class="bar-ghost"></div><div class="bar-fill"></div><div class="bt-shieldbar"></div><span class="bar-label"></span></div></div>
-          <div class="bt-ehint"></div>
-        </div>
       <div class="bt-player">
         <span class="bt-heart">${UI.ico.heart(28)}</span>
-        <div class="bar bar-hp"><div class="bar-ghost"></div><div class="bar-fill"></div><span class="bar-label"></span></div>
-        <span class="bt-shield" data-tip="${T('<b>Щит</b><br>Поглощает урон от атаки врага и сгорает после неё.', '<b>Shield</b><br>Blocks damage from the enemy attack, then breaks.')}">${UI.ico.shield(20)}<b>0</b></span>
-        <div class="bt-combo" data-tip="${T('<b>Комбо</b><br>Закрытия подряд усиливают эффект: ×1,5 → ×2 → ×3. Ход без закрытия сбрасывает комбо.', '<b>Combo</b><br>Back-to-back closes boost effects: ×1.5 → ×2 → ×3. A turn without a close resets the combo.')}"><div class="cl">${T('комбо', 'combo')}</div><div class="cv">×1</div></div>
+        <div class="bar bar-hp"><div class="bar-ghost"></div><div class="bar-fill"></div><div class="bt-pshield"></div>
+          <span class="bar-label"><span class="bar-txt"></span></span></div>
+        <span class="bt-shield zero" data-tip="${T('<b>Щит</b><br>Поглощает урон от атаки врага и сгорает после неё.', '<b>Shield</b><br>Blocks damage from the enemy attack, then breaks.')}">${UI.ico.shield(16)}<b>0</b></span>
+        <div class="bt-combo" data-tip="${T('<b>Комбо</b><br>Закрытия подряд усиливают эффект: ×1,5 → ×2 → ×3. Ход без закрытия сбрасывает комбо.', '<b>Combo</b><br>Back-to-back closes boost effects: ×1.5 → ×2 → ×3. A turn without a close resets the combo.')}">×1</div>
       </div>
-      <div class="bt-field"><div class="bt-row" data-row="0"></div><div class="bt-row" data-row="1"></div></div>
-      <div class="bt-queue"></div>
+      <div class="bt-field">
+        <div class="bt-row" data-row="0"></div><div class="bt-row" data-row="1"></div><div class="bt-queue"></div></div>
       <div class="bt-bottom"><div class="bt-belt"></div><button class="btn btn-blue bt-drain" data-a="drain"></button></div>
       </div>`;
   }
 
   function renderTop() {
-    const R = S.R, isl = UI.island(R.island);
-    $('.bt-sbar').innerHTML = UI.stageBar({ n: R.island, current: Math.min(isl.stages, R.stage + 1), best: PS.Meta.profile.best[R.island] || 0, compact: true })
-      + `<div class="bt-stage-lbl">${T(`Остров ${R.island} · этап ${Math.min(isl.stages, R.stage + 1)} из ${isl.stages}`, `Island ${R.island} · stage ${Math.min(isl.stages, R.stage + 1)} of ${isl.stages}`)}</div>`;
+    const R = S.R, isl = UI.island(R.island) || { stages: 1, bossAt: [] };
+    $('.bt-stage').innerHTML = PS.BattleLayout.progress(R.island, R.stage + 1, isl.stages, isl.bossAt, UI.art('boss', 14));
   }
 
   function enemyMeta() {
@@ -170,13 +169,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
     // Runs after every move; rebuilding an unchanged svg would re-parse it and re-attach the painted picture each time.
     const art = UI.enemyArt(m.e.id, { rage: S.vm.rage, patched: m.e.patched }), body = mon.querySelector('.bt-mon-body');
     if (body._art !== art) { body.innerHTML = art; body._art = art; }
+    const portrait = $('.bt-portrait');
+    if (portrait._id !== m.e.id) { portrait.innerHTML = UI.enemyArt(m.e.id, {}); portrait._id = m.e.id; }
     mon.classList.remove('dead', 'flee');
     mon.classList.toggle('gone', m.e && S.R.battle.status !== 'active' && S.R.battle.status !== 'lost');
     if (enter) Fx.animClass(mon, 'enter', 560);
     const encs = S.R.boss ? S.R.boss.encounters : 1;
     const heals = m.e.cycle.some(c => c.t === 'heal') ? Math.max(0, D().economy.enemyHeals - (m.e.heals || 0)) : null;
-    $('.bt-ename').innerHTML = `${m.boss ? `<span class="tag tag-hard" data-tip="<b>${esc(m.def.name || m.e.name)}</b><br>${esc(m.def.desc || '')}">${UI.inlineArt('main_screen/boss')} ${T('Босс', 'Boss')}</span>` : ''}
-      ${m.boss && encs > 1 ? `<span class="tag">${T(`встреча ${m.enc + 1}/${encs}`, `fight ${m.enc + 1}/${encs}`)}</span>` : ''}
+    $('.bt-ename').innerHTML = `${m.boss && encs > 1 ? `<span class="tag">${T(`встреча ${m.enc + 1}/${encs}`, `fight ${m.enc + 1}/${encs}`)}</span>` : ''}
       ${heals != null ? `<span class="tag" data-tip="${T(`Враг лечится не больше ${D().economy.enemyHeals} раз за бой`, `Enemy heals at most ${D().economy.enemyHeals} times per fight`)}">💚 ${heals}</span>` : ''}`;
   }
 
@@ -185,14 +185,14 @@ var PS = globalThis.PS || (globalThis.PS = {});
     bar.querySelector('.bar-fill').style.setProperty('--off', off);
     const g = bar.querySelector('.bar-ghost');
     if (g) g.style.setProperty('--off', off);
-    bar.querySelector('.bar-label').textContent = label;
+    (bar.querySelector('.bar-txt') || bar.querySelector('.bar-label')).textContent = label;
   }
 
   function renderEnemyBars() {
     const vm = S.vm, B = S.R.battle;
     if (!B) return;
     const bar = $('.bt-einfo .bar');
-    setBar(bar, vm.eHp, vm.eMax, `${Math.max(0, vm.eHp)} / ${vm.eMax}${vm.eShield > 0 ? '  🛡' + vm.eShield : ''}`);
+    setBar(bar, vm.eHp, vm.eMax, `${Math.max(0, vm.eHp)} / ${vm.eMax}`);
     bar.querySelector('.bt-shieldbar').style.width = vm.eShield > 0 ? Math.min(100, vm.eShield / vm.eMax * 100) + '%' : '0';
     const pv = PS.Combat.preview(B);
     $('.bt-einfo .bt-bar').querySelectorAll('.bt-mark').forEach(x => x.remove());
@@ -215,13 +215,13 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   function renderChips() {
     const vm = S.vm, B = S.R.battle, e = B.enemy, out = [];
-    if (vm.eShield > 0) out.push(['c-shield', `🛡 ${vm.eShield}`, T('Щит врага поглощает урон. Яд идёт насквозь.', 'Enemy shield blocks damage. Poison goes through.')]);
+    if (vm.eShield > 0) out.push(['c-shield', `${UI.ico.shield(14)} ${vm.eShield}`, T('Щит врага поглощает урон. Яд идёт насквозь.', 'Enemy shield blocks damage. Poison goes through.')]);
     const pz = e.poison.reduce((s, p) => s + p.tick, 0);
     if (pz) out.push(['c-poison', `${UI.elBadge('poison')} ${pz}`, T(`Яд: ${pz} урона за ход, мимо щита. Осталось до ${turnsTxt(Math.max.apply(null, e.poison.map(p => p.turns)))}.`, `Poison: ${pz} damage per turn, ignores shield. Up to ${turnsTxt(Math.max.apply(null, e.poison.map(p => p.turns)))} left.`)]);
     if (vm.frozen > 0) out.push(['c-ice', `${UI.elBadge('ice')} ${vm.frozen}`, T(`Враг заморожен ещё на ${turnsTxt(vm.frozen)}: таймер стоит, по нему +50% урона.`, `Enemy frozen for ${turnsTxt(vm.frozen)} more: timer paused, +50% damage to it.`)]);
-    if (vm.buff > 1) out.push(['c-buff', '💪 ×2', T('Следующая атака врага ×2.', 'Next enemy attack ×2.')]);
-    if (vm.rage) out.push(['c-rage', T('😡 ярость', '😡 rage'), T('Ярость: действует на 1 ход раньше.', 'Rage: acts 1 turn sooner.')]);
-    if (B.burn && B.burn.length) out.push(['c-rage', `🔥 ${B.burn.reduce((s, b) => s + b.dmg, 0)}`, T('Поджог: урон тебе каждый ход, мимо щита.', 'Burn: damages you every turn, ignores shield.')]);
+    if (vm.buff > 1) out.push(['c-buff', `${UI.inlineArt('gameplay/intents/intent_buff')} ×2`, T('Следующая атака врага ×2.', 'Next enemy attack ×2.')]);
+    if (vm.rage) out.push(['c-rage', `${UI.inlineArt('gameplay/intents/status_rage')} ${T('ярость', 'rage')}`, T('Ярость: действует на 1 ход раньше.', 'Rage: acts 1 turn sooner.')]);
+    if (B.burn && B.burn.length) out.push(['c-rage', `${UI.inlineArt('gameplay/intents/status_burn')} ${B.burn.reduce((s, b) => s + b.dmg, 0)}`, T('Поджог: урон тебе каждый ход, мимо щита.', 'Burn: damages you every turn, ignores shield.')]);
     $('.bt-chips').innerHTML = out.map(c => `<span class="bt-chip ${c[0]}" data-tip="${esc(c[2])}">${c[1]}</span>`).join('');
   }
 
@@ -235,16 +235,22 @@ var PS = globalThis.PS || (globalThis.PS = {});
     el.className = 'bt-intent' + (paused ? ' paused' : '') + (!paused && vm.timer <= 1 && it.t === 'atk' ? ' danger' : '');
     const foot = paused ? T(`заморожен · ${vm.frozen}`, `frozen · ${vm.frozen}`) : vm.timer <= 1 ? T('следующий ход!', 'next turn!') : T(`через ${turnsTxt(vm.timer)}`, `in ${turnsTxt(vm.timer)}`);
     el.dataset.tip = `<b>${esc(label)}</b><br>${esc(INTENT_TIP[it.t] || '')}`;
-    el.innerHTML = `<div class="il">${esc(label)}</div><div class="iv">${intentValue(it, vm.buff)}</div>
-      ${!paused && vm.timer <= 6 ? `<div class="bt-pips">${'<i></i>'.repeat(Math.max(1, vm.timer))}</div>` : ''}<div class="it">${foot}</div>`;
+    const short = { atk: T('Удар', 'Attack'), stone: T('Камни', 'Stones'), spores: T('Слизь', 'Slime'), freeze: T('Лёд', 'Freeze'), steal: T('Кража', 'Steal'), swap: T('Смена', 'Swap'), shield: T('Щит', 'Shield'), buff: T('Усиление', 'Buff'), heal: T('Лечение', 'Heal') };
+    el.dataset.tip += '<br>' + esc(foot);
+    el.setAttribute('aria-label', label + ', ' + foot);
+    const count = paused ? vm.frozen : Math.max(1, vm.timer);
+    el.innerHTML = `<div class="il">${esc(paused ? T('Лёд', 'Frozen') : short[it.t] || label)}</div><div class="iv">${intentValue(it, vm.buff)}</div><div class="it">${count}</div>`;
   }
 
   function renderPlayer() {
-    const vm = S.vm;
-    setBar($('.bt-player .bar'), vm.pHp, vm.pMax, `${Math.max(0, vm.pHp)} / ${vm.pMax}`);
-    const sh = $('.bt-shield');
-    sh.querySelector('b').textContent = Math.max(0, vm.pShield);
-    sh.classList.toggle('zero', !(vm.pShield > 0));
+    const vm = S.vm, hp = Math.max(0, vm.pHp), sh = Math.max(0, vm.pShield), pct = v => (vm.pMax ? Math.min(100, v / vm.pMax * 100) : 0) + '%';
+    setBar($('.bt-player .bar'), vm.pHp, vm.pMax, `${hp} / ${vm.pMax}`);
+    // The shield covers the tip of the green: the part of HP the next hit takes from the shield first.
+    const ps = $('.bt-pshield');
+    ps.style.left = pct(Math.max(0, hp - sh)); ps.style.width = pct(Math.min(sh, hp));
+    const el = $('.bt-shield');
+    el.querySelector('b').textContent = sh;
+    el.classList.toggle('zero', !sh);
     renderCombo();
   }
 
@@ -253,7 +259,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const n = inBattle() ? S.vm.combo || 0 : 0;
     const k = B ? PS.Combat.kOf(B, Math.min(n, D().combo.length - 1)) : 1;
     c.classList.toggle('hot', n > 0);
-    c.querySelector('.cv').textContent = '×' + kfmt(k);
+    c.textContent = '×' + kfmt(k);
   }
 
   // ---------- tubes ----------
@@ -268,9 +274,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function drawTube(i, t, o) {
     const v = S.tv[i];
     if (v.pend) { clearTimeout(v.pend); v.pend = 0; }
-    const td = UI.item('tubes', t.kind);
-    v.el.innerHTML = UI.tubeHtml(t, o) +
-      `<div class="bt-ttag"${t.kind !== 'plain' ? ` data-tip="<b>${esc(td.name)}</b><br>${esc(td.desc)}"` : ''}>${t.kind !== 'plain' ? td.icon : ''}</div>`;
+    // A special tube is told apart by its glass; a long press on it explains what it does.
+    v.el.dataset.kind = t.kind;
+    if (t.kind !== 'plain') { const td = UI.item('tubes', t.kind); v.el.dataset.tip = `<b>${esc(td.name)}</b><br>${esc(td.desc)}`; }
+    else delete v.el.dataset.tip;
+    v.el.innerHTML = UI.tubeHtml(t, o);
     v.t = snap(t); v.sig = sigOf(t);
   }
   // The state counts as shown now and is drawn once the collapse on screen has played; a newer change draws it at once first.
@@ -379,15 +387,31 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function fit() {
-    if (!S || !S.R.battle) return;
-    const f = $('.bt-field'), tubes = S.shownTubes || S.R.battle.field.tubes;
+    if (!S || S.dead || !S.R.battle) return;
+    const tubes = S.shownTubes || S.R.battle.field.tubes;
     const rows = PS.Field.layout({ tubes, filled: S.R.battle.field.filled }).rows;
-    const caps = rows.map(r => r.length ? Math.max.apply(null, r.map(i => tubes[i].cap)) : 0);
-    const totalCap = caps.reduce((a, b) => a + b, 0) || 8;
-    const over = rows.filter(r => r.length).length * 34 + 30;
-    const lh = Math.max(14, Math.min(30, Math.floor((f.clientHeight - over) / totalCap)));
-    S.el.style.setProperty('--lh', lh + 'px');
-    S.lh = lh;
+    S.lh = PS.BattleLayout.fit(S.el, tubes, rows, S.lh);
+    syncEarth(S.el);
+  }
+
+  // Island 10 draws its ground as one layer behind the HUD and the field, starting where the enemy stands; created once, moved after every fit.
+  function syncEarth(root) {
+    if (root.dataset.island !== '10') return;
+    let earth = root.querySelector('.bt-earth');
+    if (!earth) {
+      earth = document.createElement('div');
+      earth.className = 'bt-earth';
+      earth.setAttribute('aria-hidden', 'true');
+      earth.innerHTML = '<img class="bt-earth-cap" src="img/battle/island10/ground_cap.webp" alt="" draggable="false">';
+      root.prepend(earth);
+    }
+    const r = root.getBoundingClientRect(), mon = root.querySelector('.bt-mon').getBoundingClientRect(), top = root.querySelector('.bt-top').getBoundingClientRect();
+    // the enemy sprites leave about 3% of their height transparent under the feet
+    const y = Math.max(top.bottom - r.top + 4, mon.bottom - r.top - mon.height * 0.03);
+    root.style.setProperty('--earth-y', y + 'px');
+    // The cap is 1536×512 drawn at full width; its stone top runs from 31% to 40% of its height. The feet go at 43%, at the front of
+    // that top, so the stone shows behind them and the enemy reads as standing on the ground rather than perched on a wall.
+    root.style.setProperty('--cap-lift', (r.width * 512 / 1536 * 0.43) + 'px');
   }
 
   function renderQueue(queue) {
@@ -454,7 +478,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
     });
   }
 
-  const effTarget = kind => kind === 'shield' || kind === 'slime' ? $('.bt-shield') : kind === 'heal' || kind === 'self' ? $('.bt-player .bar') : monEl();
+  // The shield badge sits in the HP bar and is hidden while there is no shield, so the first one flies to the bar itself.
+  const shieldEl = () => S.vm.pShield > 0 ? $('.bt-shield') : $('.bt-player .bar');
+  const effTarget = kind => kind === 'shield' || kind === 'slime' ? shieldEl() : kind === 'heal' || kind === 'self' ? $('.bt-player .bar') : monEl();
   const flySrc = () => (S.flyFrom != null && tubeEl(S.flyFrom)) || $('.bt-field');
 
   // The source tube flies over the target and tips; a stream falls from its lip while its level drops and the target's rises,
@@ -473,6 +499,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const ox = sd => tx - sd * Math.cos(TIP) * lip, end = sd => ox(sd) - sd * Math.sin(TIP) * len;
     if (end(side) < 0 || end(side) > window.innerWidth) side = -side;
     const dx = ox(side) - (A.left + lip), dy = mouth - Math.sin(TIP) * lip - (A.top - lift);
+    const layoutToken = S, restoreTube = PS.BattleLayout.floatTube(S.el, aw);
     aw.classList.add('pouring');
     aw.style.transform = `translate(${dx}px, ${dy}px) rotate(${side * TIP_DEG}deg)`;
     await sleep(TRAVEL);
@@ -482,7 +509,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     stream(tx, mouth, surface, Math.max(4, liq.width * .3), colorDef(ev.color).css, ms);
     await sleep(ms);
     aw.style.transform = '';
-    setTimeout(() => aw.classList.remove('pouring'), TRAVEL + 40);
+    setTimeout(() => { restoreTube(); if (S === layoutToken && !layoutToken.dead) fit(); }, TRAVEL + 40);
     await sleep(TRAVEL * .4);
   }
   function stream(x, y0, y1, w, color, ms) {
@@ -578,7 +605,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const vm = S.vm;
       vm.pHp -= ev.dmg; vm.pShield -= ev.absorbed;
       renderPlayer();
-      if (ev.absorbed) hitNum($('.bt-shield'), '🛡-' + ev.absorbed, '#a7dcff');
+      if (ev.absorbed) hitNum($('.bt-player .bar'), '🛡-' + ev.absorbed, '#a7dcff');
       if (ev.dmg > 0) {
         Fx.animClass($('.bt-player .bar'), 'hit', 400);
         hitNum($('.bt-player .bar'), '-' + ev.dmg, '#ff8a7a', ev.dmg >= 10);
@@ -699,7 +726,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     relic(ev) { const r = UI.item('relics', ev.id); hitNum($('.bt-player'), r.icon, '#ffcb4f', true); return 150; },
     twist(ev) {
       if (ev.tubes) renderTubes(ev.tubes, { add: 'drop' });
-      if (ev.twist === 'stonefall') { Snd.play('stone'); UI.toast(UI.elIco('stone') + ' ' + T('Камнепад: камень упал в колбу', 'Rockfall: a stone dropped into a tube')); return 400; }
+      if (ev.twist === 'stonefall') { Snd.play('stone'); UI.toastHtml(UI.elBadge('stone') + ' ' + T('Камнепад: камень упал в колбу', 'Rockfall: a stone dropped into a tube')); return 400; }
       if (ev.twist === 'burn') { hitNum($('.bt-player'), T(`🔥 Поджог ${ev.dmg}×${ev.turns}`, `🔥 Burn ${ev.dmg}×${ev.turns}`), '#ff9a5a'); renderChips(); return 300; }
       if (ev.twist === 'frozenStart') { Snd.play('freeze'); return 300; }
       return 0;
@@ -1197,10 +1224,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
       UI.setTheme(w.theme === 'night' ? 'night' : 'day', w.palette);
       S = { el, R, sel: null, mode: null, busy: false, dead: false, vm: {}, lh: 24 };
       el.dataset.world = w.n || 1;
+      el.dataset.island = R.island;
       skeleton();
       el.addEventListener('click', e => {
         const tw = e.target.closest('.bt-tw');
-        if (tw && !e.target.closest('.bt-ttag')) { onTube(+tw.dataset.i); return; }
+        if (tw) { onTube(+tw.dataset.i); return; }
         const pot = e.target.closest('[data-pot]');
         if (pot) { onPotion(+pot.dataset.pot); return; }
         const a = e.target.closest('[data-a]');
@@ -1211,7 +1239,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         else if (a.dataset.a === 'buypot') showBuyPotion();
       });
       S.onResize = () => { if (S && !S.dead) fit(); };
-      window.addEventListener('resize', S.onResize);
+      S.stopLayout = PS.BattleLayout.watch(el, S.onResize);
       const tut = Tut();
       if (tut) tut.attach({ R, el, tubeEl, getSel: () => (S ? S.sel : null) });
       UI.debug = UI.debug || {};
@@ -1234,7 +1262,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       if (!S) return;
       S.dead = true;
       if (S.ov) { S.ov(); S.ov = null; }
-      window.removeEventListener('resize', S.onResize);
+      if (S.stopLayout) S.stopLayout();
       const tut = Tut();
       if (tut) tut.detach();
       if (UI.debug && UI.debug.onWin === debugWin) UI.debug.onWin = null;

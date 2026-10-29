@@ -8,26 +8,22 @@
 .scr-battle[data-world="4"] { --scene: url(../img/sky/sky_night.webp) center 35% / cover; --lip: #93b15e; --earth: #5f4c70; --earth2: #392d47; --pit: rgba(15, 8, 25, .35); }
 .scr-battle[data-world="5"] { --scene: url(../img/sky/sky_night.webp) center 35% / cover; --lip: #7a665c; --earth: #5c3b32; --earth2: #2f1d18; --pit: rgba(20, 5, 0, .35); }
 .bt-scene { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 8px; padding: calc(16px + var(--safe-t)) 16px 0; background: var(--scene); }
-.bt-ground { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 22px 16px calc(16px + var(--safe-b));
+.bt-ground { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 30px 16px calc(16px + var(--safe-b));
   background: linear-gradient(180deg, var(--lip) 0 12px, rgba(0, 0, 0, .12) 12px 15px, var(--earth) 15px, var(--earth2)); }
 .bt-ground > * { flex-shrink: 0; }
 .scr-battle > * { flex-shrink: 0; }
 
 /* ---------- top ---------- */
 .bt-top { display: flex; align-items: center; gap: 12px; }
-.bt-top .bt-sbar { flex: 1; min-width: 0; }
-.bt-top .sbar.compact { padding: 14px 14px 12px; }
-.bt-top .sbar-track { height: 6px; background: rgba(255, 255, 255, .7); }
-.bt-top .sbar-best, .bt-top .sbar-fill { height: 6px; background: #7cc463; border-radius: 3px; }
-.bt-top .sbar-best { opacity: .35; }
-.bt-top .sbar-mark { width: 20px; height: 20px; margin: -10px 0 0 -10px; background: rgba(255, 255, 255, .7); box-shadow: none; }
-.bt-top .sbar-mark.passed { background: #7cc463; }
-.bt-top .sbar-mark.cur:not(.boss) { width: 24px; height: 24px; margin: -12px 0 0 -12px; background: var(--butter); box-shadow: 0 0 0 2px rgba(240, 127, 82, .5); }
-.bt-top .sbar-mark.boss { width: 28px; height: 28px; margin: -14px 0 0 -14px; }
-.bt-stage-lbl { font-size: 11px; font-weight: 900; color: var(--ink); text-shadow: 0 0 6px rgba(255, 255, 255, .9); line-height: 14px; padding-left: 4px; }
+.bt-top .btn-icon { width: 40px; height: 40px; flex: none; }
+.bt-top .btn-icon .art-ico { width: 22px; height: 22px; }
+.bt-stage { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.bt-stage-lbl { font-size: 13px; font-weight: 900; color: var(--ink); text-shadow: 0 0 6px rgba(255, 255, 255, .9); line-height: 16px; text-align: center; }
+.bt-boss { height: 24px; border: 2px solid #fff; animation: btPop .35s cubic-bezier(.3, 1.4, .6, 1); }
+.bt-boss .cur-ico { width: 16px; height: 16px; }
 
 /* ---------- enemy ---------- */
-.bt-enemy { display: flex; flex-direction: column; gap: 6px; flex: 0 1 auto; min-height: 0; }
+.bt-enemy { position: relative; display: flex; flex-direction: column; gap: 6px; flex: 0 1 auto; min-height: 0; }
 /* margin: room for the islet's hanging rocks, which sit below the arena box */
 /* the enemy's feet sink into the ground's top edge */
 .bt-arena { position: relative; height: clamp(120px, 30vh, 250px); margin-bottom: -6px; }
@@ -68,13 +64,13 @@
 .bt-chip.c-shield { background: var(--skyp); color: #2a5fa8; } .bt-chip.c-poison { background: var(--lilac); color: #5a3f9c; } .bt-chip.c-ice { background: var(--skyp2); color: #2f8ea3; }
 .bt-chip.c-rage { background: var(--peach); color: #a33d22; } .bt-chip.c-buff { background: var(--butter); color: #8a4a12; }
 
-.bt-einfo { padding: 0 2px; }
-.bt-ename:empty { display: none; }
-.bt-ename { display: flex; align-items: center; gap: 6px; font-family: var(--display); font-size: 24px; line-height: 28px; margin-bottom: 6px; min-width: 0; color: var(--ink); text-shadow: 0 0 8px rgba(255, 255, 255, .9); }
-.bt-ename .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
-.bt-ename .tag { height: 28px; padding: 0 10px; border: 3px solid #fff; font-family: var(--font); font-size: 12px; box-shadow: 0 3px 6px rgba(50, 110, 130, .18); text-shadow: none; }
-.bt-ehint { font-size: 11px; color: #fff1b8; text-align: right; margin-top: 2px; line-height: 1.2; text-shadow: 0 1px 3px rgba(40, 20, 10, .8); }
-.bt-ehint:empty { display: none; }
+/* The enemy's plate straddles the edge of the ground under its feet: shorter than the player's bar, so the two never read as one scale. */
+.bt-einfo { position: absolute; z-index: 3; left: 50%; bottom: -14px; transform: translateX(-50%); width: min(62%, 240px); display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.bt-einfo .bt-bar { width: 100%; }
+.bt-ename:empty, .bt-ehint:empty { display: none; }
+.bt-ename { display: flex; gap: 4px; }
+.bt-ename .tag { height: 22px; border: 2px solid #fff; font-size: 11px; }
+.bt-ehint { font-size: 11px; font-weight: 900; color: #a33d22; line-height: 1.2; text-shadow: 0 0 5px #fff, 0 0 5px #fff; }
 .bt-bar { position: relative; }
 .bt-mark { position: absolute; top: -3px; bottom: -3px; width: 4px; margin-left: -2px; border-radius: 2px; background: var(--cta3); box-shadow: 0 0 0 1px #fff; z-index: 2; }
 .bt-mark.rage { background: var(--alarm); }
@@ -84,24 +80,26 @@
 .bt-player { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
 .bt-heart { display: flex; line-height: 0; flex: none; }
 .bt-heart .art-ico { display: block; }
-.bt-player .bar { flex: 1; }
+.bt-player .bar { flex: 1; height: 26px; }
+.bt-player .bar-label { display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 14px; }
 /* battle bars slide a full-width fill inside the rounded track instead of resizing it, so a hit animates on the compositor */
 .bt-player .bar-fill, .bt-player .bar-ghost, .bt-einfo .bar-fill, .bt-einfo .bar-ghost { width: 100%; transform: translateX(var(--off, 0)); will-change: transform; }
 .bt-player .bar-fill, .bt-einfo .bar-fill { transition: transform .45s cubic-bezier(.3, .8, .3, 1); }
 .bt-player .bar-ghost, .bt-einfo .bar-ghost { transition: transform .8s .25s ease-out; }
 .bar.hit { animation: btBarHit .4s ease-out; }
-.bt-shield { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 28px; padding: 0 10px; border-radius: 14px; font-weight: 900; font-size: 13px; flex: none;
-  background: var(--skyp); border: 3px solid #fff; color: var(--ink); box-shadow: 0 3px 6px rgba(50, 110, 130, .18); transition: filter .2s, opacity .2s; }
+/* shield: a blue cap over the tip of the green and a badge with the amount beside the HP numbers */
+.bt-pshield { position: absolute; top: 0; bottom: 0; width: 0; background: #7ab8f0; border-radius: 11px; box-shadow: inset 0 0 0 2px #fff;
+  transition: left .45s cubic-bezier(.3, .8, .3, 1), width .45s cubic-bezier(.3, .8, .3, 1); }
+.bt-shield { display: inline-flex; align-items: center; gap: 2px; height: 18px; padding: 0 6px 0 3px; border-radius: 9px; background: #fff; color: #2a5fa8; font-size: 13px; font-weight: 900; text-shadow: none; animation: btPop .3s ease-out; }
 .bt-shield .art-ico { display: block; }
-.bt-shield.zero { filter: grayscale(.7); opacity: .6; }
-.bt-combo { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border-radius: 14px; background: rgba(255, 250, 243, .85); border: 3px solid #fff; box-shadow: 0 3px 6px rgba(50, 110, 130, .18); flex: none; white-space: nowrap; color: var(--ink2); }
-.bt-combo .cl { font-size: 12px; font-weight: 900; }
-.bt-combo .cv { font-size: 12px; font-weight: 900; }
+.bt-shield.zero { display: none; }
+.bt-combo { position: absolute; z-index: 2; right: 12px; top: -12px; height: 24px; padding: 0 9px; border-radius: 12px; display: inline-flex; align-items: center;
+  font-size: 13px; font-weight: 900; background: rgba(255, 250, 243, .92); border: 2px solid #fff; box-shadow: 0 3px 6px rgba(50, 110, 130, .18); color: var(--ink2); white-space: nowrap; }
 .bt-combo.hot { background: var(--butter); color: #8a4a12; box-shadow: 0 0 0 2px rgba(240, 127, 82, .5), 0 3px 6px rgba(50, 110, 130, .18); }
 
 /* ---------- field ---------- */
 /* a pit dug into the ground */
-.bt-field { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: space-evenly; gap: 6px; padding: 18px 6px 6px; margin: 0 -4px; border-radius: 28px;
+.bt-field { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 16px 6px 10px; margin: 0 -4px; border-radius: 28px;
   background: var(--pit); box-shadow: inset 0 6px 12px rgba(0, 0, 0, .25), 0 1px 0 rgba(255, 255, 255, .18); position: relative; }
 .bt-row { display: flex; justify-content: center; align-items: flex-end; gap: 12px; min-height: 0; }
 .bt-tw { position: relative; flex: 0 1 50px; min-width: 30px; container-type: inline-size; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
@@ -121,14 +119,15 @@
 /* The glass is a drawing from img/tubes (256px wide, trimmed to the art). Its numbers are image pixels, measured per file:
    --gw body width (the tube's box), --gl/--gr overhang (rim, wings, fuse), --gt rim bottom, --gst top slice (rim plus any side decoration,
    so it never stretches), --gs bottom slice holding the round end, --wl/--wr walls, --gb glass under the hollow. --s maps them onto the tube; the rim and bottom keep their shape, only the straight middle stretches. */
-.bt-tube { --glass: url(../img/tubes/tube_plain.webp); --gw: 212; --gl: 22; --gr: 22; --gt: 67; --gst: var(--gt); --gs: 95; --wl: 38; --wr: 38; --gb: 33;
+.bt-tw, .bt-tube { --glass: url(../img/tubes/tube_plain.webp); --gw: 212; --gl: 22; --gr: 22; --gt: 67; --gst: var(--gt); --gs: 95; --wl: 38; --wr: 38; --gb: 33; }
+.bt-tube {
   --s: calc(100cqw / var(--gw)); position: relative; width: 100%; height: calc(var(--cap) * var(--lh) + (var(--gt) + var(--gb)) * var(--s) + 4px);
   filter: drop-shadow(0 4px 5px rgba(50, 110, 130, .2)); }
-.bt-tube.k-vial { --glass: url(../img/tubes/tube_vial.webp); --gw: 210; --gl: 23; --gr: 23; --gt: 71; --gs: 90; --wl: 42; --wr: 43; --gb: 36; }
-.bt-tube.k-amp { --glass: url(../img/tubes/tube_amp.webp); --gw: 252; --gl: 66; --gr: 66; --gt: 100; --gst: 205; --gs: 107; --wl: 54; --wr: 54; --gb: 46; }
-.bt-tube.k-catalyst { --glass: url(../img/tubes/tube_catalyst.webp); --gw: 189; --gl: 98; --gr: 97; --gt: 61; --gst: 170; --gs: 84; --wl: 39; --wr: 39; --gb: 35; }
-.bt-tube.k-bomb { --glass: url(../img/tubes/tube_bomb.webp); --gw: 198; --gl: 19; --gr: 167; --gt: 151; --gst: 200; --gs: 90; --wl: 43; --wr: 42; --gb: 40; }
-.bt-tube.k-sieve { --glass: url(../img/tubes/tube_sieve.webp); --gw: 200; --gl: 29; --gr: 27; --gt: 89; --gst: 115; --gs: 85; --wl: 40; --wr: 41; --gb: 35; }
+.bt-tube.k-vial, .bt-tw[data-kind="vial"] { --glass: url(../img/tubes/tube_vial.webp); --gw: 210; --gl: 23; --gr: 23; --gt: 71; --gs: 90; --wl: 42; --wr: 43; --gb: 36; }
+.bt-tube.k-amp, .bt-tw[data-kind="amp"] { --glass: url(../img/tubes/tube_amp.webp); --gw: 252; --gl: 66; --gr: 66; --gt: 100; --gst: 205; --gs: 107; --wl: 54; --wr: 54; --gb: 46; }
+.bt-tube.k-catalyst, .bt-tw[data-kind="catalyst"] { --glass: url(../img/tubes/tube_catalyst.webp); --gw: 189; --gl: 98; --gr: 97; --gt: 61; --gst: 170; --gs: 84; --wl: 39; --wr: 39; --gb: 35; }
+.bt-tube.k-bomb, .bt-tw[data-kind="bomb"] { --glass: url(../img/tubes/tube_bomb.webp); --gw: 198; --gl: 19; --gr: 167; --gt: 151; --gst: 200; --gs: 90; --wl: 43; --wr: 42; --gb: 40; }
+.bt-tube.k-sieve, .bt-tw[data-kind="sieve"] { --glass: url(../img/tubes/tube_sieve.webp); --gw: 200; --gl: 29; --gr: 27; --gt: 89; --gst: 115; --gs: 85; --wl: 40; --wr: 41; --gb: 35; }
 .bt-tube::before { content: ''; position: absolute; z-index: 3; pointer-events: none; top: 0; bottom: 0;
   left: calc(var(--gl) * var(--s) * -1); right: calc(var(--gr) * var(--s) * -1);
   border-style: solid; border-width: calc(var(--gst) * var(--s)) 0 calc(var(--gs) * var(--s)); border-image: var(--glass) var(--gst) 0 var(--gs) fill stretch; }
@@ -165,10 +164,9 @@
 .bt-ice { top: calc(var(--gt) * var(--s)); z-index: 2; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: #1d4e6b;
   background: linear-gradient(135deg, #eaf9fcdd, #9fdcf5b3); box-shadow: inset 0 0 8px #fff; }
 .bt-ice.in { animation: btPop .3s ease-out; }
-.bt-ttag { min-height: 14px; font-size: 12px; line-height: 14px; color: #fff1b8; font-weight: 900; text-shadow: 0 1px 3px rgba(40, 20, 10, .8); }
 
 /* ---------- queue ---------- */
-.bt-queue { height: 0; overflow: visible; }
+.bt-queue { position: absolute; left: 50%; bottom: 8px; width: 0; height: 0; }
 .bt-qv { display: flex; gap: 2px; padding: 3px; border-radius: 9px; border: 2.5px solid #fff; background: rgba(255, 250, 243, .85); }
 .bt-qv i { display: block; width: 8px; height: 16px; border-radius: 3px; }
 .bt-qv.next { box-shadow: 0 0 0 2px rgba(240, 127, 82, .5); }
@@ -176,22 +174,22 @@
 .bt-q-lbl { opacity: 1; }
 
 /* ---------- bottom ---------- */
-.bt-bottom { display: flex; align-items: center; gap: 12px; min-height: 56px; }
+.bt-bottom { display: flex; align-items: center; gap: 12px; min-height: 50px; }
 .bt-belt { flex: 1; display: flex; gap: 10px; min-width: 0; }
-.bt-pot { position: relative; flex: 0 0 52px; width: 52px; height: 52px; border-radius: 26px; border: 3px solid #fff; font-size: 24px; display: grid; place-items: center; background: var(--puff);
+.bt-pot { position: relative; flex: 0 0 46px; width: 46px; height: 46px; border-radius: 23px; border: 3px solid #fff; font-size: 24px; display: grid; place-items: center; background: var(--puff);
   box-shadow: 0 5px 10px rgba(50, 110, 130, .25), inset 0 -4px 0 rgba(0, 0, 0, .06); }
 .bt-pot svg { display: block; }
-.bt-pot .item-ico { width: 40px; height: 40px; }
+.bt-pot .item-ico { width: 34px; height: 34px; }
 .bt-pot.pt-undo, .bt-pot.pt-sleep { background: var(--lilac); }
 .bt-pot.pt-heal, .bt-pot.pt-firebomb { background: #ffd6d6; }
 .bt-pot.pt-flask, .bt-pot.pt-shake { background: var(--mint); }
 .bt-pot.pt-solvent, .bt-pot.pt-combo { background: var(--skyp); }
 .bt-pot:active:not(.empty) { transform: translateY(2px); }
-.bt-pot.empty { background: rgba(255, 255, 255, .18); border: 3px dashed rgba(255, 255, 255, .95); box-shadow: none; font-size: 22px; color: #fff; font-weight: 900; }
+.bt-pot.empty { background: rgba(255, 255, 255, .18); border: 3px dashed rgba(255, 255, 255, .95); box-shadow: none; font-size: 20px; color: #fff; font-weight: 900; }
 .bt-pot.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); }
 .bt-pot-n { position: absolute; right: -6px; top: -6px; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px; background: var(--cta); border: 3px solid #fff; color: #fff; font-size: 12px; font-weight: 900; line-height: 18px; text-align: center; pointer-events: none; }
-.bt-drain { flex: none; width: 56px; min-height: 56px; padding: 0; border-radius: 28px; }
-.bt-drain .art-ico { width: 34px; height: 34px; }
+.bt-drain { flex: none; width: 50px; min-height: 50px; padding: 0; border-radius: 25px; }
+.bt-drain .art-ico { width: 30px; height: 30px; }
 .bt-drain.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); }
 .bt-drain.stuck { box-shadow: 0 0 18px 4px #ffb27aaa; }
 .scr-battle.locked .bt-field, .scr-battle.locked .bt-bottom { cursor: progress; }
@@ -262,10 +260,11 @@
 
 @media (max-height: 700px) {
   .bt-arena { height: clamp(90px, 18vh, 130px); }
-  .bt-pot { flex-basis: 46px; width: 46px; height: 46px; }
-  .bt-drain { width: 48px; min-height: 48px; }
+  .bt-pot { flex-basis: 42px; width: 42px; height: 42px; }
+  .bt-pot .item-ico { width: 30px; height: 30px; }
+  .bt-drain { width: 46px; min-height: 46px; }
 }
 @media (max-width: 370px) {
   .bt-belt { gap: 6px; }
-  .bt-pot { flex-basis: 46px; width: 46px; height: 46px; }
+  .bt-pot { flex-basis: 42px; width: 42px; height: 42px; }
 }

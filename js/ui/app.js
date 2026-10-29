@@ -387,10 +387,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
     });
   };
 
-  UI.toast = function (text, ms) {
+  UI.toast = (text, ms) => UI.toastHtml(esc(text), ms);
+  UI.toastHtml = function (html, ms) {
     const box = $('toasts');
     if (!box) return;
-    const t = h('div', 'toast', esc(text));
+    const t = h('div', 'toast', html);
     box.appendChild(t);
     while (box.children.length > 3) box.firstChild.remove();
     clearTimeout(toastTimer);
