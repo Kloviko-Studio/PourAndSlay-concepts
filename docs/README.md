@@ -14,4 +14,4 @@
 
 ## Прототип
 
-`index.html` в корне — концепт v2 всей v1 (он же страница GitHub Pages). Открывается двойным кликом, сервер не нужен. Устройство — [v2/ARCHITECTURE.md](v2/ARCHITECTURE.md). Бот и тесты ядра — `node bot/sim.js`, `node bot/test-*.js`. Первый прототип сохранён в `legacy/v1.html`.
+`index.html` в корне — концепт v2 всей v1 (он же страница GitHub Pages). Открывается двойным кликом, сервер не нужен. Устройство — [v2/ARCHITECTURE.md](v2/ARCHITECTURE.md), трудности и как их решили — [v2/LESSONS.md](v2/LESSONS.md). Бот и тесты ядра — `node bot/sim.js`, `node bot/test-*.js`; игру через интерфейс с замером кадров — `node tools/playtest.mjs` (описание ключей в шапке файла). Первый прототип сохранён в `legacy/v1.html`.
