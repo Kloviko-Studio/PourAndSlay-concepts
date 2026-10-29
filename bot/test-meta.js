@@ -25,10 +25,10 @@ if (!PS.DATA) {
     questReward: { coins: 40 },
     shop: {
       products: [
-        { id: 'gems_80', gems: 80 }, { id: 'no_ads' },
+        { id: 'gems_small', gems: 80 }, { id: 'no_ads' },
         { id: 'starter', gems: 150, coins: 600, hours: 48 }, { id: 'seal', days: 30 },
       ],
-      coinPacks: [{ id: 'coins_s', gems: 20, coins: 150 }],
+      coinPacks: [{ id: 'coins_small', gems: 20, coins: 150 }],
     },
     seal: { days: 30, coinsMult: 1.5, dailyMult: 2 },
   };
@@ -210,13 +210,13 @@ assert.strictEqual(M.profile.seal.until, T0 + 60 * DAY, 'stacks on remaining tim
 M.buy('seal', T0 + 100 * DAY);
 assert.strictEqual(M.profile.seal.until, T0 + 130 * DAY, 'renew after expiry starts from now');
 assert.strictEqual(M.ctx(T0).sealActive, true);
-M.buy('gems_80', T0);
+M.buy('gems_small', T0);
 assert.strictEqual(M.profile.gems, 110);
-assert.ok(M.buyCoinPack('coins_s'));
+assert.ok(M.buyCoinPack('coins_small'));
 assert.strictEqual(M.profile.coins, 150 * M.P());
 assert.strictEqual(M.profile.gems, 90);
 M.profile.gems = 0;
-assert.strictEqual(M.buyCoinPack('coins_s'), false);
+assert.strictEqual(M.buyCoinPack('coins_small'), false);
 assert.strictEqual(M.buy('nope', T0), false);
 
 // interstitial
@@ -236,7 +236,7 @@ assert.strictEqual(M.shouldInterstitial(L + 181000, {}), true);
 M.markRewarded(L + 181000);
 assert.strictEqual(M.shouldInterstitial(L + 182000, {}), false, 'right after rewarded');
 assert.strictEqual(M.shouldInterstitial(L + 181000 + 120000, {}), true);
-M.buy('gems_80', L + 400000);
+M.buy('gems_small', L + 400000);
 assert.strictEqual(M.shouldInterstitial(L + 401000, {}), false, 'right after purchase');
 M.profile.noAds = true;
 assert.strictEqual(M.shouldInterstitial(L + DAY, {}), false, 'no_ads');

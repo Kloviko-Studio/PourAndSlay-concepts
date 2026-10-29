@@ -21,7 +21,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           // a lives day pays its coins instead while the stock is full
           const life = got ? !!got.lives : r.lives && lives < max;
           const v = got ? amount(got) : life ? `${r.lives} ❤️` : r.coins ? `${UI.fmt(Math.round(r.coins * P))} 🪙` : `${r.gems} 💎`;
-          const ico = life ? '❤️' : r.gems ? (i === days.length - 1 ? UI.inlineArt('shop/gems_450') : '💎') : (i >= 4 ? '💰' : '🪙');
+          const ico = life ? '❤️' : r.gems ? (i === days.length - 1 ? UI.inlineArt('shop/gems_medium') : '💎') : (i >= 4 ? '💰' : '🪙');
           return `<div class="day${done ? ' done' : ''}${i === today && d.canClaim ? ' today' : ''}${i === days.length - 1 ? ' big' : ''}">
             <span class="d-n">${T('День', 'Day')} ${i + 1}</span><span class="d-ico">${ico}</span><span class="d-v ${life ? 'c-hp' : r.gems ? 'c-gem' : 'c-gold'}">${v}</span></div>`;
         }).join('');

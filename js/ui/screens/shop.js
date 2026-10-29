@@ -17,7 +17,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const seal = PS.Meta.sealActive(now), days = PS.Meta.sealDaysLeft(now);
         const giftLeft = PS.Meta.adGiftLeft(now), giftMax = D.economy.gems.adGiftPerDay;
         const gems = D.shop.products.filter(x => /^gems_/.test(x.id));
-        const best = { gems_450: '+12%', gems_1000: '+25%', gems_2200: '+37%' };
+        const best = { gems_medium: '+12%', gems_large: '+25%', gems_huge: '+37%' };
         const starter = PS.Meta.starterAvailable(now) ? prod('starter') : null;
         const noAds = prod('no_ads');
         el.innerHTML = `

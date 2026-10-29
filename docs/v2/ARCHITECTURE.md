@@ -95,8 +95,8 @@ PS.DATA = {
   daily: [{coins: 30}, {coins: 50}, {gems: 5}, {coins: 80}, {coins: 100}, {coins: 120}, {gems: 15}],
   quests: [{ id, text: 'Закрой {n} колб огня', event: 'close', filter: {color: 'fire'}, n: [10, 2] /* a + b·i */, requires: {color: 'fire'} }],
   questReward: {coins: 40},
-  shop: { products: [{id: 'gems_80', name, price: '$0,99', gems: 80}, ..., {id: 'no_ads'}, {id: 'starter', gems: 150, coins: 600, hours: 48}, {id: 'seal', days: 30}],
-          coinPacks: [{id: 'coins_s', gems: 20, coins: 150}, ...] },
+  shop: { products: [{id: 'gems_small', name, price: '$0,99', gems: 80}, ..., {id: 'no_ads'}, {id: 'starter', gems: 150, coins: 600, hours: 48}, {id: 'seal', days: 30}],
+          coinPacks: [{id: 'coins_small', gems: 20, coins: 150}, ...] },
   seal: { days: 30, coinsMult: 1.5, dailyMult: 2 },
 };
 ```

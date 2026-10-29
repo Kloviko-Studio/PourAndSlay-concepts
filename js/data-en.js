@@ -155,18 +155,18 @@ var PS = globalThis.PS || (globalThis.PS = {});
       lab_spend: 'Spend {n} coins in the Lab'
     },
     products: {
-      gems_80: { name: 'Handful of Gems', price: '$0.99' },
-      gems_450: { name: 'Pouch of Gems', price: '$4.99' },
-      gems_1000: { name: 'Chest of Gems', price: '$9.99' },
-      gems_2200: { name: 'Treasury', price: '$19.99' },
+      gems_small: { name: 'Handful of Gems', price: '$0.99' },
+      gems_medium: { name: 'Pouch of Gems', price: '$4.99' },
+      gems_large: { name: 'Chest of Gems', price: '$9.99' },
+      gems_huge: { name: 'Treasury', price: '$19.99' },
       no_ads: { name: 'No Ads', price: '$3.99', desc: 'Removes ads between runs forever. Ads for rewards stay optional.' },
       starter: { name: 'Starter Pack', price: '$1.99', desc: '150 💎 and 600 🪙. One-time, 48 hours after island 2.' },
       seal: { name: 'Alchemist\'s Seal', price: '$4.99', desc: '30 days: +50% coins, daily reward ×2, revive without ads, no ads between runs.' }
     },
     coinPacks: {
-      coins_s: { name: 'Small Stack' },
-      coins_m: { name: 'Medium Stack' },
-      coins_l: { name: 'Big Stack' }
+      coins_small: { name: 'Small Stack' },
+      coins_medium: { name: 'Medium Stack' },
+      coins_large: { name: 'Big Stack' }
     }
   };
 })();

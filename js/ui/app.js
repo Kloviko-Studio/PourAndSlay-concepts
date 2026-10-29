@@ -523,7 +523,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     '⚔': 'gameplay/intents/intent_attack', '🤏': 'gameplay/intents/intent_steal', '🔀': 'gameplay/intents/intent_swap', '💪': 'gameplay/intents/intent_buff',
     '💚': 'gameplay/intents/intent_heal', '😡': 'gameplay/intents/status_rage', '🔥': 'gameplay/intents/status_burn',
     '⏳': 'ui/timer', '🎬': 'ui/ad_reward', '📺': 'ui/ad_break', '💀': 'ui/skull', '☠': 'ui/skull', '🎉': 'ui/quest_done', '👆': 'ui/hand',
-    '🚫': 'shop/no_ads', '💰': 'shop/coins_m',
+    '🚫': 'shop/no_ads', '💰': 'shop/coins_medium',
   };
   const CUR_RE = new RegExp(`(${Object.keys(CUR).join('|')})️?`, 'u');
   UI.inlineArt = path => `<img class="cur-ico" src="img/icons/${path}.webp" alt="" draggable="false">`;

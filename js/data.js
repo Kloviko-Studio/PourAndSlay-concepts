@@ -305,18 +305,18 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   D.shop = {
     products: [
-      { id: 'gems_80', name: 'Горсть кристаллов', price: '$0,99', usd: 0.99, gems: 80 },
-      { id: 'gems_450', name: 'Мешочек кристаллов', price: '$4,99', usd: 4.99, gems: 450 },
-      { id: 'gems_1000', name: 'Сундук кристаллов', price: '$9,99', usd: 9.99, gems: 1000 },
-      { id: 'gems_2200', name: 'Сокровищница', price: '$19,99', usd: 19.99, gems: 2200 },
+      { id: 'gems_small', name: 'Горсть кристаллов', price: '$0,99', usd: 0.99, gems: 80 },
+      { id: 'gems_medium', name: 'Мешочек кристаллов', price: '$4,99', usd: 4.99, gems: 450 },
+      { id: 'gems_large', name: 'Сундук кристаллов', price: '$9,99', usd: 9.99, gems: 1000 },
+      { id: 'gems_huge', name: 'Сокровищница', price: '$19,99', usd: 19.99, gems: 2200 },
       { id: 'no_ads', name: 'Без рекламы', price: '$3,99', usd: 3.99, desc: 'Навсегда убирает рекламу между забегами. Реклама за награды остаётся по желанию.' },
       { id: 'starter', name: 'Стартовый набор', price: '$1,99', usd: 1.99, gems: 150, coins: 600, hours: 48, afterIsland: 2, once: true, desc: '150 💎 и 600 🪙. Разово, 48 часов после острова 2.' },
       { id: 'seal', name: 'Печать алхимика', price: '$4,99', usd: 4.99, days: 30, desc: '30 дней: +50% монет, ежедневная награда ×2, воскрешение без рекламы, нет рекламы между забегами.' }
     ],
     coinPacks: [
-      { id: 'coins_s', name: 'Малая пачка', gems: 20, coins: 150 },
-      { id: 'coins_m', name: 'Средняя пачка', gems: 50, coins: 400 },
-      { id: 'coins_l', name: 'Большая пачка', gems: 120, coins: 1000 }
+      { id: 'coins_small', name: 'Малая пачка', gems: 20, coins: 150 },
+      { id: 'coins_medium', name: 'Средняя пачка', gems: 50, coins: 400 },
+      { id: 'coins_large', name: 'Большая пачка', gems: 120, coins: 1000 }
     ]
   };
 
