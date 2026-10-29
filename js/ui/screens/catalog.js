@@ -217,8 +217,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
         icon: `<img class="cat-gimg" src="img/icons/${d.lives ? 'battle/heart' : d.gems ? 'main_screen/diamond' : 'main_screen/coin'}.webp" alt="">`,
       }))
         .concat(D().quests.map(q => ({
-          id: q.id, name: q.text, icon: UI.art('tasks', 30), desc: '', group: T(`Задания — ${D().questsPerDay} в день`, `Quests — ${D().questsPerDay} a day`), raw: rawOf(q),
-          facts: [fact(T('цель', 'goal'), esc(`${q.n[0]} + ${q.n[1]}×i`)), fact(T('награда', 'reward'), coins(D().questReward.coins)), q.requires && fact(T('с', 'from'), esc(fmt(q.requires)))].filter(Boolean),
+          id: q.id, name: q.text.replace('{n}', 'N').replace('{color}', T('одного цвета', 'of one color')), icon: UI.art('tasks', 30), desc: '', group: T(`Задания — ${D().questsPerDay} в день`, `Quests — ${D().questsPerDay} a day`), raw: rawOf(q),
+          facts: [fact('N', esc(q.n[1] ? `${q.n[0]} + ${q.n[1]} × ${T('открытые острова', 'open islands')}` : String(q.n[0]))), fact(T('награда', 'reward'), coins(D().questReward.coins)),
+            q.requires && q.requires.island && fact(T('с острова', 'from island'), q.requires.island), q.requires && q.requires.lab && fact(T('нужна', 'needs'), T('Лаборатория', 'the Lab'))].filter(Boolean),
         }))),
     },
     {
@@ -230,9 +231,16 @@ var PS = globalThis.PS || (globalThis.PS = {});
           row('potionStart', T('Стартовый пояс', 'Starting belt'), D().potionStart.map(id => UI.item('potions', id).icon).join('')),
           row('combo', T('Множители комбо', 'Combo multipliers'), D().combo.map(k => '×' + k).join(' › ')),
         ];
+        const names = {
+          player: 'Игрок', cap: 'Слоёв в колбе', filledMin: 'Минимум полных колб', slots: 'Колбы на поле', belt: 'Слоты пояса',
+          deckMax: 'Стихий в колоде максимум', drain: 'Слив', heal: 'Лечение после боя', potionDrop: 'Шанс зелья', relicInPick: 'Реликвия в выборе',
+          picks: 'Карточки выбора', emptyPoolCoins: 'Монеты, если выбирать нечего', coins: 'Монеты', gems: 'Кристаллы', revive: 'Воскрешение',
+          lives: 'Жизни', reroll: 'Переброс', skip: 'Пропуск', boss: 'Босс', enemyHeals: 'Лечений у врага', interstitial: 'Реклама между забегами',
+          ads: 'Удвоение за рекламу', scaleP: 'Растёт с островом',
+        };
         const eco = Object.keys(ec).map(k => {
           const v = ec[k], flat = v && typeof v === 'object' && !Array.isArray(v) ? flatten(v, '', {}) : { '': v };
-          return { id: k, name: k, icon: '', desc: '', group: T('Экономика', 'Economy'), raw: {}, facts: Object.keys(flat).map(f => fact(f, esc(fmt(flat[f])))) };
+          return { id: k, name: T(names[k] || k, k), icon: '', desc: '', group: T('Экономика', 'Economy'), raw: {}, facts: Object.keys(flat).map(f => fact(f, esc(fmt(flat[f])))) };
         });
         return start.concat(eco);
       },

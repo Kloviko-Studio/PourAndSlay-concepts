@@ -46,6 +46,7 @@
 
 /* tube showcase in the catalog: battle tubes at a fixed layer height, wrapped into rows */
 .cat-tubes { --lh: 24px; margin-bottom: 14px; }
-.cat-tube-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 22px 14px; padding: 18px 8px 10px; border-radius: 20px; background: rgba(255, 250, 243, .5); }
-.cat-tube { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 50px; text-align: center; line-height: 1.15; }
+.cat-tube-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 22px 0; padding: 18px 26px 10px 4px; border-radius: 20px; background: rgba(255, 250, 243, .5); }
+.cat-tube { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 62px; text-align: center; line-height: 1.15; }
+.cat-tube .tiny { font-size: 10px; }
 .cat-tube .bt-tw { width: 46px; flex: none; }

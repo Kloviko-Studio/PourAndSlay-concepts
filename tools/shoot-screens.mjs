@@ -80,6 +80,8 @@ await go('catalog'); await ev(`document.querySelector('[data-t=tubes]').click();
 // Every catalog tab at full length for the content docs: the viewport grows to the list so one picture holds the whole tab.
 fs.mkdirSync(path.join(OUT, 'catalog'), { recursive: true });
 for (const t of await ev(`return [...document.querySelectorAll('.scr-catalog [data-t]')].map(b => b.dataset.t);`)) {
+  // back to phone height first, or a short tab inherits the previous tab's tall viewport as empty space
+  await send('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 1.5, mobile: true });
   const h = await ev(`document.querySelector('.scr-catalog [data-t=${t}]').click(); await W(600); const s = document.querySelector('.scr-catalog'); s.scrollTop = 0; return Math.ceil(s.getBoundingClientRect().top + s.scrollHeight + 16);`);
   await send('Emulation.setDeviceMetricsOverride', { width: 375, height: h, deviceScaleFactor: 1.5, mobile: true });
   await ev(`await W(400); await Promise.all([...document.images].map(i => i.complete || new Promise(r => { i.onload = i.onerror = r; }))); await W(300);`);
