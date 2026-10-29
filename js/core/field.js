@@ -221,6 +221,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   function solvent(F, i) {
     const t = F.tubes[i];
+    t.frozen = 0;
     return t.layers.length ? t.layers.pop() : null;
   }
 

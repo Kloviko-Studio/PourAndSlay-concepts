@@ -474,4 +474,40 @@ test('relic in the after-stage pick follows the max open island, not the current
   assert.ok(seen.high > 0);
 });
 
+test('booster potion: the chosen potion goes on the belt', () => {
+  const { R } = Run.create(ctxOf(), 3, ['booster_potion:sleep']);
+  assert.deepStrictEqual(R.potions, ['undo', 'heal', 'sleep']);
+});
+
+test('buying potions: each kind once per battle, price doubles for the rest of the run', () => {
+  const { R } = Run.create(ctxOf(), 3, []);
+  const B = R.battle, E = D.economy.potionBuy;
+  B.potions.length = 0;
+  assert.strictEqual(Run.potionBuyPrice(R), E.gems);
+  assert.ok(Run.buyPotion(R, 'heal'));
+  assert.strictEqual(Run.potionBuyPrice(R), E.gems * E.mult);
+  assert.ok(!Run.buyPotion(R, 'heal'), 'same kind twice in one battle');
+  assert.ok(Run.buyPotion(R, 'sleep'));
+  assert.strictEqual(R.gemsSpent, E.gems + E.gems * E.mult);
+  assert.ok(Run.buyPotion(R, 'flask'));
+  assert.ok(!Run.buyPotion(R, 'solvent'), 'belt full');
+  assert.ok(!Run.buyPotion(R, 'shake'), 'not unlocked (v1.2)');
+  advance(R);
+  assert.strictEqual(R.phase, 'battle');
+  R.battle.potions.length = 0;
+  assert.strictEqual(Run.potionBuyPrice(R), E.gems * Math.pow(E.mult, 3));
+  assert.ok(Run.buyPotion(R, 'heal'), 'kind limit resets with the battle');
+});
+
+test('undo keeps a potion bought after the last move and its purchase limit', () => {
+  const { R } = Run.create(ctxOf(), 3, []);
+  const B = R.battle;
+  B.history = JSON.parse(JSON.stringify(Object.assign({}, B, { history: null })));
+  B.potions = ['undo'];
+  Run.buyPotion(R, 'heal');
+  Run.act(R, { type: 'potion', idx: 0 });
+  assert.deepStrictEqual(R.battle.potions, ['heal']);
+  assert.deepStrictEqual(R.battle.bought, ['heal']);
+});
+
 console.log(passed + ' run tests passed');

@@ -425,7 +425,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (a.type === 'potion') {
       const id = B.potions[a.idx];
       if (!id) return false;
-      if (TUBE_POTIONS[id]) { const t = F.tubes[a.tube]; return !!t && t.layers.length >= (id === 'shake' ? 2 : 1); }
+      if (TUBE_POTIONS[id]) { const t = F.tubes[a.tube]; return !!t && (t.layers.length >= (id === 'shake' ? 2 : 1) || (id === 'solvent' && t.frozen > 0)); }
       if (id === 'undo') return !!B.history;
       if (id === 'combo') return !B.comboElixir;
       return !!D().potions[id];
@@ -480,11 +480,12 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (TUBE_POTIONS[id]) e.tube = a.tube;
     switch (id) {
       case 'undo': {
-        const snap = B.history, potions = B.potions.slice(), used = B.stats.potionsUsed;
+        const snap = B.history, potions = B.potions.slice(), used = B.stats.potionsUsed, bought = B.bought;
         Object.keys(snap).forEach(k => { B[k] = snap[k]; });
-        // Potions spent since the snapshot stay spent, so undo can't refund them.
+        // Potions spent or bought since the snapshot stay as they are, so undo can't refund them or reset the purchase limit.
         B.potions = potions;
         B.stats.potionsUsed = used;
+        B.bought = bought;
         B.history = null;
         e.tubes = tubesOf(B.field);
         ev.push(e);

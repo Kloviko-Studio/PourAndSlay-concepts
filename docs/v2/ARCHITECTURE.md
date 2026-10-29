@@ -2,14 +2,18 @@
 
 HTML-концепт всей v1 (этап A в `E:\MyApps\Kloviko\pour-and-slay\docs\ROADMAP.md`). Источник правды по правилам и числам — спеки `E:\MyApps\Kloviko\pour-and-slay\docs\` (`content/`, `screens/`, `decisions/`, `CONTEXT.md`). Старый прототип — `legacy/v1.html` (переносим оттуда всё, что не противоречит спекам: правила поля, звук, эффекты, SVG-монстров).
 
-Язык интерфейса — только русский. Работает и с `file://`, и на GitHub Pages: **обычные `<script src>`, без модулей, без сборки, без зависимостей**.
+Язык интерфейса — английский по умолчанию, русский в Настройках (`js/i18n.js`: строки UI пишутся рядом с разметкой как `T('рус', 'eng')`, тексты данных — `js/data-en.js` поверх `data.js`). В приложении язык берётся из телефона. Работает и с `file://`, и на GitHub Pages: **обычные `<script src>`, без модулей, без сборки, без зависимостей**.
 
 ## Файлы
 
 ```
 index.html                 оболочка: <link css>, контейнеры, <script> в порядке ниже
 css/style.css              токены, компоненты, экраны
+css/battle.css             бой, окна внутри попытки, слой обучения
+css/debug.css              каталог и отладка
 js/data.js                 PS.DATA — весь контент и баланс (только данные)
+js/data-en.js              английские названия и описания поверх PS.DATA
+js/i18n.js                 PS.T — язык и переводы строк UI
 js/core/rng.js             PS.Rng — детерминированный ГСЧ с состоянием в объекте
 js/core/util.js            PS.U — clone, clamp, round, plural
 js/core/field.js           PS.Field — колбы, переливание, мусор, очередь, генерация
@@ -17,17 +21,21 @@ js/core/combat.js          PS.Combat — бой: эффекты цветов, к
 js/core/run.js             PS.Run — попытка острова: этапы, выбор, босс, воскрешение, монеты
 js/core/meta.js            PS.Meta — профиль, Лаборатория, экономика, ежедневка, задания, магазин, сохранение
 js/ui/sound.js             PS.Snd
-js/ui/fx.js                PS.Fx — частицы, полёт, всплывающие числа, тряска
-js/ui/art.js               PS.Art — SVG врагов, боссов, островов
+js/ui/fx.js                PS.Fx — кольцо на месте попадания, шарик по дуге, всплывающие числа и надписи (без частиц и тряски)
+js/ui/art.js               PS.Art — запасные SVG врагов и островов (основной арт — рисованные картинки из img/)
 js/ui/app.js               PS.UI — роутер экранов, оверлеи, верхняя полоса, вкладки, тосты, Ads-заглушка
 js/ui/screens/*.js         экраны (регистрируются через PS.UI.screen(name, impl))
 js/ui/boot.js              старт приложения (последним)
 bot/load.js                загрузка data + core в Node через vm
 bot/sim.js                 бот: таблица прохождения островов
 bot/test-*.js              тесты ядра (node, без фреймворка, assert)
+tools/shoot-screens.mjs    скриншоты экранов и каталога в pour-and-slay/docs/art/shots
+tools/playtest.mjs         бой через интерфейс в Chrome без окна: кадры и цена хода
+tools/stamp-assets.mjs     метки ?v=<хэш> на css/js в index.html (перед коммитом)
+tools/compress-images.py   .webp рядом с исходными .png
 ```
 
-Порядок `<script>`: data → core/rng → core/util → core/field → core/combat → core/run → core/meta → ui/sound → ui/fx → ui/art → ui/app → ui/screens/* → ui/boot.
+Порядок `<script>`: data → data-en → i18n → core/rng → core/util → core/field → core/combat → core/run → core/meta → ui/sound → ui/fx → ui/art → ui/app → ui/screens/* → ui/boot.
 
 ## Общие правила
 
@@ -52,7 +60,7 @@ PS.Rng.weighted(r, [{w, ...}]) -> item
 
 ## PS.DATA (`js/data.js`)
 
-Всё из `docs/content/*.md`. Объекты по id; у каждого элемента: `id, name, icon (эмодзи), desc` (короткое описание с числами, RU) + поля ниже. Тексты описаний — шаблоны с подстановкой чисел из полей не нужны: пишем готовую строку.
+Всё из `docs/content/*.md`. Объекты по id; у каждого элемента: `id, name, icon, desc` (короткое описание с числами, RU; английское — в `data-en.js`). `icon` — эмодзи-метка: UI до отрисовки подменяет её рисованной картинкой, эмодзи на экран не попадают + поля ниже. Тексты описаний — шаблоны с подстановкой чисел из полей не нужны: пишем готовую строку.
 
 ```js
 PS.DATA = {
@@ -88,7 +96,7 @@ PS.DATA = {
     drain: {hp: 3}, heal: {regular: 0.10, boss: 0.25}, potionDrop: 0.20, relicInPick: {chance: 0.15, from: 4},
     coins: {reg: [3, 1], flee: [8, 3], kill: [15, 5], first: 20, hardMult: 1.25},   // [a, b] = a + b·i
     gems: {start: 30, first: 5, firstHard: 10, adGift: 2, adGiftPerDay: 3, questsAll: 5},
-    revive: {hp: 0.5, gems: 20, perRun: 1 /*одно воскрешение за попытку из любого источника, включая Перо феникса*/}, enemyHeals: 3, reroll: {gems: 7, mult: 2}, skip: [5, 1],
+    revive: {hp: 0.5, gems: 20, perRun: 1 /*одно воскрешение за попытку из любого источника, включая Перо феникса*/}, enemyHeals: 3, reroll: {gems: 7, mult: 2}, potionBuy: {gems: 15, mult: 2}, skip: [5, 1],
     boss: {returnHp: 0.5, rageAt: 0.33, rageTimer: 1},   // вернувшийся босс: returnHp от макс. HP
     interstitial: {fromIsland: 3, minSec: 180},
   },
@@ -178,6 +186,7 @@ PS.Run.create(ctx, islandN, boosterIds) -> {R, events}      // сразу ста
 PS.Run.act(R, action) -> events                           // в phase 'battle' → Combat.act; обрабатывает конец боя
 PS.Run.choose(R, optionIdx) -> events                     // может открыть уточняющий offer (какой цвет заменить и т.п.)
 PS.Run.reroll(R) -> events                                // оплату кристаллами делает Meta/UI
+PS.Run.potionBuyPrice(R), canBuyPotion(R, id), buyPotion(R, id) -> bool   // докупка зелья в бою: вид — раз за бой, цена ×2 за каждую покупку в попытке (R.potionBuys); ADR 0009 в доках игры; оплата — Meta/UI
 PS.Run.skip(R) -> events
 PS.Run.revive(R, source: 'free'|'gems') -> events
 PS.Run.reviveOptions(R) -> {free: bool, gemsPrice: n|null}
@@ -220,11 +229,11 @@ PS.Meta.starterAvailable(now)
 - `PS.UI.overlay(html|el, {cls, onClose})` → закрыватель; `PS.UI.toast(text)`; `PS.UI.topbar()` — обновить валюты.
 - `PS.UI.tabs` — нижние вкладки (Магазин · Лаборатория · Мир · Коллекция), скрываются в бою.
 - `PS.UI.ads.show(kind) -> Promise<bool>` — заглушка: оверлей «Реклама (демо)» на 1,5 с, затем награда. Interstitial — та же заглушка с крестиком.
-- `PS.UI.play(events, handlers)` — последовательное проигрывание событий с анимациями.
-- Экраны: `main` (свайп островов), `start` (окно старта), `battle` (+ выбор, реликвия, воскрешение, пауза, сборка), `results`, `cleared`, `lab`, `shop`, `collection`, `daily`, `quests`, `seal`, `settings`, `tutorial` (подсказки поверх боя).
+- `PS.UI.play(events, handlers)` — последовательное проигрывание событий: обработчик возвращает длительность (мс или Promise), следующее событие ждёт её. Порядок и тайминги боя — `pour-and-slay/docs/screens/battle.md`, «Анимации».
+- Экраны: `main` (свайп островов), `start` (окно старта), `battle` (+ выбор, реликвия, воскрешение, пауза, сборка), `results`, `cleared`, `lab`, `shop`, `collection`, `daily`, `quests`, `seal`, `settings`, `tutorial` (подсказки поверх боя), `catalog` (Настройки → Отладка → Каталог: всё из данных на одной странице).
 - Сохранение `activeRun` после каждого действия; при запуске — «Продолжить забег?».
 - ⚙ → Настройки содержит раздел «Отладка» (в концепте он нужен всегда): +500 🪙, +100 💎, открыть все острова, выиграть бой, сбросить прогресс, переключить Печать/Без рекламы.
 
 ## Стиль
 
-Решено: два шрифта — рисованный Pangolin для названий и заголовков, ровный Nunito для кнопок, чисел и текста (роли — `pour-and-slay/docs/art/style.md`, «Шрифты»), рисованные парящие острова, тёмно-синие панели с тёплыми акцентами; главная кнопка — самый контрастный элемент экрана (тёплая на холодном). Миры 1–3 дневные, 4–5 ночные. Палитру выбирает автор UI; все цвета — CSS-переменные на `:root`. Фон главного экрана (небо, облака, звёзды, острова) в концепте статичен; анимации, которые сделаем в приложении, описаны в `pour-and-slay/docs/screens/main.md`, раздел «Фон и анимации».
+Решено: два шрифта — рисованный Pangolin для названий и заголовков, ровный Nunito для кнопок, чисел и текста (роли — `pour-and-slay/docs/art/style.md`, «Шрифты»), рисованные небо и парящие острова, кремовые панели с бумажной фактурой и белой обводкой; главная кнопка — самый контрастный элемент экрана (тёплая на холодном). Миры 1–3 дневные, 4–5 ночные. Палитра — `pour-and-slay/docs/art/style.md`; все цвета — CSS-переменные на `:root`. Фон главного экрана (небо, облака, звёзды, острова) в концепте статичен; анимации, которые сделаем в приложении, описаны в `pour-and-slay/docs/screens/main.md`, раздел «Фон и анимации».

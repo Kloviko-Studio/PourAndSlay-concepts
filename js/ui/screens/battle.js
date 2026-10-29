@@ -410,7 +410,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const p = UI.item('potions', g.id);
       html += `<button class="bt-pot pt-${g.id}${g.id === armedId ? ' armed' : ''}" data-pot="${g.idx}" data-tip="<b>${esc(p.icon + ' ' + p.name)}${g.n > 1 ? ' ×' + g.n : ''}</b><br>${esc(p.desc)}" aria-label="${esc(p.name)}">${p.icon}${g.n > 1 ? `<span class="bt-pot-n">${g.n}</span>` : ''}</button>`;
     });
-    for (let i = list.length; i < (R.beltSize || 3); i++) html += `<div class="bt-pot empty" aria-label="${T('Пустой слот пояса', 'Empty belt slot')}">+</div>`;
+    for (let i = list.length; i < (R.beltSize || 3); i++) html += `<button class="bt-pot empty" data-a="buypot" aria-label="${T('Купить зелье', 'Buy a potion')}">+</button>`;
     $('.bt-belt').innerHTML = html;
     const dr = $('.bt-drain'), B = R.battle;
     const stuck = inBattle() && B.stuck;
@@ -891,6 +891,35 @@ var PS = globalThis.PS || (globalThis.PS = {});
     }
   }
 
+  // Tapping an empty belt slot buys a potion for gems (ADR 0009): each kind once per battle, every further buy in the run costs double.
+  function showBuyPotion() {
+    if (!S || S.busy || !inBattle()) return;
+    const tut = Tut();
+    if (tut && tut.locked()) return;
+    const R = S.R, B = R.battle, price = PS.Run.potionBuyPrice(R), gems = PS.Meta.profile.gems;
+    Snd.play('select');
+    const rows = PS.Run.unlockedPool(R, 'potions').map(id => {
+      const p = UI.item('potions', id), had = (B.bought || []).indexOf(id) >= 0, ok = PS.Run.canBuyPotion(R, id) && gems >= price;
+      return `<button class="boost${ok ? '' : ' capped'}" data-buy="${id}" ${PS.Run.canBuyPotion(R, id) ? '' : 'disabled'}>
+        <span class="boost-ico">${p.icon}</span><span class="grow"><span class="card-title" style="font-size:15px">${esc(p.name)}</span><br><span class="card-desc">${esc(p.desc)}</span></span>
+        <span class="boost-price">${had ? `<span class="dim">${T('куплено', 'bought')}</span>` : `<span class="price">${UI.ico.gem(18)}${price}</span>`}</span></button>`;
+    }).join('');
+    const close = UI.overlay(`<button class="btn-icon ov-x" data-close>${UI.ico.close}</button><h2 class="ov-title">${T('Купить зелье', 'Buy a potion')}</h2>
+      <p class="ov-text">${T(`Каждое зелье — раз за бой; каждая следующая покупка до конца острова — ×${D().economy.potionBuy.mult}. Ход не тратится.`, `Each potion once per fight; every next buy on this island costs ×${D().economy.potionBuy.mult}. Doesn't use a turn.`)}</p>
+      <div class="col">${rows}</div>`, { cls: 'sheet' });
+    close.card.querySelectorAll('[data-buy]').forEach(b => b.onclick = () => {
+      const id = b.dataset.buy;
+      if (!S || S.busy || !PS.Run.canBuyPotion(R, id)) return;
+      if (!PS.Meta.spendGems(price)) { Snd.play('bad'); UI.toast(T(`Не хватает 💎 — нужно ${price}`, `Not enough 💎 — need ${price}`)); return; }
+      PS.Run.buyPotion(R, id);
+      close();
+      save();
+      renderBelt();
+      Snd.play('gem');
+      hitNum($('.bt-belt'), UI.item('potions', id).icon, '#fff', true);
+    });
+  }
+
   function onDrain() {
     if (!S || S.busy || !inBattle()) return;
     const tut = Tut();
@@ -1179,6 +1208,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         if (a.dataset.a === 'drain') onDrain();
         else if (a.dataset.a === 'pause') { Snd.play('select'); showPause(); }
         else if (a.dataset.a === 'build') { Snd.play('select'); showBuild(); }
+        else if (a.dataset.a === 'buypot') showBuyPotion();
       });
       S.onResize = () => { if (S && !S.dead) fit(); };
       window.addEventListener('resize', S.onResize);

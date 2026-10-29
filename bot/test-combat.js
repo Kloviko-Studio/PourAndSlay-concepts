@@ -318,6 +318,20 @@ test('potions: heal 25%, flask, solvent, shake, sleep, firebomb; none spend a tu
   assert.strictEqual(B.stats.potionsUsed, 6);
 });
 
+test('solvent on a frozen tube removes the top layer and the ice, even on an empty one', () => {
+  const B = mkB({ rc: { potions: ['solvent', 'solvent'] } });
+  B.field.tubes[0].frozen = 3;
+  const n = B.field.tubes[0].layers.length;
+  Cb.act(B, { type: 'potion', idx: 0, tube: 0 });
+  assert.strictEqual(B.field.tubes[0].frozen, 0);
+  assert.strictEqual(B.field.tubes[0].layers.length, n - 1);
+  const e = B.field.tubes.findIndex(t => !t.layers.length);
+  B.field.tubes[e].frozen = 2;
+  assert.ok(Cb.canAct(B, { type: 'potion', idx: 0, tube: e }));
+  Cb.act(B, { type: 'potion', idx: 0, tube: e });
+  assert.strictEqual(B.field.tubes[e].frozen, 0);
+});
+
 test('hourglass delays first intent by 2; non-final boss retreats at 0 HP; rage only in final encounter', () => {
   const H = mkB({ rc: { relics: ['hourglass'] }, es: { cycle: [{ t: 'atk', v: 5, turns: 3 }] } });
   assert.strictEqual(H.enemy.timer, 5);

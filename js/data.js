@@ -72,7 +72,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     undo: { id: 'undo', name: 'Отмена', unlock: 1, weight: 10, desc: 'Откатывает последний ход целиком: поле, очередь, комбо, HP, щит, врага, яд и таймеры.' },
     heal: { id: 'heal', name: 'Лечение', unlock: 1, weight: 10, pct: 0.25, desc: 'Лечит 25% от максимума HP.' },
     flask: { id: 'flask', name: 'Пустая склянка', unlock: 1, weight: 8, desc: '+1 пустая колба до конца боя.' },
-    solvent: { id: 'solvent', name: 'Растворитель', unlock: 1, weight: 8, desc: 'Убирает верхний слой выбранной колбы (цвет или мусор).' },
+    solvent: { id: 'solvent', name: 'Растворитель', unlock: 1, weight: 8, desc: 'Убирает верхний слой выбранной колбы (цвет или мусор) и снимает с неё лёд.' },
     shake: { id: 'shake', name: 'Встряска', unlock: null, later: 'v1.2', weight: 6, desc: 'Перемешивает слои выбранной колбы.' },
     sleep: { id: 'sleep', name: 'Сонное зелье', unlock: 1, weight: 6, delay: 3, desc: 'Действие врага наступит на 3 хода позже.' },
     firebomb: { id: 'firebomb', name: 'Огненная бомба', unlock: 7, weight: 5, mult: 3, desc: 'Урон = 3 × текущий урон закрытия огня (без комбо).' },
@@ -104,7 +104,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     plain: { id: 'plain', name: 'Обычная колба', cap: 4, desc: 'Обычная колба на 4 слоя.' },
     amp: { id: 'amp', name: 'Усилитель', unlock: 3, mult: 2, desc: 'Эффект закрытия ×2.' },
     catalyst: { id: 'catalyst', name: 'Катализатор', unlock: 5, desc: 'Закрытие в ней не тратит ход.' },
-    sieve: { id: 'sieve', name: 'Сито', unlock: 3, desc: 'Камень и слизь, налитые в неё, исчезают; такое переливание не тратит ход.' },
+    sieve: { id: 'sieve', name: 'Сито', unlock: 3, desc: 'Камень и слизь, налитые в неё или брошенные врагом, исчезают; переливание мусора не тратит ход.' },
     bomb: { id: 'bomb', name: 'Бомба', unlock: 7, targets: 2, desc: 'При закрытии сбивает верхний слой у двух соседних колб (соседи подсвечиваются).' },
     vial: { id: 'vial', name: 'Пробирка', unlock: 10, cap: 2, desc: '2 слоя любых цветов вперемешку, никогда не закрывается.' }
   };
@@ -160,7 +160,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   };
 
   D.boosters = {
-    booster_potion: { id: 'booster_potion', name: 'Зелье на выбор', gems: 13, desc: 'Любое открытое зелье в пояс.' },
+    booster_potion: { id: 'booster_potion', name: 'Зелье на выбор', gems: 13, desc: 'Открытое зелье на твой выбор в пояс.' },
     booster_flask: { id: 'booster_flask', name: 'Запасная колба', gems: 20, slots: 1, desc: '+1 пустая колба в каждом бою.' },
     booster_vitality: { id: 'booster_vitality', name: 'Крепость', gems: 13, maxHp: 20, desc: '+20 к макс. HP на попытку.' },
     booster_first_strike: { id: 'booster_first_strike', name: 'Первый удар', gems: 10, mult: 2, desc: '×2 урона всех эффектов на первом этапе.' }
@@ -277,7 +277,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     coins: { reg: [4, 2], flee: [8, 3], kill: [15, 5], first: 20, hardMult: 1.25 },
     gems: { start: 30, first: 5, firstHard: 10, adGift: 2, adGiftPerDay: 3, questsAll: 5 },
     // lives: stored free revives (daily gift); with a full stock the gift's coins are given instead
-    revive: { hp: 0.5, gems: 20, perRun: 1 }, lives: { max: 5 }, reroll: { gems: 7, mult: 2 }, skip: [5, 1],
+    revive: { hp: 0.5, gems: 20, perRun: 1 }, lives: { max: 5 }, reroll: { gems: 7, mult: 2 }, potionBuy: { gems: 15, mult: 2 }, skip: [5, 1],
     // A beaten boss leaves and comes back next encounter with returnHp of its max HP (and a plaster).
     boss: { returnHp: 0.5, rageAt: 0.33, rageTimer: 1 },
     enemyHeals: 3,

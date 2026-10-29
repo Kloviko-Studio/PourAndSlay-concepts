@@ -6,3 +6,8 @@
 
 ## Deploy
 - After any change in `css/` or `js/`, run `node tools/stamp-assets.mjs` before committing. GitHub Pages lets browsers cache files for 10 minutes; without fresh `?v=` stamps a phone mixes new scripts with stale styles and screens fall apart.
+
+## Pour & Slay docs are the source of truth
+- Before changing rules, numbers, screens or art in the concept, read the matching spec in `../pour-and-slay/docs/` (`content/`, `screens/`, `art/`, `decisions/`, `CONTEXT.md`). Don't silently break it: if the concept should differ, say so and propose updating the docs (or an ADR) first.
+- After every change in the concept, bring those docs in line in the same piece of work: numbers, ids, screen behaviour, animation order, screenshots (`node tools/shoot-screens.mjs`) and lessons worth carrying to the React Native app (`docs/lessons.md` there).
+- Exception: things deliberately left out of the concept and built only in the real app (e.g. the living main-screen background). The docs say so explicitly ("в прототипе нет, делается в приложении"); such gaps are not mismatches and need no concept change.

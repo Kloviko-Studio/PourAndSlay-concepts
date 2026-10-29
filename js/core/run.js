@@ -304,7 +304,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const R = {
       v: 1, island: n, ctx: U().clone(ctx), rng: Rg().make(ctx.seed), phase: 'battle',
       stages: null, stage: 0, hp: 0, maxHp: 0, deck: {}, mods: {}, relics: [], slots: [], potions: [], beltSize: 0, filter: false,
-      boss: null, boosters, coins: 0, gemsSpent: 0, revives: { free: 0, gems: 0, life: 0 }, phoenixUsed: false, rerolls: 0,
+      boss: null, boosters, coins: 0, gemsSpent: 0, revives: { free: 0, gems: 0, life: 0 }, phoenixUsed: false, rerolls: 0, potionBuys: 0,
       offer: null, battle: null, best: 0, firstClear: false,
       stats: { closes: {}, junkCloses: 0, kills: 0, bossReached: 0, maxCombo: 0, potionsUsed: 0, stagesCleared: 0, turns: 0, dmgDealt: 0 },
     };
@@ -394,6 +394,24 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   const rerollPrice = R => D().economy.reroll.gems * Math.pow(D().economy.reroll.mult, R.rerolls);
 
+  // Buying a potion mid-fight: each kind once per battle (B.bought resets with the battle), every buy doubles the price for the rest of the run, like the reroll.
+  const potionBuyPrice = R => D().economy.potionBuy.gems * Math.pow(D().economy.potionBuy.mult, R.potionBuys || 0);
+  function canBuyPotion(R, id) {
+    const B = R.battle;
+    return R.phase === 'battle' && !!B && B.status === 'active' && B.potions.length < R.beltSize
+      && unlockedPool(R, 'potions').indexOf(id) >= 0 && (B.bought || []).indexOf(id) < 0;
+  }
+  // Gems are paid by Meta/UI, like the reroll.
+  function buyPotion(R, id) {
+    if (!canBuyPotion(R, id)) return false;
+    const B = R.battle;
+    R.gemsSpent += potionBuyPrice(R);
+    R.potionBuys = (R.potionBuys || 0) + 1;
+    (B.bought = B.bought || []).push(id);
+    B.potions.push(id);
+    return true;
+  }
+
   function reroll(R) {
     const ev = [];
     if (R.phase !== 'reward' || !R.offer || SUB_OFFERS[R.offer.kind]) return ev;
@@ -450,7 +468,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   PS.Run = {
-    stagesOf, create, act, canAct, choose, reroll, rerollPrice, skip, revive, reviveOptions, giveUp, unlockedPool,
+    stagesOf, create, act, canAct, choose, reroll, rerollPrice, potionBuyPrice, canBuyPotion, buyPotion, skip, revive, reviveOptions, giveUp, unlockedPool,
     coinMult, islandTags,
   };
 })();

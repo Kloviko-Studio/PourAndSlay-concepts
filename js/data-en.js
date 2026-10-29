@@ -21,7 +21,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       undo: { name: 'Undo', desc: 'Rewinds the whole last turn: field, queue, combo, HP, shield, enemy, poison and timers.' },
       heal: { name: 'Healing', desc: 'Heals 25% of max HP.' },
       flask: { name: 'Empty Flask', desc: '+1 empty tube until the end of the fight.' },
-      solvent: { name: 'Solvent', desc: 'Removes the top layer of the chosen tube (color or junk).' },
+      solvent: { name: 'Solvent', desc: 'Removes the top layer of the chosen tube (color or junk) and thaws it.' },
       shake: { name: 'Shake', desc: 'Shuffles the layers of the chosen tube.' },
       sleep: { name: 'Sleep Potion', desc: 'The enemy acts 3 turns later.' },
       firebomb: { name: 'Fire Bomb', desc: 'Damage = 3 × your current fire closing damage (no combo).' },
@@ -49,7 +49,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       plain: { name: 'Plain Tube', desc: 'A regular tube with 4 layers.' },
       amp: { name: 'Amplifier', desc: 'Closing effect ×2.' },
       catalyst: { name: 'Catalyst', desc: 'Closing in it doesn\'t use a turn.' },
-      sieve: { name: 'Sieve', desc: 'Stone and slime poured into it vanish; that pour doesn\'t use a turn.' },
+      sieve: { name: 'Sieve', desc: 'Stone and slime poured or thrown into it vanish; pouring junk doesn\'t use a turn.' },
       bomb: { name: 'Bomb', desc: 'On closing, knocks the top layer off two neighbouring tubes (neighbours are highlighted).' },
       vial: { name: 'Vial', desc: '2 layers of any colors mixed, never closes.' }
     },
@@ -95,7 +95,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       thrift: { name: 'Thrift', desc: '+10% coins per level.' }
     },
     boosters: {
-      booster_potion: { name: 'Potion of Choice', desc: 'Any unlocked potion into your belt.' },
+      booster_potion: { name: 'Potion of Choice', desc: 'An unlocked potion of your choice into your belt.' },
       booster_flask: { name: 'Spare Tube', desc: '+1 empty tube in every fight.' },
       booster_vitality: { name: 'Fortitude', desc: '+20 max HP for this run.' },
       booster_first_strike: { name: 'First Strike', desc: '×2 damage from all effects on the first stage.' }

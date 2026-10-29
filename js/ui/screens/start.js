@@ -15,6 +15,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const boss = bossId ? UI.item('bosses', bossId) : null;
       const ids = ORDER.filter(id => PS.DATA.boosters && PS.DATA.boosters[id]).concat(Object.keys(PS.DATA.boosters || {}).filter(id => ORDER.indexOf(id) < 0));
       const picked = {};
+      // «Potion of choice»: the player picks which potion when ticking the booster (ADR 0009).
+      let potion = null;
+      const potionPool = () => Object.keys(PS.DATA.potions).filter(id => { const d = PS.DATA.potions[id]; return !d.later && (d.unlock || 1) <= (p.maxIsland || 1); });
       const E = PS.DATA.economy, slotsFull = E.slots.base + PS.Meta.labTier('slot') * PS.DATA.lab.slot.per.slots >= E.slots.max;
       const capped = id => id === 'booster_flask' && slotsFull;
 
@@ -36,7 +39,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         <div class="col" data-boosts>${ids.map(id => {
           const b = UI.item('boosters', id);
           return `<button class="boost${capped(id) ? ' capped' : ''}" data-b="${id}" ${capped(id) ? 'disabled' : ''} data-tip="<b>${esc(b.name)}</b><br>${esc(b.desc)}">
-            <span class="boost-ico">${b.icon}</span><span class="grow"><span class="card-title" style="font-size:15px">${esc(b.name)}</span><br><span class="card-desc">${esc(b.desc)}</span></span>
+            <span class="boost-ico">${b.icon}</span><span class="grow"><span class="card-title" style="font-size:15px">${esc(b.name)}</span><br><span class="card-desc" data-desc>${esc(b.desc)}</span></span>
             <span class="boost-price">${capped(id) ? `<span class="dim">${T('макс. колб', 'max tubes')}</span>` : `<span class="price">${UI.ico.gem(18)}${b.gems}</span>`}</span><span class="boost-chk"></span></button>`;
         }).join('')}</div>
         <div class="start-total"><span class="muted">${T('Итого', 'Total')}</span><b data-total class="c-gem price"></b></div>
@@ -50,13 +53,31 @@ var PS = globalThis.PS || (globalThis.PS = {});
         el.querySelector('[data-total]').innerHTML = UI.ico.gem(18) + t;
         el.querySelectorAll('[data-b]').forEach(b => {
           b.classList.toggle('on', !!picked[b.dataset.b]);
+          if (b.dataset.b === 'booster_potion') {
+            const pp = potion && UI.item('potions', potion);
+            b.querySelector('[data-desc]').innerHTML = pp ? `${pp.icon} ${esc(pp.name)}` : esc(UI.item('boosters', 'booster_potion').desc);
+          }
           b.querySelector('.boost-chk').innerHTML = picked[b.dataset.b] ? UI.ico.check(14) : '';
         });
         const short = t > p.gems;
         go.className = 'btn btn-lg btn-block ' + (short ? 'btn-gem' : 'btn-cta');
         go.innerHTML = short ? T(`Не хватает <span class="price">${UI.ico.gem(20)}${t - p.gems}</span> — в магазин`, `Need <span class="price">${UI.ico.gem(20)}${t - p.gems}</span> more — Shop`) : (t ? `${T('Начать', 'Start')} <span class="price">· ${UI.ico.gem(22)}${t}</span>` : T('Начать', 'Start'));
       }
+      function pickPotion() {
+        const rows = potionPool().map(id => {
+          const pp = UI.item('potions', id);
+          return `<button class="boost" data-pp="${id}"><span class="boost-ico">${pp.icon}</span><span class="grow"><span class="card-title" style="font-size:15px">${esc(pp.name)}</span><br><span class="card-desc">${esc(pp.desc)}</span></span></button>`;
+        }).join('');
+        const close = UI.overlay(`<button class="btn-icon ov-x" data-close>${UI.ico.close}</button><h2 class="ov-title">${T('Выбери зелье', 'Pick a potion')}</h2>
+          <p class="ov-text">${T('Оно ляжет в пояс на старте попытки', 'It goes on your belt when the run starts')}</p><div class="col">${rows}</div>`, { cls: 'sheet' });
+        close.card.querySelectorAll('[data-pp]').forEach(r => r.onclick = () => {
+          potion = r.dataset.pp; picked.booster_potion = true;
+          close(); PS.Snd.play('gem'); sync();
+        });
+      }
       el.querySelectorAll('[data-b]').forEach(b => b.onclick = () => {
+        if (b.dataset.b === 'booster_potion' && !picked.booster_potion) { PS.Snd.play('select'); pickPotion(); return; }
+        if (b.dataset.b === 'booster_potion') potion = null;
         picked[b.dataset.b] = !picked[b.dataset.b];
         PS.Snd.play(picked[b.dataset.b] ? 'gem' : 'select');
         sync();
@@ -68,7 +89,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         if (params.abandon || (p.activeRun && p.activeRun.island !== n)) UI.abandonActiveRun();
         if (t && !PS.Meta.spendGems(t)) { UI.toast(T('Не хватает кристаллов', 'Not enough gems')); return; }
         PS.Snd.play('win');
-        UI.startRun(n, Object.keys(picked).filter(k => picked[k]));
+        UI.startRun(n, Object.keys(picked).filter(k => picked[k]).map(k => (k === 'booster_potion' && potion ? k + ':' + potion : k)));
       };
       sync();
     },

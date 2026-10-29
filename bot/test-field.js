@@ -224,6 +224,9 @@ test('potions: solvent, shake, addFlask', () => {
   const F = mk([['a', 'b', 'c', 'd'], []]);
   assert.strictEqual(Fd.solvent(F, 0), 'd');
   assert.strictEqual(Fd.solvent(F, 1), null);
+  F.tubes[1].frozen = 2;
+  Fd.solvent(F, 1);
+  assert.strictEqual(F.tubes[1].frozen, 0, 'solvent thaws the tube');
   Fd.shake(F, Rng.make(9), 0);
   assert.deepStrictEqual(F.tubes[0].layers.slice().sort(), ['a', 'b', 'c']);
   assert.strictEqual(Fd.addFlask(F), 2);

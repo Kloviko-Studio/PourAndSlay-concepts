@@ -235,7 +235,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
           player: 'Игрок', cap: 'Слоёв в колбе', filledMin: 'Минимум полных колб', slots: 'Колбы на поле', belt: 'Слоты пояса',
           deckMax: 'Стихий в колоде максимум', drain: 'Слив', heal: 'Лечение после боя', potionDrop: 'Шанс зелья', relicInPick: 'Реликвия в выборе',
           picks: 'Карточки выбора', emptyPoolCoins: 'Монеты, если выбирать нечего', coins: 'Монеты', gems: 'Кристаллы', revive: 'Воскрешение',
-          lives: 'Жизни', reroll: 'Переброс', skip: 'Пропуск', boss: 'Босс', enemyHeals: 'Лечений у врага', interstitial: 'Реклама между забегами',
+          lives: 'Жизни', reroll: 'Переброс', potionBuy: 'Докупка зелья в бою', skip: 'Пропуск', boss: 'Босс', enemyHeals: 'Лечений у врага', interstitial: 'Реклама между забегами',
           ads: 'Удвоение за рекламу', scaleP: 'Растёт с островом',
         };
         const eco = Object.keys(ec).map(k => {
