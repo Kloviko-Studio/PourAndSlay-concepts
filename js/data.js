@@ -251,6 +251,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
     I(9, 'lava_steps', 5, 'Лавовые Ступени', 'Lava Steps', 'medium', 12, [4, 8, 12], ['imp', 'lava_golem', 'ash_trickster'], 2.5, 1),
     I(10, 'tricksters_tower', 5, 'Башня Обманщика', "Trickster's Tower", 'hard', 15, [5, 10, 15], ['imp', 'lava_golem', 'ash_trickster'], 2.8, 4, true)
   ];
+  // Islands with their own battle location (arena backdrop, ground cap, dungeon earth in img/battle/island<N>/); the rest use the
+  // world's sky and earth colours. How to add one: pour-and-slay/docs/art/battle-locations.md.
+  [10].forEach(n => { D.islands[n - 1].battleArt = true; });
   // P scales packs, daily and quest coins; pinned apart from M so enemy tuning does not shift the economy.
   [1.0, 1.25, 1.5, 1.9, 2.0, 2.3, 2.7, 2.8, 3.1, 3.5].forEach((p, i) => { D.islands[i].P = p; });
 

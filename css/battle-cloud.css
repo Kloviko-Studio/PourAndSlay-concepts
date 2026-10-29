@@ -6,10 +6,10 @@ body[data-screen="battle"][data-theme="night"] { background: #152738; }
   min-height: 0; isolation: isolate; background: var(--earth2); }
 .scr-battle .bt-scene { flex: 0 0 auto; gap: 4px;
   padding: calc(8px + var(--safe-t)) calc(var(--gutter) + var(--safe-r)) 0 calc(var(--gutter) + var(--safe-l)); }
-.scr-battle .bt-ground { flex: 1 1 0; min-height: 0; gap: 8px; padding: 8px calc(var(--gutter) + var(--safe-r)) calc(10px + var(--safe-b)) calc(var(--gutter) + var(--safe-l));
+.scr-battle .bt-ground { flex: 1 1 0; min-height: 0; gap: 8px; padding: 5px calc(var(--gutter) + var(--safe-r)) calc(10px + var(--safe-b)) calc(var(--gutter) + var(--safe-l));
   background: linear-gradient(180deg, var(--earth), var(--earth2)); }
-.scr-battle[data-island="10"] { --earth: #263e55; --earth2: #202f49; --cream: #fff5e4; }
-.scr-battle[data-island="10"] .bt-scene { background: url(../img/battle/island10/arena_backdrop.webp) 30% 38% / cover #263e55; }
+/* Islands with their own battle layers (bt-art, see docs/art/battle-locations.md) keep a neutral dark earth under the pictures. */
+.scr-battle.bt-art { --earth: #263e55; --earth2: #202f49; --cream: #fff5e4; }
 .scr-battle .bt-top { gap: 10px; min-height: 44px; }
 .scr-battle .bt-top .btn-icon { width: 44px; height: 44px; border-radius: 50%; background: var(--puff); border: 2px solid #fff7e9; }
 .scr-battle .bt-top .art-ico { width: 26px; height: 26px; }
@@ -41,6 +41,9 @@ body[data-screen="battle"][data-theme="night"] { background: #152738; }
 .scr-battle .bt-chip .art-ico, .scr-battle .bt-chip .cur-ico { width: 14px; height: 14px; }
 /* portrait, HP bar, move icon and turn count all sit on the bar's bottom edge */
 .bt-enemy-hud { --hud-bar: 25px; display: flex; gap: 7px; align-items: flex-end; min-height: 44px; position: relative; z-index: 3; padding: 4px 0; }
+/* The enemy's row (or its status chips) tucks into the transparent strip under the sprite's feet, so the HP reads as the enemy's own. */
+.scr-battle .bt-chips:empty + .bt-enemy-hud { margin-top: -14px; }
+.scr-battle .bt-arena + .bt-chips:not(:empty) { margin-top: -8px; }
 .bt-portrait { flex: 0 0 34px; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; border: 2px solid #eedfc8; background: #e0dfcb; }
 .bt-portrait svg { width: 100%; height: 100%; display: block; transform: scale(1.45); transform-origin: 50% 30%; }
 .scr-battle .bt-einfo { position: static; transform: none; flex: 1; width: auto; min-width: 70px; gap: 2px; align-items: stretch; }
@@ -61,7 +64,10 @@ body[data-screen="battle"][data-theme="night"] { background: #152738; }
   font-variant-numeric: tabular-nums; color: #fff3d9; background: #172b4290; box-shadow: inset 0 0 0 1.5px #e4dfcf80; }
 .scr-battle .bt-intent.danger .it { color: #fff; background: #b84f42; }
 .scr-battle .bt-intent.paused .it { color: #203d53; background: #d1ecf2; }
-.scr-battle .bt-player { padding: 0; min-height: 28px; gap: 6px; }
+/* A quiet groove splits the enemy's row from the hero's; it is part of the hero's row, so the layout measures it. */
+.scr-battle .bt-player { padding: 11px 0 0; min-height: 28px; gap: 6px;
+  background: linear-gradient(rgba(13, 18, 34, .42), rgba(13, 18, 34, .42)) 0 0 / 100% 2px no-repeat,
+    linear-gradient(rgba(255, 255, 255, .07), rgba(255, 255, 255, .07)) 0 2px / 100% 1px no-repeat; }
 .scr-battle .bt-player .bar { min-width: 0; height: 25px; }
 .scr-battle .bt-player .bar-label { font-size: 13px; }
 .scr-battle .bt-heart .art-ico { width: 25px; height: 25px; }
@@ -104,14 +110,15 @@ body[data-theme="day"] .scr-battle .bt-intent { color: var(--ink); }
 body[data-theme="day"] .scr-battle .bt-intent .il { color: var(--num); }
 body[data-theme="day"] .scr-battle .bt-intent .it { color: var(--ink); background: rgba(255, 255, 255, .7); }
 body[data-theme="day"] .scr-battle .bt-ehint { color: #a33d22; text-shadow: 0 0 5px #fff; }
-/* Island 10 earth: one layer under the whole lower screen, started at the enemy's footing by syncEarth() in battle.js.
-   The cap (stone top, footing at 35% of its height) sits over the dungeon backdrop and fades into it; neither is in the flex flow. */
-.scr-battle[data-island="10"] .bt-scene { z-index: auto; background: none; }
-.scr-battle[data-island="10"] .bt-scene::before { content: ""; position: absolute; inset: 0; z-index: 0;
-  background: url(../img/battle/island10/arena_backdrop.webp) 30% 38% / cover #263e55; pointer-events: none; }
-.scr-battle[data-island="10"] .bt-top, .scr-battle[data-island="10"] .bt-enemy, .scr-battle[data-island="10"] .bt-ground { position: relative; z-index: 2; }
-.scr-battle[data-island="10"] .bt-ground { background: none; }
-.scr-battle[data-island="10"] .bt-earth { position: absolute; z-index: 1; left: 0; right: 0; top: var(--earth-y); bottom: 0;
-  background: #3d3d4c url(../img/battle/island10/dungeon_bg.webp) center top / cover no-repeat; pointer-events: none; }
-.scr-battle[data-island="10"] .bt-earth-cap { position: absolute; left: 0; top: calc(-1 * var(--cap-lift)); display: block; width: 100%; height: auto; max-width: none;
+/* An island's own battle location: the arena backdrop behind the scene, and one earth layer under the whole lower screen that
+   syncEarth() in battle.js starts at the enemy's feet. The ground cap sits over the dungeon backdrop and fades into it; neither is
+   in the flex flow. --arena-art / --dungeon-art are set per island on mount. */
+.scr-battle.bt-art .bt-scene { z-index: auto; background: none; }
+.scr-battle.bt-art .bt-scene::before { content: ""; position: absolute; inset: 0; z-index: 0;
+  background: var(--arena-art) 30% 38% / cover #263e55; pointer-events: none; }
+.scr-battle.bt-art .bt-top, .scr-battle.bt-art .bt-enemy, .scr-battle.bt-art .bt-ground { position: relative; z-index: 2; }
+.scr-battle.bt-art .bt-ground { background: none; }
+.scr-battle.bt-art .bt-earth { position: absolute; z-index: 1; left: 0; right: 0; top: var(--earth-y); bottom: 0;
+  background: #3d3d4c var(--dungeon-art) center top / cover no-repeat; pointer-events: none; }
+.scr-battle.bt-art .bt-earth-cap { position: absolute; left: 0; top: calc(-1 * var(--cap-lift)); display: block; width: 100%; height: auto; max-width: none;
   -webkit-mask-image: linear-gradient(#000 0 70%, transparent 100%); mask-image: linear-gradient(#000 0 70%, transparent 100%); }

@@ -394,15 +394,18 @@ var PS = globalThis.PS || (globalThis.PS = {});
     syncEarth(S.el);
   }
 
-  // Island 10 draws its ground as one layer behind the HUD and the field, starting where the enemy stands; created once, moved after every fit.
+  // An island with its own layers draws its ground as one layer behind the HUD and the field, starting where the enemy stands; created once, moved after every fit.
+  // Absolute, so a url() set inline does not depend on which stylesheet reads the variable.
+  const artUrl = (n, file) => new URL(`img/battle/island${n}/${file}.webp`, document.baseURI).href;
+
   function syncEarth(root) {
-    if (root.dataset.island !== '10') return;
+    if (!root.classList.contains('bt-art')) return;
     let earth = root.querySelector('.bt-earth');
     if (!earth) {
       earth = document.createElement('div');
       earth.className = 'bt-earth';
       earth.setAttribute('aria-hidden', 'true');
-      earth.innerHTML = '<img class="bt-earth-cap" src="img/battle/island10/ground_cap.webp" alt="" draggable="false">';
+      earth.innerHTML = `<img class="bt-earth-cap" src="${artUrl(root.dataset.island, 'ground_cap')}" alt="" draggable="false">`;
       root.prepend(earth);
     }
     const r = root.getBoundingClientRect(), mon = root.querySelector('.bt-mon').getBoundingClientRect(), top = root.querySelector('.bt-top').getBoundingClientRect();
@@ -1225,6 +1228,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
       S = { el, R, sel: null, mode: null, busy: false, dead: false, vm: {}, lh: 24 };
       el.dataset.world = w.n || 1;
       el.dataset.island = R.island;
+      // An island with its own battle layers draws them from img/battle/island<N>/ (docs/art/battle-locations.md).
+      const art = (UI.island(R.island) || {}).battleArt;
+      el.classList.toggle('bt-art', !!art);
+      if (art) ['arena_backdrop', 'dungeon_bg'].forEach((f, k) => el.style.setProperty(k ? '--dungeon-art' : '--arena-art', `url("${artUrl(R.island, f)}")`));
       skeleton();
       el.addEventListener('click', e => {
         const tw = e.target.closest('.bt-tw');
