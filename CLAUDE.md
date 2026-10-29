@@ -5,7 +5,7 @@
 - Originals stay as `.png` art sources; the game loads the `.webp` written next to them by `python tools/compress-images.py`. New sizes, quality or trimming go into that script's rules, not into one-off conversions.
 
 ## Battle locations
-- When the user sends layers for an island's battle location (arena backdrop, ground cap, dungeon earth), connect them by `../pour-and-slay/docs/art/battle-locations.md` without re-asking the decisions recorded there: files go to `img/battle/island<N>/`, the island gets `battleArt` in `js/data.js`, nothing else in the code changes. A layer that doesn't fit those rules gets regenerated, not compensated in code.
+- When the user sends layers for an island's battle location (arena backdrop, ground cap, dungeon earth), connect them by `../pour-and-slay/docs/art/battle-locations.md` without re-asking the decisions recorded there: files go to `img/battle/island_<NN>/` (two-digit number), the island gets `battleArt` in `js/data.js`, nothing else in the code changes. A layer that doesn't fit those rules gets regenerated, not compensated in code.
 
 ## Deploy
 - After any change in `css/` or `js/`, run `node tools/stamp-assets.mjs` before committing. GitHub Pages lets browsers cache files for 10 minutes; without fresh `?v=` stamps a phone mixes new scripts with stale styles and screens fall apart.

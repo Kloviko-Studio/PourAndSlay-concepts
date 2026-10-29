@@ -396,7 +396,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   // An island with its own layers draws its ground as one layer behind the HUD and the field, starting where the enemy stands; created once, moved after every fit.
   // Absolute, so a url() set inline does not depend on which stylesheet reads the variable.
-  const artUrl = (n, file) => new URL(`img/battle/island${n}/${file}.webp`, document.baseURI).href;
+  const artUrl = (n, file) => new URL(`img/battle/island_${String(n).padStart(2, '0')}/${file}.webp`, document.baseURI).href;
 
   function syncEarth(root) {
     if (!root.classList.contains('bt-art')) return;
@@ -1228,7 +1228,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       S = { el, R, sel: null, mode: null, busy: false, dead: false, vm: {}, lh: 24 };
       el.dataset.world = w.n || 1;
       el.dataset.island = R.island;
-      // An island with its own battle layers draws them from img/battle/island<N>/ (docs/art/battle-locations.md).
+      // An island with its own battle layers draws them from img/battle/island_<NN>/ (docs/art/battle-locations.md).
       const art = (UI.island(R.island) || {}).battleArt;
       el.classList.toggle('bt-art', !!art);
       if (art) ['arena_backdrop', 'dungeon_bg'].forEach((f, k) => el.style.setProperty(k ? '--dungeon-art' : '--arena-art', `url("${artUrl(R.island, f)}")`));
