@@ -891,7 +891,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     }
   }
 
-  // Tapping an empty belt slot buys a potion for gems (ADR 0009): each kind once per battle, every further buy in the run costs double.
+  // Tapping an empty belt slot buys a potion for gems (ADR 0010): each kind once per battle, every further buy in the run costs double.
   function showBuyPotion() {
     if (!S || S.busy || !inBattle()) return;
     const tut = Tut();

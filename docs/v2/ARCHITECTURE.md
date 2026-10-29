@@ -186,7 +186,7 @@ PS.Run.create(ctx, islandN, boosterIds) -> {R, events}      // сразу ста
 PS.Run.act(R, action) -> events                           // в phase 'battle' → Combat.act; обрабатывает конец боя
 PS.Run.choose(R, optionIdx) -> events                     // может открыть уточняющий offer (какой цвет заменить и т.п.)
 PS.Run.reroll(R) -> events                                // оплату кристаллами делает Meta/UI
-PS.Run.potionBuyPrice(R), canBuyPotion(R, id), buyPotion(R, id) -> bool   // докупка зелья в бою: вид — раз за бой, цена ×2 за каждую покупку в попытке (R.potionBuys); ADR 0009 в доках игры; оплата — Meta/UI
+PS.Run.potionBuyPrice(R), canBuyPotion(R, id), buyPotion(R, id) -> bool   // докупка зелья в бою: вид — раз за бой, цена ×2 за каждую покупку в попытке (R.potionBuys); ADR 0010 в доках игры; оплата — Meta/UI
 PS.Run.skip(R) -> events
 PS.Run.revive(R, source: 'free'|'gems') -> events
 PS.Run.reviveOptions(R) -> {free: bool, gemsPrice: n|null}

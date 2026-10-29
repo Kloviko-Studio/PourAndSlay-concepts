@@ -15,7 +15,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       const boss = bossId ? UI.item('bosses', bossId) : null;
       const ids = ORDER.filter(id => PS.DATA.boosters && PS.DATA.boosters[id]).concat(Object.keys(PS.DATA.boosters || {}).filter(id => ORDER.indexOf(id) < 0));
       const picked = {};
-      // «Potion of choice»: the player picks which potion when ticking the booster (ADR 0009).
+      // «Potion of choice»: the player picks which potion when ticking the booster (ADR 0010).
       let potion = null;
       const potionPool = () => Object.keys(PS.DATA.potions).filter(id => { const d = PS.DATA.potions[id]; return !d.later && (d.unlock || 1) <= (p.maxIsland || 1); });
       const E = PS.DATA.economy, slotsFull = E.slots.base + PS.Meta.labTier('slot') * PS.DATA.lab.slot.per.slots >= E.slots.max;
