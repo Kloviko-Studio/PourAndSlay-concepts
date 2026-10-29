@@ -292,7 +292,10 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
 
 /* ---------- fx ---------- */
 #fx { position: fixed; inset: 0; pointer-events: none; z-index: 70; overflow: hidden; }
-.orb, .spark { position: fixed; left: 0; top: 0; border-radius: 50%; }
+.orb, .spark, .ring { position: fixed; left: 0; top: 0; border-radius: 50%; }
+.ring { border: 4px solid; box-sizing: border-box; }
+/* the liquid falling from a tipped tube into the target; grows from the lip, then drains away into the target */
+.stream { position: fixed; left: 0; top: 0; border-radius: 4px; transform-origin: 50% 0; }
 .num { position: fixed; left: 0; top: 0; font-weight: 900; font-size: 24px; white-space: nowrap; -webkit-text-stroke: 5px #fff; paint-order: stroke fill; text-shadow: 0 3px 6px rgba(60, 120, 140, .4); }
 .num.big { font-size: 34px; }
 .pop { position: fixed; left: 50%; top: 42%; font-family: var(--display); font-weight: 400; font-size: min(54px, 11vw); line-height: 1; color: #fff; -webkit-text-stroke: 8px #f07f52; paint-order: stroke fill;
@@ -300,6 +303,7 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
   transform: translate(-50%, -50%); max-width: calc(100vw - 32px); }
 #vignette { position: fixed; inset: 0; pointer-events: none; z-index: 69; box-shadow: inset 0 0 120px 40px var(--vig, #f0584a); opacity: 0; }
 .wiggle { animation: wig .3s; }
+.bump { animation: bump .3s ease-out; }
 
 /* ================= screens ================= */
 
@@ -506,6 +510,7 @@ select.inp { font: inherit; color: var(--ink); background: #fff; border: 3px sol
 @keyframes rise { from { transform: translateY(30px) scale(.95); opacity: 0; } }
 @keyframes sheetUp { from { transform: translateY(100%); } }
 @keyframes toastIn { from { transform: translateY(-10px) scale(.95); opacity: 0; } }
+@keyframes bump { 40% { transform: scale(1.15); } }
 @keyframes wig { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes unlockIn { from { transform: scale(.2) rotate(-20deg); opacity: 0; } }

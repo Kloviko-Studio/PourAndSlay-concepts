@@ -2,8 +2,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
 (function () {
   'use strict';
   const UI = PS.UI, esc = UI.esc, Snd = PS.Snd;
-  // Battle motion is parked until the final app (only the pour stays): effect calls stay in place but draw nothing.
-  const Fx = Object.assign({}, PS.Fx, { animClass() {}, floatNum() {}, bigPop() {}, vignette() { return Promise.resolve(); } });
+  const Fx = PS.Fx;
+  const bigPop = (text, color) => Fx.bigPop(text, color, '24%');
   const T = PS.T;
   const D = () => PS.DATA;
   const Tut = () => PS.Tutorial || null;
@@ -23,21 +23,35 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
   const turnsTxt = n => n + ' ' + T.pl(n, ['ход', 'хода', 'ходов'], ['turn', 'turns']);
   // One tube's glass, liquid, ice and cork; the catalog's tube showcase draws with it too.
-  // o.fill: the last n layers rise in and their run's icon fades in after them; o.cork / o.glow: a closed tube.
+  // o.fill: the last n layers rise in and their run's icon fades in after them; o.drop: layers from this index up fall in from the mouth;
+  // o.flash: indexes of recoloured layers; o.runs: runs on screen before (runKey), whose icons stay while the others fade in;
+  // o.iceIn: the ice is new; o.cork / o.glow: a closed tube.
   UI.tubeHtml = function (t, o) {
     o = o || {};
-    const n = t.layers.length, sp = o.fill || 0;
+    const n = t.layers.length, sp = o.fill || 0, dr = o.drop;
     // Equal neighbours read as one body of liquid: one icon at the middle of each run (carried by its bottom layer).
     let run = 0;
     const layers = t.layers.map((c, k) => {
       if (k === 0 || c !== t.layers[k - 1]) { run = 1; while (t.layers[k + run] === c) run++; }
       const first = k === 0 || c !== t.layers[k - 1];
-      const cls = 'bt-layer' + (k === n - 1 ? ' top' : '') + (sp && k >= n - sp ? ' fill' : '');
-      return `<div class="${cls}" style="--k:${k};${layerBg(c)}">${first ? `<i${sp && k + run === n ? ' class="late"' : ''} style="--run:${run}">${iconOf(c)}</i>` : ''}</div>`;
+      const drops = dr != null && k >= dr;
+      const cls = 'bt-layer' + (k === n - 1 ? ' top' : '') + (sp && k >= n - sp ? ' fill' : '') + (drops ? ' drop' : '') + (o.flash && o.flash.has(k) ? ' flash' : '');
+      let ic = '';
+      if (first) {
+        const fade = sp && k + run === n ? 'late' : o.runs && !drops && !o.runs.has(runKey(k, run, c)) ? 'fresh' : '';
+        ic = `<i${fade ? ` class="${fade}"` : ''} style="--run:${run}">${iconOf(c)}</i>`;
+      }
+      return `<div class="${cls}" style="--k:${k};${drops ? `--d:${k - dr};` : ''}${sp && k >= n - sp ? `--j:${k - n + sp};` : ''}${layerBg(c)}">${ic}</div>`;
     }).join('');
     return `<div class="bt-tube k-${t.kind}${o.glow ? ' closed' : ''}" style="--cap:${t.cap}${o.glow ? `;--glow:${o.glow}` : ''}"><div class="bt-liq">${layers}</div>` +
-      `${t.frozen ? `<div class="bt-ice">${UI.elIco('freeze')} ${t.frozen}</div>` : ''}${o.cork ? '<div class="bt-cork"></div>' : ''}</div>`;
+      `${t.frozen ? `<div class="bt-ice${o.iceIn ? ' in' : ''}">${UI.elIco('freeze')} ${t.frozen}</div>` : ''}${o.cork ? '<div class="bt-cork"></div>' : ''}</div>`;
   };
+  const runKey = (k, run, c) => k + ':' + run + ':' + c;
+  function runsOf(layers) {
+    const out = new Set();
+    for (let k = 0; k < layers.length;) { let r = 1; while (layers[k + r] === layers[k]) r++; out.add(runKey(k, r, layers[k])); k += r; }
+    return out;
+  }
 
   const INTENT = {
     atk: [T('удар', 'attack'), UI.intentIco('atk')], stone: [T('камни в колбы', 'stones in tubes'), UI.intentIco('stone')], spores: [T('слизь в очередь', 'slime in queue'), UI.intentIco('spores')], freeze: [T('заморозит колбу', 'freezes a tube'), UI.intentIco('freeze')],
@@ -167,10 +181,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function setBar(bar, v, max, label) {
-    const pct = Math.max(0, Math.min(100, max ? v / max * 100 : 0)) + '%';
-    bar.querySelector('.bar-fill').style.width = pct;
+    const off = (Math.max(0, Math.min(100, max ? v / max * 100 : 0)) - 100) + '%';
+    bar.querySelector('.bar-fill').style.setProperty('--off', off);
     const g = bar.querySelector('.bar-ghost');
-    if (g) g.style.width = pct;
+    if (g) g.style.setProperty('--off', off);
     bar.querySelector('.bar-label').textContent = label;
   }
 
@@ -242,30 +256,126 @@ var PS = globalThis.PS || (globalThis.PS = {});
     c.querySelector('.cv').textContent = '×' + kfmt(k);
   }
 
-  // fill: {tube, n} — the last n layers of that tube rise in and its top run's icon fades in after them
-  function renderTubes(tubes, fill) {
+  // ---------- tubes ----------
+  // Every tube keeps its DOM until its contents change, and a change plays from what is on screen to the new state:
+  // layers poured off or removed collapse, layers added on top rise (pour) or drop in (stones, refills), recoloured ones flash,
+  // and a whole new set first drains the old one away. S.tv[i] = {el, t: snapshot, sig, pend, final}.
+  const snap = t => ({ kind: t.kind, cap: t.cap, frozen: t.frozen, layers: t.layers.slice() });
+  const sigOf = t => t.kind + '|' + t.cap + '|' + t.frozen + '|' + t.layers.join(',');
+  const DROP = 260, DROP_STEP = 35, OUT = 200;
+  const dropMs = n => DROP + Math.max(0, n - 1) * DROP_STEP;
+
+  function drawTube(i, t, o) {
+    const v = S.tv[i];
+    if (v.pend) { clearTimeout(v.pend); v.pend = 0; }
+    const td = UI.item('tubes', t.kind);
+    v.el.innerHTML = UI.tubeHtml(t, o) +
+      `<div class="bt-ttag"${t.kind !== 'plain' ? ` data-tip="<b>${esc(td.name)}</b><br>${esc(td.desc)}"` : ''}>${t.kind !== 'plain' ? td.icon : ''}</div>`;
+    v.t = snap(t); v.sig = sigOf(t);
+  }
+  // The state counts as shown now and is drawn once the collapse on screen has played; a newer change draws it at once first.
+  function drawLater(i, t, o, ms) {
+    const v = S.tv[i];
+    v.t = snap(t); v.sig = sigOf(t); v.final = t;
+    v.pend = setTimeout(() => { v.pend = 0; if (S && S.tv && S.tv[i] === v) drawTube(i, t, o); }, ms / (UI.speed || 1));
+  }
+  function flush(i) {
+    const v = S.tv[i];
+    if (v && v.pend) drawTube(i, v.final, {});
+  }
+  // Marks layers of tube i (indexes into what is shown) to collapse; icons of runs that lose layers fade, since their middle moves.
+  function collapse(i, gone) {
+    const v = S.tv[i], L = v.el.querySelectorAll('.bt-layer'), was = v.t.layers;
+    // a block off the top just sinks; anything taken from lower down collapses so the layers above settle
+    const low = was.length - gone.length, top = gone.every(k => k >= low);
+    gone.forEach(k => { if (!L[k]) return; if (top) L[k].style.setProperty('--j', k - low); L[k].classList.add(top ? 'off' : 'out'); });
+    for (let k = 0; k < was.length;) {
+      let r = 1;
+      while (was[k + r] === was[k]) r++;
+      if (gone.some(g => g >= k && g < k + r)) { const ic = L[k] && L[k].querySelector('i'); if (ic) ic.classList.add('gone'); }
+      k += r;
+    }
+  }
+  // Indexes of `was` to drop so that the rest reads `now`, or null when `now` is not what is left of `was`.
+  function removed(was, now) {
+    const out = [];
+    let j = 0;
+    was.forEach((c, k) => { if (j < now.length && c === now[j]) j++; else out.push(k); });
+    return j === now.length ? out : null;
+  }
+  function uncork(i) {
+    const tb = S.tv[i].el.querySelector('.bt-tube');
+    if (tb && tb.querySelector('.bt-cork')) { tb.classList.remove('closed', 'closing'); tb.classList.add('opening'); }
+  }
+
+  // Shows `tubes` (default: the field) and returns how long the changes take to play, in ms.
+  // opt.add: 'drop' makes layers added on top fall in instead of rising; opt.enter: every tube fills from empty; opt.instant: no motion.
+  function renderTubes(tubes, opt) {
     const B = S.R.battle;
-    if (!B) return;
+    if (!B) return 0;
+    opt = opt || {};
     tubes = tubes || B.field.tubes;
-    const rows = PS.Field.layout({ tubes, filled: B.field.filled }).rows;
-    const bombN = {};
-    tubes.forEach((t, i) => { if (t.kind === 'bomb') PS.Field.neighbors({ tubes, filled: B.field.filled }, i).forEach(j => { bombN[j] = true; }); });
-    rows.forEach((row, r) => {
-      const host = $(`.bt-row[data-row="${r}"]`);
-      host.innerHTML = '';
-      row.forEach(i => {
-        const t = tubes[i];
-        const w = document.createElement('div');
-        w.className = 'bt-tw' + (bombN[i] ? ' bomb-n' : '');
-        w.dataset.i = i;
-        const td = UI.item('tubes', t.kind);
-        w.innerHTML = UI.tubeHtml(t, { fill: fill && fill.tube === i ? fill.n : 0 }) + `
-          <div class="bt-ttag"${t.kind !== 'plain' ? ` data-tip="<b>${esc(td.name)}</b><br>${esc(td.desc)}"` : ''}>${t.kind !== 'plain' ? td.icon : ''}</div>`;
-        host.appendChild(w);
+    const L = { tubes, filled: B.field.filled }, rows = PS.Field.layout(L).rows;
+    const key = rows.map(r => r.join(',')).join('/');
+    if (!S.tv || S.tvKey !== key) {
+      // Re-attached nodes would replay their old animations, so after a layout change every tube is drawn afresh.
+      const prev = S.tv || [];
+      S.tv = [];
+      rows.forEach((row, r) => {
+        const host = $(`.bt-row[data-row="${r}"]`);
+        host.textContent = '';
+        row.forEach(i => {
+          let v = prev[i];
+          if (v) { if (v.pend) { clearTimeout(v.pend); v.pend = 0; } v.sig = ''; }
+          else {
+            const w = document.createElement('div');
+            w.className = 'bt-tw';
+            w.dataset.i = i;
+            v = { el: w, t: null, sig: '' };
+            if (prev.length && !opt.instant && !opt.enter) { w.classList.add('appear'); setTimeout(() => w.classList.remove('appear'), 400); }
+          }
+          S.tv[i] = v;
+          host.appendChild(v.el);
+        });
       });
+      S.tvKey = key;
+    }
+    const bombN = {};
+    tubes.forEach((t, i) => { if (t.kind === 'bomb') PS.Field.neighbors(L, i).forEach(j => { bombN[j] = true; }); });
+    let ms = 0;
+    tubes.forEach((t, i) => {
+      const v = S.tv[i];
+      if (!v) return;
+      v.el.classList.toggle('bomb-n', !!bombN[i]);
+      if (v.sig === sigOf(t) && !opt.enter) return;
+      flush(i);
+      const o = v.sig ? v.t : null, iceIn = !!(o && !o.frozen && t.frozen);
+      if (opt.enter) { drawTube(i, t, { drop: 0 }); ms = Math.max(ms, dropMs(t.layers.length)); return; }
+      if (opt.instant || !o) { drawTube(i, t, {}); return; }
+      if (o.kind !== t.kind || o.cap !== t.cap) { drawTube(i, t, { drop: 0, iceIn }); ms = Math.max(ms, dropMs(t.layers.length)); return; }
+      const was = o.layers, now = t.layers, runs = runsOf(was);
+      if (now.length > was.length && was.every((c, k) => now[k] === c)) {
+        const add = now.length - was.length;
+        if (opt.add === 'drop') { drawTube(i, t, { drop: was.length, runs, iceIn }); ms = Math.max(ms, dropMs(add)); }
+        else { drawTube(i, t, { fill: add, runs, iceIn }); ms = Math.max(ms, 260); }
+        return;
+      }
+      const gone = now.length < was.length ? removed(was, now) : null;
+      if (gone) { collapse(i, gone); drawLater(i, t, { runs, iceIn }, OUT); ms = Math.max(ms, OUT + 20); return; }
+      if (now.length === was.length) {
+        const f = new Set();
+        was.forEach((c, k) => { if (now[k] !== c) f.add(k); });
+        drawTube(i, t, { flash: f, runs, iceIn });
+        ms = Math.max(ms, f.size ? 400 : 0);
+        return;
+      }
+      // a whole new set of layers: the old ones drain away, then the new ones fall in
+      if (was.length) { uncork(i); collapse(i, was.map((c, k) => k)); drawLater(i, t, { drop: 0, iceIn }, OUT); ms = Math.max(ms, OUT + dropMs(now.length)); }
+      else { drawTube(i, t, { drop: 0, iceIn }); ms = Math.max(ms, dropMs(now.length)); }
     });
     S.shownTubes = tubes;
     refreshSel();
+    return ms;
   }
 
   function fit() {
@@ -327,7 +437,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     renderEnemyBars();
     renderIntent();
     renderPlayer();
-    renderTubes();
+    renderTubes(null, { instant: true });
     renderQueue();
     renderBelt();
     fit();
@@ -347,19 +457,48 @@ var PS = globalThis.PS || (globalThis.PS = {});
   const effTarget = kind => kind === 'shield' || kind === 'slime' ? $('.bt-shield') : kind === 'heal' || kind === 'self' ? $('.bt-player .bar') : monEl();
   const flySrc = () => (S.flyFrom != null && tubeEl(S.flyFrom)) || $('.bt-field');
 
-  // Nothing flies between tubes: the source level drops while its top icon fades, then the target level rises and the icon of the
-  // run it lands in fades back in at the run's new middle.
+  // The source tube flies over the target and tips; a stream falls from its lip while its level drops and the target's rises,
+  // then it flies back. Only transforms move, on the tube's own layer.
+  const TIP_DEG = 105, TIP = TIP_DEG * Math.PI / 180, TRAVEL = 150;
   async function animPour(ev) {
     Snd.play('pour');
-    const aw = tubeEl(ev.from);
-    if (aw) {
-      [...aw.querySelectorAll('.bt-layer')].slice(-ev.n).forEach(L => L.classList.add('out'));
-      const icons = aw.querySelectorAll('.bt-layer i');
-      if (icons.length) icons[icons.length - 1].classList.add('gone');
-      await sleep(200);
-    }
-    renderTubes(ev.tubes, ev.swallow ? null : { tube: ev.to, n: ev.n });
-    if (!ev.swallow) await sleep(260);
+    const aw = tubeEl(ev.from), bw = tubeEl(ev.to);
+    if (!aw || !bw) { renderTubes(ev.tubes); return; }
+    flush(ev.from); flush(ev.to);
+    const A = aw.querySelector('.bt-tube').getBoundingClientRect(), Bt = bw.querySelector('.bt-tube').getBoundingClientRect();
+    const lift = new DOMMatrix(getComputedStyle(aw).transform).m42;
+    const lip = A.width / 2, len = A.height, tx = Bt.left + Bt.width / 2, mouth = Bt.top - 6;
+    let side = tx >= A.left + lip ? 1 : -1;
+    // the tipped body sticks out away from the target; flip it when that would leave the screen
+    const ox = sd => tx - sd * Math.cos(TIP) * lip, end = sd => ox(sd) - sd * Math.sin(TIP) * len;
+    if (end(side) < 0 || end(side) > window.innerWidth) side = -side;
+    const dx = ox(side) - (A.left + lip), dy = mouth - Math.sin(TIP) * lip - (A.top - lift);
+    aw.classList.add('pouring');
+    aw.style.transform = `translate(${dx}px, ${dy}px) rotate(${side * TIP_DEG}deg)`;
+    await sleep(TRAVEL);
+    const liq = bw.querySelector('.bt-liq').getBoundingClientRect();
+    const surface = liq.bottom - (ev.swallow ? 0 : S.tv[ev.to].t.layers.length * S.lh);
+    const ms = Math.max(260, renderTubes(ev.tubes));
+    stream(tx, mouth, surface, Math.max(4, liq.width * .3), colorDef(ev.color).css, ms);
+    await sleep(ms);
+    aw.style.transform = '';
+    setTimeout(() => aw.classList.remove('pouring'), TRAVEL + 40);
+    await sleep(TRAVEL * .4);
+  }
+  function stream(x, y0, y1, w, color, ms) {
+    const fx = document.getElementById('fx');
+    if (!fx || y1 <= y0) return;
+    const el = document.createElement('div'), h = y1 - y0, left = x - w / 2;
+    el.className = 'stream';
+    el.style.cssText = `width:${w}px;height:${h}px;background:linear-gradient(90deg, rgba(255,255,255,.45), transparent 45%), ${color}`;
+    fx.appendChild(el);
+    const an = el.animate([
+      { transform: `translate(${left}px, ${y0}px) scaleY(0)` },
+      { transform: `translate(${left}px, ${y0}px) scaleY(1)`, offset: .3 },
+      { transform: `translate(${left}px, ${y0}px) scaleY(1)`, offset: .7 },
+      { transform: `translate(${left}px, ${y1}px) scaleY(0)` },
+    ], { duration: ms / (UI.speed || 1), easing: 'ease-in-out' });
+    Fx.settle(an, ms).then(() => el.remove());
   }
 
   function hitNum(el, text, color, big) { if (el) Fx.floatNum(el, text, color, big); }
@@ -374,8 +513,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
       S.flyFrom = null;
       renderTop();
       renderMonster(true);
-      renderEnemyBars(); renderIntent(); renderPlayer(); renderTubes(B.field.tubes); renderQueue(); renderBelt(); fit();
-      if (ev.boss) { Fx.bigPop(ev.final ? T('Босс!', 'Boss!') : T(`Босс · встреча ${ev.encounter + 1}`, `Boss · fight ${ev.encounter + 1}`), '#ff9a8a'); Snd.play('hurt'); return 900; }
+      renderEnemyBars(); renderIntent(); renderPlayer(); renderQueue(); renderBelt();
+      renderTubes(B.field.tubes, { instant: true }); fit();
+      renderTubes(B.field.tubes, { enter: true });
+      if (ev.boss) { bigPop(ev.final ? T('Босс!', 'Boss!') : T(`Босс · встреча ${ev.encounter + 1}`, `Boss · fight ${ev.encounter + 1}`), '#ff9a8a'); Snd.play('hurt'); return 900; }
       Snd.play('drop');
       return 550;
     },
@@ -387,26 +528,27 @@ var PS = globalThis.PS || (globalThis.PS = {});
     swallow(ev) { Fx.burstAt(tubeEl(ev.tube), '#c9d3ee', 12, 40); Snd.play('drop'); return 150; },
     async close(ev) {
       S.flyFrom = ev.tube;
-      renderTubes(ev.tubes);
+      const ms = renderTubes(ev.tubes);
+      if (ms) await sleep(ms);
+      flush(ev.tube);
       const w = tubeEl(ev.tube);
       if (w) {
         const t = w.querySelector('.bt-tube');
         t.style.setProperty('--glow', colorDef(ev.color).css);
-        t.classList.add('closed');
+        t.classList.add('closed', 'closing');
         t.insertAdjacentHTML('beforeend', '<div class="bt-cork"></div>');
         Fx.burstAt(t, colorDef(ev.color).css, 16, 50);
       }
       Snd.play(ev.color === 'stone' ? 'stone' : 'close', ev.step);
-      if (ev.cascade) Fx.bigPop(T('Каскад!', 'Cascade!'));
-      await sleep(280);
+      if (ev.cascade) bigPop(T('Каскад!', 'Cascade!'));
+      await sleep(260);
     },
     combo(ev) {
       S.vm.combo = ev.step + 1;
       renderCombo();
-      Fx.bigPop(T('Комбо ×', 'Combo ×') + kfmt(ev.k));
+      bigPop(T('Комбо ×', 'Combo ×') + kfmt(ev.k));
       Snd.play('combo');
-      Fx.shake($('.bt-field'), 3 + ev.step * 2);
-      Fx.animClass($('.bt-combo'), 'wiggle', 320);
+      Fx.animClass($('.bt-combo'), 'bump', 320);
       return 250;
     },
     async effect(ev) {
@@ -416,6 +558,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       await Fx.fly(from, effTarget(ev.kind), color, { size: 22 });
       if (ev.kind === 'shield' || ev.kind === 'slime') {
         vm.pShield += ev.value; renderPlayer(); Snd.play('shield');
+        Fx.animClass($('.bt-shield'), 'bump', 320);
         hitNum($('.bt-shield'), '🛡+' + ev.value, '#a7dcff');
       } else if (ev.kind === 'poison') { Snd.play('poison'); hitNum(monEl(), `${UI.elBadge('poison')} ${ev.value}×${ev.turns}`, '#a6e35a'); renderChips(); }
       else if (ev.kind === 'freeze') { Snd.play('freeze'); vm.frozen = ev.value; renderEnemyBars(); renderIntent(); }
@@ -437,6 +580,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       renderPlayer();
       if (ev.absorbed) hitNum($('.bt-shield'), '🛡-' + ev.absorbed, '#a7dcff');
       if (ev.dmg > 0) {
+        Fx.animClass($('.bt-player .bar'), 'hit', 400);
         hitNum($('.bt-player .bar'), '-' + ev.dmg, '#ff8a7a', ev.dmg >= 10);
         Snd.play('hurt'); UI.vibrate(40);
         if (ev.source !== 'dark' && ev.source !== 'drain') { Fx.vignette(); Fx.shake(document.getElementById('app'), 6); }
@@ -459,18 +603,17 @@ var PS = globalThis.PS || (globalThis.PS = {});
     poison_tick() { Snd.play('poison'); return 120; },
     burn_tick() { hitNum($('.bt-player .bar'), '🔥', '#ff9a5a'); return 150; },
     refill: async ev => {
-      renderTubes(ev.tubes);
+      const ms = renderTubes(ev.tubes, { add: 'drop' });
       if (ev.queue) renderQueue(ev.queue);
       Snd.play('drop');
-      await sleep(380);
+      await sleep(Math.max(200, ms));
     },
-    stones(ev) { renderTubes(ev.tubes); Fx.burstAt(tubeEl(ev.tube), colorDef('stone').css, 18, 50); Snd.play('stone'); return 260; },
+    stones(ev) { Fx.burstAt(tubeEl(ev.tube), colorDef('stone').css, 18, 50); Snd.play('stone'); return Math.max(260, renderTubes(ev.tubes)); },
     bomb(ev) {
       (ev.targets || []).forEach(t => Fx.burstAt(tubeEl(t.tube), '#ffb347', 16, 50));
       Fx.burstAt(tubeEl(ev.tube), '#ff7a3d', 24, 70);
       Snd.play('hit');
-      renderTubes(ev.tubes);
-      return 320;
+      return Math.max(320, renderTubes(ev.tubes));
     },
     turn(ev) {
       if (ev.free) {
@@ -499,30 +642,29 @@ var PS = globalThis.PS || (globalThis.PS = {});
         case 'stone':
           Snd.play('stone');
           await Promise.all((ev.target || []).map((j, k) => sleep(k * 90).then(() => Fx.fly(mon, tubeEl(j), stoneC, { size: 16, dur: 380 }))));
-          renderTubes(ev.tubes);
+          await sleep(renderTubes(ev.tubes, { add: 'drop' }));
           break;
         case 'freeze':
           Snd.play('freeze');
           if (ev.target >= 0) await Fx.fly(mon, tubeEl(ev.target), '#a9ecff', { size: 20 });
-          renderTubes(ev.tubes);
+          await sleep(renderTubes(ev.tubes));
           break;
         case 'steal':
           if (ev.target) {
-            const from = tubeEl(ev.target.tube);
-            renderTubes(ev.tubes);
-            await Fx.fly(from, mon, colorDef(ev.target.color).css, { size: 18 });
+            const from = tubeEl(ev.target.tube), ms = renderTubes(ev.tubes);
+            await Promise.all([Fx.fly(from, mon, colorDef(ev.target.color).css, { size: 18 }), sleep(ms)]);
           } else renderTubes(ev.tubes);
           Snd.play('bad');
           break;
         case 'swap':
           Snd.play('zap');
-          await Fx.shake($('.bt-field'), 10);
-          renderTubes(ev.tubes);
+          await sleep(renderTubes(ev.tubes));
           if (ev.target) hitNum($('.bt-field'), `${UI.elBadge(ev.target.a) || iconOf(ev.target.a)} ${UI.inlineArt('gameplay/intents/intent_swap')} ${UI.elBadge(ev.target.b) || iconOf(ev.target.b)}`, '#ffe08a', true);
           break;
         case 'spores':
           Snd.play('poison');
           await Fx.fly(mon, $('.bt-queue'), colorDef('slime').css, { size: 18 });
+          hitNum($('.bt-field'), `${UI.elBadge('slime')} ×${ev.v}`, '#b9e86a');
           if (ev.queue) renderQueue(ev.queue);
           break;
         case 'buff': S.vm.buff = 2; renderEnemyBars(); hitNum(mon, '💪 ×2', '#ffb08a', true); Snd.play('hurt'); break;
@@ -530,32 +672,33 @@ var PS = globalThis.PS || (globalThis.PS = {});
       }
       await sleep(120);
     },
-    rage() { S.vm.rage = true; renderMonster(false); renderEnemyBars(); renderIntent(); Fx.bigPop(T('Ярость!', 'Rage!'), '#ff7a6b'); Snd.play('hurt'); Fx.shake($('.bt-arena'), 8); return 800; },
+    rage() { S.vm.rage = true; renderMonster(false); renderEnemyBars(); renderIntent(); bigPop(T('Ярость!', 'Rage!'), '#ff7a6b'); Snd.play('hurt'); Fx.shake($('.bt-arena'), 8); return 800; },
     dead_end() { Fx.animClass($('.bt-drain'), 'wiggle', 320); Snd.play('bad'); return 100; },
     async drain(ev) {
       S.mode = null;
       Snd.play('pour');
-      renderTubes(ev.tubes);
+      const ms = renderTubes(ev.tubes);
       renderBelt();
       if (ev.free) hitNum($('.bt-drain'), T('даром', 'free'), '#ffe08a');
-      await sleep(200);
+      await sleep(Math.max(200, ms));
     },
     potion(ev) {
       const p = UI.item('potions', ev.id);
       renderBelt();
       Snd.play('buy');
       hitNum($('.bt-belt'), p.icon, '#fff', true);
-      if (ev.id === 'undo') { renderAll(); Fx.bigPop(T('↶ Отмена', '↶ Undo')); return 500; }
-      if (ev.tubes) renderTubes(ev.tubes);
+      if (ev.id === 'undo') { const ms = renderTubes(S.R.battle.field.tubes); renderAll(); bigPop(T('↶ Отмена', '↶ Undo')); return Math.max(500, ms); }
+      let ms = 300;
+      if (ev.tubes) ms = Math.max(ms, renderTubes(ev.tubes));
       if (ev.id === 'flask') fit();
       if (ev.id === 'sleep') { S.vm.timer += D().potions.sleep.delay; renderIntent(); hitNum($('.bt-intent'), '💤 +' + D().potions.sleep.delay, '#c9d6ff'); }
-      if (ev.id === 'combo') Fx.bigPop(T('✨ Следующее — ×2', '✨ Next one ×2'));
+      if (ev.id === 'combo') bigPop(T('✨ Следующее — ×2', '✨ Next one ×2'));
       if (ev.id === 'firebomb') S.flyFrom = null;
-      return 300;
+      return ms;
     },
     relic(ev) { const r = UI.item('relics', ev.id); hitNum($('.bt-player'), r.icon, '#ffcb4f', true); return 150; },
     twist(ev) {
-      if (ev.tubes) renderTubes(ev.tubes);
+      if (ev.tubes) renderTubes(ev.tubes, { add: 'drop' });
       if (ev.twist === 'stonefall') { Snd.play('stone'); UI.toast(UI.elIco('stone') + ' ' + T('Камнепад: камень упал в колбу', 'Rockfall: a stone dropped into a tube')); return 400; }
       if (ev.twist === 'burn') { hitNum($('.bt-player'), T(`🔥 Поджог ${ev.dmg}×${ev.turns}`, `🔥 Burn ${ev.dmg}×${ev.turns}`), '#ff9a5a'); renderChips(); return 300; }
       if (ev.twist === 'frozenStart') { Snd.play('freeze'); return 300; }
@@ -566,6 +709,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       Snd.play('hit');
       Fx.burstAt(mon, '#ffcf4a', 26, 90);
       mon.classList.add('dead');
+      $('.bt-intent').hidden = true;
       await sleep(750);
     },
     // No caption on purpose: the boss just staggers and runs off; the tutorial explains it the first time.
@@ -575,12 +719,13 @@ var PS = globalThis.PS || (globalThis.PS = {});
       Fx.animClass(mon, 'hurt', 350);
       await sleep(380);
       mon.classList.add('flee');
+      $('.bt-intent').hidden = true;
       Snd.play('swipe');
       Fx.burstAt(mon, '#e6dcc4', 16, 70);
       await sleep(900);
     },
     async player_dead() { Fx.vignette('#000'); Snd.play('lose'); await sleep(700); },
-    stage_clear() { if (S.R.phase !== 'won') Fx.bigPop(T('Этап пройден!', 'Stage clear!')); return 500; },
+    stage_clear() { if (S.R.phase !== 'won') bigPop(T('Этап пройден!', 'Stage clear!')); return 500; },
     coins(ev) { if (ev.v) { hitNum($('.bt-arena'), `+${ev.v} 🪙`, '#ffcf4a', true); Snd.play('coin'); } return 350; },
     heal_after(ev) {
       S.vm.pMax = S.R.maxHp; S.vm.pShield = 0;
@@ -597,7 +742,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     },
     revived() {
       syncVm(); renderPlayer();
-      Fx.bigPop(T('Воскрешение!', 'Revived!'));
+      bigPop(T('Воскрешение!', 'Revived!'));
       Snd.play('heal');
       Fx.burstAt($('.bt-player'), '#8af0a0', 22, 80);
       return 700;
@@ -1041,6 +1186,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       if (tut) tut.attach({ R, el, tubeEl, getSel: () => (S ? S.sel : null) });
       UI.debug = UI.debug || {};
       UI.debug.onWin = debugWin;
+      UI.debug.render = () => { if (S && !S.dead && !S.busy) renderAll(); };
 
       syncVm();
       if (params.events && !params.played) {

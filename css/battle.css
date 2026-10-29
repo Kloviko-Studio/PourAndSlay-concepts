@@ -1,6 +1,4 @@
 /* Pour & Slay v2 — battle screen, in-run windows, tutorial layer (cloud pastel) */
-/* bars jump to their new value: no motion in battle until the final app */
-.scr-battle .bar-fill, .scr-battle .bar-ghost, .scr-battle .sbar-fill { transition: none; }
 .scr-battle { padding: 0; overflow: hidden; gap: 0; --lh: 24px; }
 /* Two zones: the scene above ground where the enemy stands, and the ground the tubes are dug into.
    Backgrounds come per world; until their pictures exist the scene uses the sky and the ground a flat earth tone. */
@@ -34,16 +32,22 @@
 /* the enemy's feet sink into the ground's top edge */
 .bt-arena { position: relative; height: clamp(120px, 30vh, 250px); margin-bottom: -6px; }
 .bt-mon { position: absolute; left: 50%; bottom: 2px; height: 100%; aspect-ratio: 1; transform: translateX(-50%); z-index: 2; }
+/* No idle loop: an endless animation keeps the main thread ticking every frame of the fight. The enemy moves only when something happens. */
 .bt-mon-body { position: relative; z-index: 1; width: 100%; height: 100%; }
-.bt-mon-body svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.bt-mon-body svg { width: 100%; height: 100%; overflow: visible; display: block; transform-origin: 50% 92%; }
 .bt-mon-shadow { position: absolute; left: 18%; right: 18%; bottom: -5%; height: 12%; border-radius: 50%; background: radial-gradient(closest-side, rgba(50, 30, 20, .35), transparent); }
-.bt-mon.dead .bt-mon-body, .bt-mon.flee .bt-mon-body { opacity: 0; }
+.bt-mon.enter .bt-mon-body svg { animation: btEnter .45s cubic-bezier(.3, 1.3, .6, 1); }
+.bt-mon.hurt .bt-mon-body svg { animation: btHurt .32s ease-out; }
+.bt-mon.attack .bt-mon-body svg { animation: btLunge .42s ease-in-out; }
+.bt-mon.dead .bt-mon-body svg { animation: btDie .6s ease-in forwards; }
+.bt-mon.flee .bt-mon-body svg { animation: btFlee .8s ease-in forwards; }
+.bt-mon.dead .bt-mon-shadow, .bt-mon.flee .bt-mon-shadow { opacity: 0; transition: opacity .5s; }
 .bt-mon.gone .bt-mon-body, .bt-mon.gone .bt-mon-shadow { opacity: 0; }
 .bt-mon.frozen svg { filter: saturate(.35) brightness(1.3) hue-rotate(150deg); }
 .bt-mon.buffed svg { filter: drop-shadow(0 0 10px #f0584a); }
 .bt-mon .bt-bubble { position: absolute; inset: -6px; border-radius: 50%; border: 3px solid #fff; display: none; pointer-events: none; z-index: 2;
   background: radial-gradient(circle at 35% 30%, #ffffff88, #7ab8f044 60%, transparent 72%); }
-.bt-mon.shielded .bt-bubble { display: block; }
+.bt-mon.shielded .bt-bubble { display: block; animation: btPop .3s ease-out; }
 
 /* speech bubble to the left of the enemy */
 .bt-intent { position: absolute; left: 0; top: 4px; z-index: 3; min-width: 96px; max-width: 36%; padding: 6px 12px 7px; border-radius: 22px; text-align: center;
@@ -81,6 +85,11 @@
 .bt-heart { display: flex; line-height: 0; flex: none; }
 .bt-heart .art-ico { display: block; }
 .bt-player .bar { flex: 1; }
+/* battle bars slide a full-width fill inside the rounded track instead of resizing it, so a hit animates on the compositor */
+.bt-player .bar-fill, .bt-player .bar-ghost, .bt-einfo .bar-fill, .bt-einfo .bar-ghost { width: 100%; transform: translateX(var(--off, 0)); will-change: transform; }
+.bt-player .bar-fill, .bt-einfo .bar-fill { transition: transform .45s cubic-bezier(.3, .8, .3, 1); }
+.bt-player .bar-ghost, .bt-einfo .bar-ghost { transition: transform .8s .25s ease-out; }
+.bar.hit { animation: btBarHit .4s ease-out; }
 .bt-shield { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 28px; padding: 0 10px; border-radius: 14px; font-weight: 900; font-size: 13px; flex: none;
   background: var(--skyp); border: 3px solid #fff; color: var(--ink); box-shadow: 0 3px 6px rgba(50, 110, 130, .18); transition: filter .2s, opacity .2s; }
 .bt-shield .art-ico { display: block; }
@@ -95,8 +104,12 @@
 .bt-field { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: space-evenly; gap: 6px; padding: 18px 6px 6px; margin: 0 -4px; border-radius: 28px;
   background: var(--pit); box-shadow: inset 0 6px 12px rgba(0, 0, 0, .25), 0 1px 0 rgba(255, 255, 255, .18); position: relative; }
 .bt-row { display: flex; justify-content: center; align-items: flex-end; gap: 12px; min-height: 0; }
-.bt-tw { position: relative; flex: 0 1 50px; min-width: 30px; container-type: inline-size; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+.bt-tw { position: relative; flex: 0 1 50px; min-width: 30px; container-type: inline-size; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
+  transform-origin: 50% 0; transition: transform .15s ease-out; }
 .bt-tw.sel { transform: translateY(-14px); }
+/* the source tube flies over the target and tips; its own layer keeps the rest of the field from repainting while it moves */
+.bt-tw.pouring { z-index: 4; will-change: transform; transition: transform .15s ease-in-out; }
+.bt-tw.appear { animation: btTubeIn .35s cubic-bezier(.3, 1.3, .6, 1); }
 /* wings, arrows and the fuse reach past the tube's box; keep them over the neighbouring glass */
 .bt-tw:has(> .k-amp, > .k-catalyst, > .k-bomb) { z-index: 1; }
 .bt-tw.sel .bt-tube { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 7px rgba(255, 150, 90, .9)) drop-shadow(0 8px 8px rgba(200, 90, 50, .25)); }
@@ -125,11 +138,19 @@
 /* one painted texture per liquid, laid out as if drawn on the whole column (--k: layer from the bottom) so a run shows no seams */
 .bt-layer { height: var(--lh); flex: none; position: relative;
   background-size: auto calc(6 * var(--lh)); background-position: 50% calc((var(--k) + 1 - var(--cap)) * var(--lh)); }
-/* the pour, the one motion kept in battle */
-.bt-layer.out { height: 0; transition: height .2s ease-in; }
+/* Level changes: poured-off or removed layers collapse, poured-in ones rise, refills drop in from the mouth one by one (--d: order),
+   recoloured ones flash in. Icons that move to a new run middle fade out first and back in after. */
+/* --j: place in the moving block, so every layer of it scales about the block's bottom edge and the level drops or rises as one */
+.bt-layer.off, .bt-layer.fill { transform-origin: 50% calc(var(--lh) * (1 + var(--j, 0))); }
+.bt-layer.off { transform: scaleY(0); transition: transform .19s ease-in; }
 .bt-layer.fill { animation: btFill .24s ease-out; }
+/* layers taken from under others (broken stones) collapse for real, so what sat on them settles down */
+.bt-layer.out { height: 0; transition: height .19s ease-in; }
+.bt-layer.drop { animation: btDrop .26s calc(var(--d, 0) * 35ms) cubic-bezier(.4, 0, .6, 1.3) backwards; }
+.bt-layer.flash { animation: btSwap .4s ease-out; }
 .bt-layer i { transition: opacity .15s; }
 .bt-layer i.gone { opacity: 0; }
+.bt-layer i.fresh { animation: fadein .2s backwards; }
 .bt-layer i.late { animation: fadein .25s .2s backwards; }
 .bt-layer i { position: absolute; z-index: 1; left: 50%; bottom: calc(var(--run) * var(--lh) / 2); transform: translate(-50%, 50%);
   font-style: normal; display: flex; font-size: min(14px, calc(var(--lh) * .55)); line-height: 1; filter: drop-shadow(0 1px 1px rgba(40, 50, 60, .35)); }
@@ -139,8 +160,11 @@
    (z-index below ::before), so the rim covers its middle and only the cap above it and the plug inside the neck show. */
 .bt-cork { position: absolute; z-index: 2; left: 0; width: 100%; aspect-ratio: 128 / 101; top: calc(var(--gt) * var(--s) - 55cqw);
   background: url(../img/tubes/cork.webp) center / contain no-repeat; }
+.bt-tube.closing .bt-cork { animation: btCork .28s cubic-bezier(.3, 1.4, .6, 1); }
+.bt-tube.opening .bt-cork { animation: btUncork .22s ease-in forwards; }
 .bt-ice { top: calc(var(--gt) * var(--s)); z-index: 2; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: #1d4e6b;
   background: linear-gradient(135deg, #eaf9fcdd, #9fdcf5b3); box-shadow: inset 0 0 8px #fff; }
+.bt-ice.in { animation: btPop .3s ease-out; }
 .bt-ttag { min-height: 14px; font-size: 12px; line-height: 14px; color: #fff1b8; font-weight: 900; text-shadow: 0 1px 3px rgba(40, 20, 10, .8); }
 
 /* ---------- queue ---------- */
@@ -219,7 +243,19 @@
 .tut-bubble .btn { margin-top: 10px; width: 100%; }
 
 /* ---------- keyframes ---------- */
-@keyframes btFill { from { height: 0; } }
+@keyframes btFill { from { transform: scaleY(0); } }
+@keyframes btDrop { from { transform: translateY(-500%); } }
+@keyframes btSwap { from { opacity: .15; transform: scaleX(.6); } }
+@keyframes btCork { from { transform: translateY(-70%); opacity: 0; } }
+@keyframes btUncork { to { transform: translateY(-80%) rotate(-14deg); opacity: 0; } }
+@keyframes btPop { from { transform: scale(1.18); opacity: 0; } }
+@keyframes btTubeIn { from { transform: translateY(24px) scale(.6); opacity: 0; } }
+@keyframes btEnter { from { transform: translateY(-24px) scale(.8); opacity: 0; } }
+@keyframes btHurt { 30% { transform: translateX(7px) scale(.95, 1.05); filter: brightness(1.45); } 65% { transform: translateX(-3px); } }
+@keyframes btLunge { 35% { transform: translateY(-8px) scale(.97); } 60% { transform: translateY(18px) scale(1.1); } }
+@keyframes btDie { 30% { transform: scale(1.06, .9); opacity: 1; } to { transform: translateY(24px) scale(.3); opacity: 0; } }
+@keyframes btFlee { 25% { transform: translateX(-10px); opacity: 1; } to { transform: translateX(70vw); opacity: 0; } }
+@keyframes btBarHit { 30% { box-shadow: 0 0 0 3px #ff8a7a, 0 3px 8px rgba(50, 110, 130, .2); } }
 @keyframes btHint { 50% { opacity: 1; } }
 @keyframes tutRing { 50% { opacity: 1; } }
 @keyframes tutTap { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(4px, 10px) scale(.92); } }
