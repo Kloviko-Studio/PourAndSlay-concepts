@@ -87,7 +87,7 @@
 .bt-player .bar-fill, .bt-einfo .bar-fill { transition: transform .45s cubic-bezier(.3, .8, .3, 1); }
 .bt-player .bar-ghost, .bt-einfo .bar-ghost { transition: transform .8s .25s ease-out; }
 .bar.hit { animation: btBarHit .4s ease-out; }
-/* shield: a blue cap over the tip of the green and a badge with the amount beside the HP numbers */
+/* shield: extra HP, a blue stretch after the green (the whole bar when HP is full) and a badge with the amount beside the HP numbers */
 .bt-pshield { position: absolute; top: 0; bottom: 0; width: 0; background: #7ab8f0; border-radius: 11px; box-shadow: inset 0 0 0 2px #fff;
   transition: left .45s cubic-bezier(.3, .8, .3, 1), width .45s cubic-bezier(.3, .8, .3, 1); }
 .bt-shield { display: inline-flex; align-items: center; gap: 2px; height: 18px; padding: 0 6px 0 3px; border-radius: 9px; background: #fff; color: #2a5fa8; font-size: 13px; font-weight: 900; text-shadow: none; animation: btPop .3s ease-out; }
@@ -192,7 +192,6 @@
 .bt-drain .art-ico { width: 30px; height: 30px; }
 .bt-drain.armed { box-shadow: 0 0 0 3px var(--cta3), 0 0 16px rgba(240, 127, 82, .7); }
 .bt-drain.stuck { box-shadow: 0 0 18px 4px #ffb27aaa; }
-.scr-battle.locked .bt-field, .scr-battle.locked .bt-bottom { cursor: progress; }
 
 /* ---------- windows (pick after stage, revive, build, rules) ---------- */
 .bt-ov .ov-card { padding: 18px 16px 16px; }

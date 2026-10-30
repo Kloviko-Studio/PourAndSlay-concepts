@@ -245,9 +245,9 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function renderPlayer() {
     const vm = S.vm, hp = Math.max(0, vm.pHp), sh = Math.max(0, vm.pShield), pct = v => (vm.pMax ? Math.min(100, v / vm.pMax * 100) : 0) + '%';
     setBar($('.bt-player .bar'), vm.pHp, vm.pMax, `${hp} / ${vm.pMax}`);
-    // The shield covers the tip of the green: the part of HP the next hit takes from the shield first.
-    const ps = $('.bt-pshield');
-    ps.style.left = pct(Math.max(0, hp - sh)); ps.style.width = pct(Math.min(sh, hp));
+    // The shield is extra HP: blue continues the green to the right; on a full bar it takes over the whole bar until it is broken.
+    const ps = $('.bt-pshield'), full = hp >= vm.pMax;
+    ps.style.left = full ? '0%' : pct(hp); ps.style.width = full ? (sh ? '100%' : '0%') : pct(Math.min(sh, vm.pMax - hp));
     const el = $('.bt-shield');
     el.querySelector('b').textContent = sh;
     el.classList.toggle('zero', !sh);
@@ -798,7 +798,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function play(evs) {
     const token = S;
     token.busy = true;
-    token.el.classList.add('locked');
+    token.pending = (token.pending || 0) + 1;
     prepare(evs);
     const tut = Tut();
     if (tut) tut.onEvents(evs);
@@ -811,7 +811,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
       };
     });
     token.events = evs;
-    handlers.done = () => (S === token && !token.dead ? afterPlay() : null);
+    handlers.done = () => {
+      if (S !== token || token.dead) return null;
+      // a move queued behind this one still has to play: re-rendering from the final state now would skip its animation
+      return --token.pending > 0 ? null : afterPlay();
+    };
     return UI.play(evs, handlers);
   }
 
@@ -842,8 +846,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
     q.list.forEach((x, i) => { if (!x.claimed && snap.list[i]) { x.progress = snap.list[i].progress; x.done = snap.list[i].done; } });
   }
 
+  // The core has already applied every queued move, so the next one is legal against the final state while the animations still play; the tutorial keeps its strict turn-by-turn lock.
+  const inputLocked = () => !!S.busy && ((Tut() && Tut().active()) || S.R.phase !== 'battle');
+
   function doAct(a) {
-    if (S.busy || !PS.Run.canAct(S.R, a)) return false;
+    if (inputLocked() || !PS.Run.canAct(S.R, a)) return false;
     const B0 = S.R.battle;
     const undo = a.type === 'potion' && B0 && B0.potions[a.idx] === 'undo';
     const snap = a.type === 'pour' || a.type === 'drain' ? questSnap() : null;
@@ -876,7 +883,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function wiggle(i) { const w = tubeEl(i); if (w) Fx.animClass(w, 'wiggle', 320); }
 
   function onTube(i) {
-    if (!S || S.busy || !inBattle()) return;
+    if (!S || inputLocked() || !inBattle()) return;
     const tut = Tut();
     if (tut && !tut.allowTube(i)) { wiggle(i); return; }
     const R = S.R, F = R.battle.field, t = F.tubes[i];
@@ -899,7 +906,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function onPotion(idx) {
-    if (!S || S.busy || !inBattle()) return;
+    if (!S || inputLocked() || !inBattle()) return;
     const tut = Tut();
     if (tut && tut.locked()) return;
     const B = S.R.battle, id = B.potions[idx];
@@ -951,7 +958,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function onDrain() {
-    if (!S || S.busy || !inBattle()) return;
+    if (!S || inputLocked() || !inBattle()) return;
     const tut = Tut();
     if (tut && tut.locked()) return;
     S.sel = null;
