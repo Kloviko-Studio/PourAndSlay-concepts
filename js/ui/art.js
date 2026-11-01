@@ -90,7 +90,7 @@ PS.Art = (function () {
         '<path d="M44 64 L58 70 M86 64 L72 70" stroke="' + INK + '" stroke-width="5" stroke-linecap="round"/>' +
         '<circle cx="53" cy="74" r="4.5" fill="#ffd23f"/><circle cx="77" cy="74" r="4.5" fill="#ffd23f"/><path d="M52 92 Q65 84 78 92" stroke="' + INK + '" stroke-width="4" fill="none" stroke-linecap="round"/>' + brows(53, 77, 74, r, 6)];
     },
-    mole: function (u, r) {
+    rat: function (u, r) {
       return [rg(u + 'a', '#b98e6a', '#5e4030'),
         '<ellipse cx="60" cy="108" rx="48" ry="10" fill="#7a5a3c"/><circle cx="26" cy="104" r="5" fill="#8a6a48"/><circle cx="96" cy="106" r="6" fill="#8a6a48"/>' +
         '<ellipse cx="60" cy="74" rx="36" ry="32" fill="url(#' + u + 'a)"/>' +

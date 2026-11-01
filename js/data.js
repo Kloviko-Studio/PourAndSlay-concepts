@@ -178,7 +178,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     E('beetle', 'Колючий жук', 1, 'shaman', 22, [c('shield', 6, 2), c('atk', 6, 3)], 'Прикрывается щитом 6, бьёт на 6.'),
     E('golem', 'Каменный голем', 2, 'mason', 28, [c('stone', 2, 3), c('atk', 9, 3)], 'Сыплет камни, бьёт на 9.'),
     E('boulder', 'Валун-катун', 2, 'attacker', 34, [c('atk', 14, 5)], 'Редкий, но тяжёлый удар: 14.'),
-    E('mole', 'Скальный крот', 2, 'thief', 24, [c('steal', 0, 2), c('atk', 6, 3)], 'Ворует слои, бьёт на 6.'),
+    E('rat', 'Каменная крыса', 2, 'thief', 24, [c('steal', 0, 2), c('atk', 6, 3)], 'Ворует слои, бьёт на 6.'),
     E('frost_spirit', 'Инейный дух', 3, 'froster', 24, [c('freeze', 3, 2), c('atk', 5, 2)], 'Замораживает колбы на 3 хода, бьёт на 5.'),
     E('ice_wolf', 'Ледяной волк', 3, 'attacker', 22, [c('atk', 4, 2)], 'Быстрые укусы: 4 каждые 2 хода.'),
     E('snow_golem', 'Снежный голем', 3, 'mason', 30, [c('stone', 2, 2), c('shield', 6, 2), c('atk', 7, 3)], 'Камни, щит 6 и удар на 7.'),
@@ -198,7 +198,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     B('slime_king', 'Король слизней', [1, 2], 36, [c('atk', 7, 3), c('spores', 2, 2), c('atk', 9, 3)], c('shield', 6, 2), false, 'Бьёт, гноит очередь. На втором острове ещё и щит.'),
     B('ancient_golem', 'Древний голем', [3, 4], 48, [c('stone', 3, 2), c('atk', 12, 4), c('shield', 12, 2)], c('buff', 0, 1), false, 'Камни, тяжёлые удары и щит 12.'),
     B('ice_queen', 'Ледяная королева', [5, 6], 40, [c('freeze', 3, 2), c('atk', 8, 3), c('shield', 8, 2), c('atk', 10, 3)], c('steal', 0, 2), false, 'Морозит колбы и закрывается щитом.'),
-    B('mycelium_mother', 'Матка грибницы', [7, 8], 46, [c('spores', 3, 2), c('atk', 9, 3), c('heal', 6, 2)], c('stone', 2, 2), false, 'Гноит очередь и лечится.'),
+    B('mycelium_mother', 'Мать грибницы', [7, 8], 46, [c('spores', 3, 2), c('atk', 9, 3), c('heal', 6, 2)], c('stone', 2, 2), false, 'Гноит очередь и лечится.'),
     B('lava_serpent', 'Лавовый змей', [9], 50, [c('atk', 10, 3), c('stone', 2, 2), c('buff', 0, 1), c('atk', 8, 2)], null, false, 'Жжёт, сыплет камни, усиливает удар.'),
     B('trickster', 'Алхимик-обманщик', [10], 54, [c('atk', 8, 3), c('swap', 0, 2), c('shield', 10, 2), c('buff', 0, 1), c('atk', 7, 3)], null, true, 'Финальный босс: путает цвета, щитится, усиливает удар.')
   ].forEach(function (b) { D.bosses[b.id] = b; });
@@ -242,8 +242,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
   D.islands = [
     I(1, 'sunny_shallows', 1, 'Солнечные Отмели', 'Sunny Shallows', 'easy', 4, [4], ['slime'], 1.0, 0),
     I(2, 'slime_bog', 1, 'Трясина Слизней', 'Slime Bog', 'medium', 6, [3, 6], ['slime', 'gremlin', 'beetle'], 1.6, 4),
-    I(3, 'golem_gorge', 2, 'Ущелье Големов', 'Golem Gorge', 'medium', 8, [4, 8], ['golem', 'boulder', 'mole'], 1.6, 2),
-    I(4, 'ancients_peak', 2, 'Пик Древнего', "Ancient's Peak", 'hard', 12, [4, 8, 12], ['golem', 'boulder', 'mole'], 2.0, 2),
+    I(3, 'golem_gorge', 2, 'Ущелье Големов', 'Golem Gorge', 'medium', 8, [4, 8], ['golem', 'boulder', 'rat'], 1.6, 2),
+    I(4, 'ancients_peak', 2, 'Пик Древнего', "Ancient's Peak", 'hard', 12, [4, 8, 12], ['golem', 'boulder', 'rat'], 2.0, 2),
     I(5, 'rime_harbor', 3, 'Инейная Гавань', 'Rime Harbor', 'medium', 8, [4, 8], ['frost_spirit', 'ice_wolf', 'snow_golem'], 2.3, 5),
     I(6, 'queens_palace', 3, 'Дворец Королевы', "Queen's Palace", 'medium', 10, [5, 10], ['frost_spirit', 'ice_wolf', 'snow_golem'], 2.6, 5),
     I(7, 'toadstool_mire', 4, 'Мухоморная Топь', 'Toadstool Mire', 'hard', 14, [5, 10, 14], ['mycelium', 'toad_shaman', 'rot_slime'], 2.25, 7),

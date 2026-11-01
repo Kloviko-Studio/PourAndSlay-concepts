@@ -106,7 +106,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       beetle: { name: 'Spiky Beetle', desc: 'Raises a 6 shield, hits for 6.' },
       golem: { name: 'Stone Golem', desc: 'Drops stones, hits for 9.' },
       boulder: { name: 'Rolling Boulder', desc: 'Rare but heavy hit: 14.' },
-      mole: { name: 'Rock Mole', desc: 'Steals layers, hits for 6.' },
+      rat: { name: 'Stone Rat', desc: 'Steals layers, hits for 6.' },
       frost_spirit: { name: 'Rime Spirit', desc: 'Freezes tubes for 3 turns, hits for 5.' },
       ice_wolf: { name: 'Ice Wolf', desc: 'Quick bites: 4 every 2 turns.' },
       snow_golem: { name: 'Snow Golem', desc: 'Stones, a 6 shield and a hit for 7.' },
