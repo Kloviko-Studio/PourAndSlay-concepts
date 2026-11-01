@@ -50,7 +50,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       amp: { name: 'Amplifier', desc: 'Closing effect ×2.' },
       catalyst: { name: 'Catalyst', desc: 'Closing in it doesn\'t use a turn.' },
       sieve: { name: 'Sieve', desc: 'Stone and slime poured or thrown into it vanish; pouring junk doesn\'t use a turn.' },
-      bomb: { name: 'Bomb', desc: 'On closing, knocks the top layer off two neighbouring tubes (neighbours are highlighted).' },
+      bomb: { name: 'Bomb', desc: 'On closing, blasts one top layer from each neighbour to the left and right in the same row. Each layer triggers 50% of a normal closing effect at the same combo. Neighbours are highlighted.' },
       vial: { name: 'Vial', desc: '2 layers of any colors mixed, never closes.' }
     },
     rarity: {

@@ -584,7 +584,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     async effect(ev) {
       const vm = S.vm, color = ev.color === 'slime' ? '#5bb8ff' : colorDef(ev.color).css;
       if (ev.kind === 'self' || ev.kind === 'stone') return 0;
-      const from = ev.source === 'firebomb' ? $('.bt-belt') : flySrc();
+      const from = ev.source === 'firebomb' ? $('.bt-belt') : ev.tube != null ? tubeEl(ev.tube) : flySrc();
       await Fx.fly(from, effTarget(ev.kind), color, { size: 22 });
       if (ev.kind === 'shield' || ev.kind === 'slime') {
         vm.pShield += ev.value; renderPlayer(); Snd.play('shield');

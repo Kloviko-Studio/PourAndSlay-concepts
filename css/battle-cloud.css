@@ -80,7 +80,6 @@ body[data-screen="battle"][data-theme="night"] { background: #152738; }
 .scr-battle .bt-row { flex: 0 0 auto; width: max-content; min-width: 100%; gap: 4px; align-items: flex-end; }
 .scr-battle .bt-tw { flex: 0 0 var(--tube-hit, 54px); width: var(--tube-hit, 54px); min-width: 44px; min-height: 44px; margin: 0 !important; }
 .scr-battle .bt-tube { --s: calc(var(--tube-w) / var(--gw)); width: var(--tube-w); flex: none; }
-/* The hit area reserves --gl on the left and --gr on the right; a bomb's fuse sticks out one side only, so the glass sits after its own left overhang instead of in the middle. */
 .scr-battle .bt-tw { align-items: flex-start; }
 .scr-battle .bt-tube { margin-left: calc(var(--gl) * var(--s) + 2px); }
 .scr-battle .bt-tw.sel { transform: translateY(-12px); }

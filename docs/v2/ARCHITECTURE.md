@@ -81,7 +81,7 @@ PS.DATA = {
   mods:  { tough: {cap: 3, unlock: 1, maxHp: 10, heal: 10}, apron: {cap: 3, pct: 0.10}, caustic: {cap: 3, dmg: 2}, bubble: {cap: 3, shield: 6},
            prep: {cap: 3, dmg: 6}, thorns: {cap: 3, dmg: 3}, leech: {cap: 3, pct: 0.10}, combo_master: {cap: 2, add: 0.25}, potion_pick: {cap: 0 /*без потолка*/, choices: 3} },
   finds: { new_color: {unlock: 2}, boost_color: {unlock: 1, cap: 3}, special_tube: {unlock: 3}, extra_slot: {unlock: 5}, filter: {unlock: 3, cap: 1, pct: 0.5, requires: 'junkEnemy'} },
-  tubes: { plain: {cap: 4}, amp: {unlock: 3, mult: 2}, catalyst: {unlock: 5}, sieve: {unlock: 3}, bomb: {unlock: 7}, big: {unlock: 10, cap: 6, mult: 1.5}, vial: {unlock: 10, cap: 2} },
+  tubes: { plain: {cap: 4}, amp: {unlock: 3, mult: 2}, catalyst: {unlock: 5}, sieve: {unlock: 3}, bomb: {unlock: 7, effectMult: 0.5}, big: {unlock: 10, cap: 6, mult: 1.5}, vial: {unlock: 10, cap: 2} },
   rarity: { common: {weight: 60, unlock: 1}, rare: {weight: 30, unlock: 5}, legendary: {weight: 10, unlock: 8} },
   relics: { hot_crucible: {rarity: 'common', requires: null, dmg: 4}, ... },   // requires: null | {color: 'water'} | {enemy: 'stone'|'spores'|'fieldSpoiler'}
   lab:   { vitality: {tiers: 8, costs: [20, 30, 50, ...], unlock: 1, per: {maxHp: 5}}, ... },   // costs уже посчитаны и округлены до 5
@@ -166,7 +166,17 @@ PS.Combat.effectValue(B, colorId, k) -> число эффекта (для под
 
 **События** (`{type, ...}`; поля, затрагивающие поле, несут `tubes` — копию слоёв всех колб после шага, чтобы UI рисовал промежуточные состояния):
 
-`pour {from, to, n, color, tubes}` · `swallow {tube}` · `close {tube, color, k, cascade, tubes}` · `effect {color, kind: 'dmg'|'shield'|'heal'|'poison'|'freeze'|'delay'|'self'|'slime'|'stone', value}` · `refill {tube, tubes}` · `stones {tube, n, tubes}` · `bomb {tube, targets, tubes}` · `combo {k}` · `turn {free: bool, reason}` · `poison_tick {dmg}` · `burn_tick {dmg}` · `enemy_act {t, v, tubes?, target?}` · `player_hit {dmg, absorbed}` · `enemy_hit {dmg, absorbed, source}` · `enemy_heal {v}` · `enemy_shield {v}` · `intent {t, v, timer}` · `rage` · `frozen_enemy {turns}` · `dead_end` · `drain {tube, free, refilled, tubes}` · `potion {id, tube?}` · `heal {v}` · `relic {id}` (сработала реликвия) · `twist {type, ...}` · `enemy_dead` · `boss_fled` · `player_dead`.
+`pour {from, to, n, color, tubes}` · `swallow {tube}` · `close {tube, color, k, cascade, tubes}` · `effect {color, kind: 'dmg'|'shield'|'heal'|'poison'|'freeze'|'delay'|'self'|'slime'|'stone', value, source?, tube?}` · `refill {tube, tubes}` · `stones {tube, n, tubes}` · `bomb {tube, targets, tubes}` · `combo {k}` · `turn {free: bool, reason}` · `poison_tick {dmg}` · `burn_tick {dmg}` · `enemy_act {t, v, tubes?, target?}` · `player_hit {dmg, absorbed}` · `enemy_hit {dmg, absorbed, source}` · `enemy_heal {v}` · `enemy_shield {v}` · `intent {t, v, timer}` · `rage` · `frozen_enemy {turns}` · `dead_end` · `drain {tube, free, refilled, tubes}` · `potion {id, tube?}` · `heal {v}` · `relic {id}` (сработала реликвия) · `twist {type, ...}` · `enemy_dead` · `boss_fled` · `player_dead`.
+
+### Бомба
+
+При закрытии `bomb` сначала срабатывает её собственный эффект и обычное разрушение камней у соседей. `Field.bombNeighbors` снимает по одному верхнему слою у непустых соседей слева и справа в том же ряду; событие `bomb` содержит снятые цвета и снимок поля. Заморозка соседней колбы не мешает взрыву, пустые соседи не дозаполняются.
+
+Затем Combat применяет цвета слева направо с `tubes.bomb.effectMult = 0.5`, k закрытия самой Бомбы и свойствами обычной колбы. Урон, щит, лечение, урон яда за ход, самоурон тьмы и длительности льда/задержки молнии делятся пополам до единственного округления (0,5 вверх); длительность яда и уязвимость замороженного врага прежние. Зеркало повторяет последний закрытый цвет с половинной силой, слизь даёт половину щита. Эффекты реликвий стихии сохраняются с тем же ослаблением; реликвии «за закрытие» повторно не запускаются.
+
+Эффекты взрыва не считаются закрытиями, не растят комбо или счётчики и не меняют `lastColor`; свойства колб-соседей не срабатывают. Великий котёл не повторяет взрыв, каскад самой Бомбы повторяет. События `effect` взрыва несут `source: 'bomb'` и `tube` соседа: UI отправляет эффект из него, после анимации взрыва. При победе или смерти оставшиеся эффекты прекращаются; после смерти поле заканчивает удаление и дозаливку самой Бомбы для воскрешения.
+
+Полная спецификация и примеры — [Pour & Slay: особые колбы](../../../pour-and-slay/docs/content/tubes.md#взрыв-бомбы).
 
 ## PS.Run (`js/core/run.js`)
 

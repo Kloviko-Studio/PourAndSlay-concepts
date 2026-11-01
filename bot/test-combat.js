@@ -222,13 +222,142 @@ test('slime close 3 shield (sponge 10); stone close counts for combo; stone hear
   assert.strictEqual(ofType(ev, 'stones').length, 1);
 });
 
-test('bomb close knocks top layers off neighbours', () => {
+test('bomb close removes one layer per neighbour and applies half effects after the blast', () => {
   const B = mkB({ tubes: [['water', 'life'], { kind: 'bomb', layers: ['fire', 'fire', 'fire'] }, ['life', 'fire'], []], filled: 4 });
   const ev = pour(B, 2, 1);
   const bomb = ofType(ev, 'bomb')[0];
   assert.deepStrictEqual(bomb.targets.map(t => t.tube), [0, 2]);
   assert.deepStrictEqual(B.field.tubes[0].layers, ['water']);
   assert.deepStrictEqual(B.field.tubes[2].layers, []);
+  assert.deepStrictEqual(ofType(ev, 'effect').filter(e => e.source === 'bomb').map(e => [e.tube, e.color, e.kind, e.value]), [[0, 'life', 'heal', 2], [2, 'life', 'heal', 2]]);
+  assert.ok(ev.indexOf(bomb) < ev.findIndex(e => e.source === 'bomb'));
+  assert.strictEqual(B.combo, 1);
+  assert.deepStrictEqual(B.stats.closes, { fire: 1 });
+  assert.strictEqual(B.lastColor, 'fire');
+});
+
+function mkBomb(left, right, opts = {}) {
+  const color = opts.color || 'water';
+  return mkB({ ...opts, tubes: [left, { kind: 'bomb', layers: Array(3).fill(color) }, right, ['life', color]], filled: 4 });
+}
+const blastEffects = ev => ofType(ev, 'effect').filter(e => e.source === 'bomb');
+
+test('bomb halves every elemental effect, control duration and dark self damage', () => {
+  const cases = {
+    fire: [['dmg', 3]], water: [['shield', 3]], life: [['heal', 2]],
+    poison: [['poison', 1]], ice: [['freeze', 1]], lightning: [['dmg', 2], ['delay', 1]],
+    dark: [['dmg', 6], ['self', 2]], slime: [['slime', 2]],
+  };
+  for (const [color, expected] of Object.entries(cases)) {
+    const B = mkBomb(['life', color], [], { rc: { hp: 30 } });
+    B.player.shield = 10;
+    const ev = pour(B, 3, 1);
+    assert.deepStrictEqual(blastEffects(ev).map(e => [e.kind, e.value]), expected, color);
+    assert.strictEqual(B.player.hp, color === 'dark' ? 28 : color === 'life' ? 32 : 30, color);
+    if (color === 'poison') {
+      assert.strictEqual(blastEffects(ev)[0].turns, 4);
+      assert.deepStrictEqual(B.enemy.poison, [{ tick: 1, turns: 3 }]);
+    }
+  }
+});
+
+test('bomb uses its own combo, rounds once and ignores the neighbour tube multiplier', () => {
+  const B = mkBomb({ kind: 'amp', layers: ['fire', 'fire'] }, [], { rc: { labFlat: { fire: 1 } } });
+  B.combo = 1;
+  const ev = pour(B, 3, 1);
+  assert.strictEqual(ofType(ev, 'close')[0].k, 1.5);
+  assert.strictEqual(blastEffects(ev)[0].value, 5);
+  assert.strictEqual(B.enemy.hp, 195);
+  assert.deepStrictEqual(B.field.tubes[0].layers, ['fire']);
+  assert.strictEqual(B.combo, 2);
+
+  const M = mkBomb(['fire'], [], { rc: { deck: { fire: 1, water: 0, life: 0 }, labFlat: { fire: 1 }, mods: { caustic: 1 }, relics: ['hot_crucible'], masteryPct: 0.1 } });
+  M.combo = 1; M.enemy.frozen = 2; M.firstStrike = 2;
+  const effects = blastEffects(pour(M, 3, 1));
+  assert.strictEqual(effects[0].value, 40);
+});
+
+test('bomb keeps poison duration and applies control and utility relics at half strength', () => {
+  const P = mkBomb(['poison'], [], { rc: { relics: ['poison_ivy'], deck: { poison: 1 } } });
+  assert.deepStrictEqual(blastEffects(pour(P, 3, 1)).map(e => [e.value, e.turns]), [[2, 8]]);
+  const I = mkBomb(['ice'], [], { rc: { deck: { ice: 1 } } });
+  I.combo = 2;
+  assert.strictEqual(blastEffects(pour(I, 3, 1))[0].value, 2);
+  const L = mkBomb(['lightning'], [], { rc: { relics: ['storm_rod'] } });
+  L.combo = 2;
+  assert.deepStrictEqual(blastEffects(pour(L, 3, 1)).map(e => [e.kind, e.value]), [['dmg', 4], ['delay', 2]]);
+  const S = mkBomb(['slime'], [], { rc: { relics: ['sponge'] } });
+  assert.strictEqual(blastEffects(pour(S, 3, 1))[0].value, 5);
+  const D = mkBomb(['dark'], [], { rc: { hp: 30, relics: ['blood_retort'] } });
+  pour(D, 3, 1);
+  assert.strictEqual(D.player.hp, 31);
+});
+
+test('bomb mirror repeats the last closed colour and blast colours do not replace it', () => {
+  const B = mkBomb(['fire'], ['mirror'], { rc: { relics: ['void_lens'] } });
+  const ev = pour(B, 3, 1);
+  assert.deepStrictEqual(blastEffects(ev).map(e => [e.tube, e.color, e.value]), [[0, 'fire', 3], [2, 'water', 3], [2, 'water', 3]]);
+  assert.strictEqual(B.lastColor, 'water');
+  const M = mkBomb(['mirror'], [], { color: 'mirror' });
+  const mev = pour(M, 3, 1);
+  assert.strictEqual(blastEffects(mev)[0].value, 2);
+  assert.strictEqual(M.lastColor, null);
+});
+
+test('bomb effects run left to right, so ice can strengthen the following fire blast', () => {
+  const B = mkBomb(['ice'], ['fire']);
+  const ev = pour(B, 3, 1);
+  assert.deepStrictEqual(blastEffects(ev).map(e => [e.tube, e.value]), [[0, 1], [2, 5]]);
+  assert.strictEqual(B.enemy.hp, 195);
+});
+
+test('bomb clears stones first, can hit frozen neighbours and does not refill empty neighbours', () => {
+  const B = mkBomb({ layers: ['fire', 'stone'], frozen: 3 }, ['slime']);
+  const ev = pour(B, 3, 1);
+  assert.deepStrictEqual(ofType(ev, 'bomb')[0].targets, [{ tube: 0, color: 'fire' }, { tube: 2, color: 'slime' }]);
+  assert.deepStrictEqual(B.field.tubes[0].layers, []);
+  assert.strictEqual(B.field.tubes[0].frozen, 2);
+  assert.deepStrictEqual(B.field.tubes[2].layers, []);
+  assert.deepStrictEqual(ofType(ev, 'refill').map(e => e.tube), [1]);
+});
+
+test('bomb on a row edge hits only its same-row neighbour and cannot trigger another bomb', () => {
+  const B = mkB({ tubes: [['fire'], { kind: 'bomb', layers: ['water', 'water', 'water'] }, { kind: 'bomb', layers: ['fire', 'fire', 'fire', 'fire'] }, ['water']], filled: 2 });
+  const ev = pour(B, 3, 1);
+  assert.deepStrictEqual(ofType(ev, 'bomb')[0].targets, [{ tube: 0, color: 'fire' }]);
+  assert.strictEqual(B.field.tubes[2].layers.length, 4);
+  assert.strictEqual(ofType(ev, 'close').length, 1);
+  const N = mkBomb([], []);
+  assert.deepStrictEqual(blastEffects(pour(N, 3, 1)), []);
+});
+
+test('great cauldron does not double bomb blasts; a bomb cascade blasts again', () => {
+  const B = mkBomb(['fire', 'fire', 'fire'], [], { rc: { relics: ['great_cauldron'] } });
+  B.combo = 3;
+  const ev = pour(B, 3, 1);
+  assert.strictEqual(blastEffects(ev).length, 1);
+  assert.strictEqual(B.enemy.hp, 191);
+  const C = mkBomb(['fire', 'fire', 'fire'], [], { queue: [Array(4).fill('water'), ...MIX] });
+  const cev = pour(C, 3, 1);
+  assert.deepStrictEqual(blastEffects(cev).map(e => e.value), [3, 5]);
+  assert.strictEqual(ofType(cev, 'bomb').length, 2);
+  assert.strictEqual(C.turn, 1);
+});
+
+test('bomb stops effects on victory or death and leaves a consistent field for revive', () => {
+  const W = mkBomb(['fire'], ['life'], { rc: { hp: 30 }, es: { hp: 3 } });
+  const wev = pour(W, 3, 1);
+  assert.strictEqual(W.status, 'won');
+  assert.strictEqual(blastEffects(wev).length, 1);
+  assert.strictEqual(W.player.hp, 30);
+  const L = mkBomb(['dark'], ['life'], { rc: { hp: 1 } });
+  const lev = pour(L, 3, 1);
+  assert.strictEqual(L.status, 'lost');
+  assert.strictEqual(blastEffects(lev).filter(e => e.kind === 'heal').length, 0);
+  assert.deepStrictEqual(L.field.tubes[0].layers, []);
+  assert.deepStrictEqual(L.field.tubes[2].layers, []);
+  assert.strictEqual(ofType(lev, 'refill').length, 1);
+  assert.ok(L.owedMove);
 });
 
 test('great cauldron at k3 fires twice; alchemist heart heals on k2+; combo elixir', () => {

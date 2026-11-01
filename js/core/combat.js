@@ -49,11 +49,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   // README order: base + flat -> x special tube -> x k -> x relics/freeze/mastery/boosters -> round half up.
-  function scaled(B, color, k, kind) {
+  function scaled(B, color, k, kind, power = 1) {
     let m = 1 + (B.masteryPct || 0);
     if (DMG_COLORS[color] || color === 'poison') m *= B.firstStrike || 1;
     if (DMG_COLORS[color]) m *= vulnMult(B);
-    return rnd(flat(B, color) * tubeMult(kind) * k * m);
+    return rnd(flat(B, color) * tubeMult(kind) * k * m * power);
   }
 
   function freezeTurns(B, step) {
@@ -136,44 +136,45 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   // ---- colour effects ----
-  function applyColor(B, color, step, kind, ev, viaMirror) {
+  function applyColor(B, color, step, kind, ev, viaMirror, power = 1) {
     if (!alive(B)) return;
     const k = kOf(B, step), C = D().elements;
     switch (color) {
       case 'fire': case 'lightning': case 'dark': {
-        const v = scaled(B, color, k, kind);
+        const v = scaled(B, color, k, kind, power);
         ev.push({ type: 'effect', color, kind: 'dmg', value: v });
         hitEnemy(B, v, color, ev);
         if (!alive(B)) break;
         if (color === 'lightning') {
-          const d = delayTurns(B, step);
+          const d = rnd(delayTurns(B, step) * power);
           B.enemy.timer += d;
           if (has(B, 'storm_rod')) relicEv(ev, 'storm_rod');
           ev.push({ type: 'effect', color, kind: 'delay', value: d });
         } else if (color === 'dark') {
-          if (has(B, 'blood_retort')) { relicEv(ev, 'blood_retort'); healPlayer(B, D().relics.blood_retort.heal, 'blood_retort', ev); } else {
-            ev.push({ type: 'effect', color, kind: 'self', value: C.dark.base.self });
-            hurtPlayer(B, C.dark.base.self, 'dark', ev, true);
+          if (has(B, 'blood_retort')) { relicEv(ev, 'blood_retort'); healPlayer(B, rnd(D().relics.blood_retort.heal * power), 'blood_retort', ev); } else {
+            const self = rnd(C.dark.base.self * power);
+            ev.push({ type: 'effect', color, kind: 'self', value: self });
+            hurtPlayer(B, self, 'dark', ev, true);
           }
         }
         break;
       }
-      case 'water': addShield(B, scaled(B, color, k, kind), color, ev); break;
+      case 'water': addShield(B, scaled(B, color, k, kind, power), color, ev); break;
       case 'life': {
-        const v = scaled(B, color, k, kind);
+        const v = scaled(B, color, k, kind, power);
         ev.push({ type: 'effect', color, kind: 'heal', value: v });
         healPlayer(B, v, 'life', ev);
         break;
       }
       case 'poison': {
-        const v = scaled(B, color, k, kind);
+        const v = scaled(B, color, k, kind, power);
         const turns = has(B, 'poison_ivy') ? D().relics.poison_ivy.turns : C.poison.base.turns;
         B.enemy.poison.push({ tick: v, turns });
         ev.push({ type: 'effect', color, kind: 'poison', value: v, turns });
         break;
       }
       case 'ice': {
-        const n = freezeTurns(B, step);
+        const n = rnd(freezeTurns(B, step) * power);
         // Max instead of sum: stacking ice would otherwise lock the enemy forever.
         B.enemy.frozen = Math.max(B.enemy.frozen, n);
         ev.push({ type: 'effect', color, kind: 'freeze', value: n });
@@ -184,13 +185,13 @@ var PS = globalThis.PS || (globalThis.PS = {});
         if (B.lastColor) {
           const times = has(B, 'void_lens') ? D().relics.void_lens.times : 1;
           if (times > 1) relicEv(ev, 'void_lens');
-          for (let i = 0; i < times; i++) applyColor(B, B.lastColor, step, kind, ev, true);
-        } else addShield(B, C.mirror.base.fallbackShield, 'mirror', ev);
+          for (let i = 0; i < times; i++) applyColor(B, B.lastColor, step, kind, ev, true, power);
+        } else addShield(B, rnd(C.mirror.base.fallbackShield * power), 'mirror', ev);
         break;
       }
       case 'slime':
         if (has(B, 'sponge')) relicEv(ev, 'sponge');
-        addShield(B, effectValue(B, 'slime'), 'slime', ev);
+        addShield(B, rnd(effectValue(B, 'slime') * power), 'slime', ev);
         break;
     }
     if (!viaMirror && color !== 'mirror' && !JUNK[color]) B.lastColor = color;
@@ -230,7 +231,15 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (t.kind === 'bomb') {
       const targets = Fd().bombNeighbors(F, i);
       if (targets.length) ev.push({ type: 'bomb', tube: i, targets, tubes: tubesOf(F) });
+      for (const target of targets) {
+        const start = ev.length;
+        applyColor(B, target.color, step, 'plain', ev, true, D().tubes.bomb.effectMult);
+        for (let x = start; x < ev.length; x++) {
+          if (ev[x].type === 'effect') Object.assign(ev[x], { source: 'bomb', tube: target.tube });
+        }
+      }
     }
+    if (B.status !== 'active' && B.status !== 'lost') return;
     t.frozen = 0;
     Fd().refill(F, B.rng, i);
     ev.push({ type: 'refill', tube: i, tubes: tubesOf(F), queue: queueOf(F) });

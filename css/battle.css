@@ -117,17 +117,17 @@
   box-shadow: 0 0 8px 2px var(--peach2), 0 0 3px 1px var(--peach); opacity: 0; animation: btHint 1s infinite; }
 .bt-tw.bomb-n .bt-tube { filter: drop-shadow(0 0 4px #ffb27acc) drop-shadow(0 4px 5px rgba(50, 110, 130, .2)); }
 /* The glass is a drawing from img/tubes (256px wide, trimmed to the art). Its numbers are image pixels, measured per file:
-   --gw body width (the tube's box), --gl/--gr overhang (rim, wings, fuse), --gt rim bottom, --gst top slice (rim plus any side decoration,
+   --gw body width (the tube's box), --gl/--gr rim overhang, --gt rim bottom, --gst top slice (rim plus any side decoration,
    so it never stretches), --gs bottom slice holding the round end, --wl/--wr walls, --gb glass under the hollow. --s maps them onto the tube; the rim and bottom keep their shape, only the straight middle stretches. */
-.bt-tw, .bt-tube { --glass: url(../img/tubes/tube_plain.webp); --gw: 212; --gl: 22; --gr: 22; --gt: 67; --gst: var(--gt); --gs: 95; --wl: 38; --wr: 38; --gb: 33; }
+.bt-tw, .bt-tube { --glass: url(../img/tubes/tube_plain.webp); --gw: 214; --gl: 21; --gr: 21; --gt: 66; --gst: var(--gt); --gs: 110; --wl: 36; --wr: 36; --gb: 36; }
 .bt-tube {
   --s: calc(100cqw / var(--gw)); position: relative; width: 100%; height: calc(var(--cap) * var(--lh) + (var(--gt) + var(--gb)) * var(--s) + 4px);
   filter: drop-shadow(0 4px 5px rgba(50, 110, 130, .2)); }
-.bt-tube.k-vial, .bt-tw[data-kind="vial"] { --glass: url(../img/tubes/tube_vial.webp); --gw: 210; --gl: 23; --gr: 23; --gt: 71; --gs: 90; --wl: 42; --wr: 43; --gb: 36; }
-.bt-tube.k-amp, .bt-tw[data-kind="amp"] { --glass: url(../img/tubes/tube_amp.webp); --gw: 252; --gl: 66; --gr: 66; --gt: 100; --gst: 205; --gs: 107; --wl: 54; --wr: 54; --gb: 46; }
-.bt-tube.k-catalyst, .bt-tw[data-kind="catalyst"] { --glass: url(../img/tubes/tube_catalyst.webp); --gw: 189; --gl: 98; --gr: 97; --gt: 61; --gst: 170; --gs: 84; --wl: 39; --wr: 39; --gb: 35; }
-.bt-tube.k-bomb, .bt-tw[data-kind="bomb"] { --glass: url(../img/tubes/tube_bomb.webp); --gw: 198; --gl: 19; --gr: 167; --gt: 151; --gst: 200; --gs: 90; --wl: 43; --wr: 42; --gb: 40; }
-.bt-tube.k-sieve, .bt-tw[data-kind="sieve"] { --glass: url(../img/tubes/tube_sieve.webp); --gw: 200; --gl: 29; --gr: 27; --gt: 89; --gst: 115; --gs: 85; --wl: 40; --wr: 41; --gb: 35; }
+.bt-tube.k-vial, .bt-tw[data-kind="vial"] { --glass: url(../img/tubes/tube_vial.webp); --gw: 216; --gl: 20; --gr: 20; --gt: 68; --gs: 112; --wl: 39; --wr: 39; --gb: 38; }
+.bt-tube.k-amp, .bt-tw[data-kind="amp"] { --glass: url(../img/tubes/tube_amp.webp); --gw: 214; --gl: 21; --gr: 21; --gt: 68; --gs: 110; --wl: 38; --wr: 38; --gb: 36; }
+.bt-tube.k-catalyst, .bt-tw[data-kind="catalyst"] { --glass: url(../img/tubes/tube_catalyst.webp); --gw: 214; --gl: 21; --gr: 21; --gt: 70; --gs: 110; --wl: 38; --wr: 38; --gb: 36; }
+.bt-tube.k-bomb, .bt-tw[data-kind="bomb"] { --glass: url(../img/tubes/tube_bomb.webp); --gw: 218; --gl: 19; --gr: 19; --gt: 70; --gs: 114; --wl: 41; --wr: 41; --gb: 39; }
+.bt-tube.k-sieve, .bt-tw[data-kind="sieve"] { --glass: url(../img/tubes/tube_sieve.webp); --gw: 214; --gl: 21; --gr: 21; --gt: 72; --gs: 112; --wl: 39; --wr: 39; --gb: 37; }
 .bt-tube::before { content: ''; position: absolute; z-index: 3; pointer-events: none; top: 0; bottom: 0;
   left: calc(var(--gl) * var(--s) * -1); right: calc(var(--gr) * var(--s) * -1);
   border-style: solid; border-width: calc(var(--gst) * var(--s)) 0 calc(var(--gs) * var(--s)); border-image: var(--glass) var(--gst) 0 var(--gs) fill stretch; }
