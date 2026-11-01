@@ -1255,7 +1255,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       S.onResize = () => { if (S && !S.dead) fit(); };
       S.stopLayout = PS.BattleLayout.watch(el, S.onResize);
       const tut = Tut();
-      if (tut) tut.attach({ R, el, tubeEl, getSel: () => (S ? S.sel : null) });
+      if (tut && !R.preview) tut.attach({ R, el, tubeEl, getSel: () => (S ? S.sel : null) });
       UI.debug = UI.debug || {};
       UI.debug.onWin = debugWin;
       UI.debug.render = () => { if (S && !S.dead && !S.busy) renderAll(); };

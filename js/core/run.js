@@ -468,7 +468,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   PS.Run = {
-    stagesOf, create, act, canAct, choose, reroll, rerollPrice, potionBuyPrice, canBuyPotion, buyPotion, skip, revive, reviveOptions, giveUp, unlockedPool,
+    stagesOf, create, startStage, act, canAct, choose, reroll, rerollPrice, potionBuyPrice, canBuyPotion, buyPotion, skip, revive, reviveOptions, giveUp, unlockedPool,
     coinMult, islandTags,
   };
 })();

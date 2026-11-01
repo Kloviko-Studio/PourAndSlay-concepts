@@ -51,6 +51,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
               <button class="btn btn-sm" data-d="day">${T('+1 день', '+1 day')}</button>
               <button class="btn btn-sm" data-d="ads">${T('Сеть', 'Network')}: ${UI.ads.online ? T('есть', 'on') : T('нет', 'off')}</button>
               <button class="btn btn-sm" data-d="catalog">${T('Каталог контента', 'Content catalog')}</button>
+              <button class="btn btn-sm" data-d="watch">${T('Сцены мобов', 'Watch scenes')}</button>
               <button class="btn btn-sm btn-danger" data-d="reset">${T('Сбросить прогресс', 'Reset progress')}</button>
             </div>
             <div class="tiny dim" style="margin-top:8px">${T('Сдвиг времени', 'Time shift')}: ${Math.round(UI.timeShift / 86400000)} ${T('дн.', 'd')} · ${T('сессий', 'sessions')}: ${p.sessions || 0}</div>
@@ -83,6 +84,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         on('[data-a=reset]', reset);
         on('[data-d=reset]', reset);
         on('[data-d=catalog]', () => UI.go('catalog', { back: params.back }));
+        on('[data-d=watch]', () => UI.watchScenes(params.back));
         const dbg = PS.Meta.debug || {};
         on('[data-d=coins]', () => { dbg.addCoins ? dbg.addCoins(500) : PS.Meta.addCoins(500); UI.topbar(); UI.toast('+500 🪙'); });
         on('[data-d=gems]', () => { dbg.addGems ? dbg.addGems(100) : PS.Meta.addGems(100); UI.topbar(); UI.toast('+100 💎'); });

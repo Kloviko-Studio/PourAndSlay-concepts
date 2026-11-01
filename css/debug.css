@@ -50,3 +50,17 @@
 .cat-tube { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 62px; text-align: center; line-height: 1.15; }
 .cat-tube .tiny { font-size: 10px; }
 .cat-tube .bt-tw { width: 46px; flex: none; }
+
+/* "Watch scenes" debug toolbar: floats over the real battle screen, which stays visible but unclickable. */
+body.watch-mode #screen { pointer-events: none; }
+.watch-bar {
+  position: fixed; left: 50%; bottom: calc(16px + var(--safe-b)); transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px; max-width: calc(100% - 32px);
+  padding: 8px 10px 8px 16px; border-radius: 30px; background: rgba(20, 20, 26, .78); backdrop-filter: blur(6px);
+  color: #fff; pointer-events: auto; box-shadow: var(--sh);
+}
+.watch-label { flex: 1; min-width: 0; font-size: 13px; font-weight: 700; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.watch-btn { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(255, 255, 255, .14); color: #fff; }
+.watch-btn:active { background: rgba(255, 255, 255, .28); }
+.watch-close { background: rgba(224, 72, 58, .85); }
+.watch-close:active { background: rgba(224, 72, 58, 1); }
