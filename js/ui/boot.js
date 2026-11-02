@@ -37,7 +37,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function splash() {
     const s = document.createElement('div');
     s.className = 'splash';
-    s.innerHTML = `<div class="logo"><div class="logo-t">Pour<br><span>&amp;</span> Slay</div><div class="logo-s">${T('алхимия · монстры', 'alchemy · monsters')}</div></div>`;
+    s.innerHTML = `<div class="logo"><img class="logo-art" src="img/branding/app_icon.webp" width="192" height="192" alt=""><div class="logo-t">Pour<br><span>&amp;</span> Slay</div><div class="logo-s">${T('алхимия · монстры', 'alchemy · monsters')}</div></div>`;
     document.body.appendChild(s);
     return s;
   }

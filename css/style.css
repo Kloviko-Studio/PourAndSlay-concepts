@@ -310,6 +310,7 @@ button.card:active:not(:disabled) { transform: translateY(2px); }
 /* ---------- splash ---------- */
 .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: linear-gradient(180deg, #cfe6ea 0%, #a9dde4 30%, #8fd3dd 55%, #5cc8d8 100%); }
 .logo { text-align: center; }
+.logo-art { display: block; width: min(192px, 36vh, 55vw); height: auto; margin: 0 auto 24px; border-radius: 28px; box-shadow: 0 8px 24px rgba(60, 120, 140, .25); }
 .logo-t { font-family: var(--display); font-size: 56px; font-weight: 400; line-height: .95; color: #fff; -webkit-text-stroke: 8px #f07f52; paint-order: stroke fill; text-shadow: 0 6px 0 #d9653d, 0 0 40px rgba(255, 255, 255, .8); }
 .logo-t span { color: #fff1b8; }
 .logo-s { margin-top: 14px; color: var(--ink); font-size: 14px; letter-spacing: .2em; text-transform: uppercase; }
