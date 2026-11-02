@@ -62,6 +62,10 @@ var PS = globalThis.PS || (globalThis.PS = {});
         ${block ? `<button class="btn btn-cta btn-sm" data-ok>${opts.button || T('Понятно', 'Got it')}</button>` : ''}</div>`;
       layer.innerHTML = html;
       document.body.appendChild(layer);
+      const bubble = layer.querySelector('.tut-bubble');
+      const top = bubble.style.top ? parseFloat(bubble.style.top) : H - parseFloat(bubble.style.bottom) - bubble.offsetHeight;
+      bubble.style.top = Math.max(12, Math.min(top, H - bubble.offsetHeight - 12)) + 'px';
+      bubble.style.bottom = 'auto';
       cur = { layer, resolve, forced: !block };
       const ok = layer.querySelector('[data-ok]');
       if (ok) ok.onclick = e => { e.stopPropagation(); PS.Snd.play('select'); hide(); };
@@ -102,7 +106,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   // ---------- public ----------
   const Tut = PS.Tutorial = {
-    attach(api) { ctx = api; queue = []; forced = null; },
+    attach(api) { hide(); ctx = api; queue = []; forced = null; showing = false; },
     detach() { hide(); ctx = null; forced = null; queue = []; showing = false; },
     hide() { hide(); forced = null; },
     active: () => !!cur,
@@ -143,20 +147,23 @@ var PS = globalThis.PS || (globalThis.PS = {});
     },
     // Blocking hints queued by events; awaited before the battle routes to a window.
     async flush() {
-      while (queue.length && ctx) {
+      const token = ctx;
+      while (queue.length && ctx && ctx === token) {
         const h = queue.shift();
         if (seen(h.key)) continue;
         mark(h.key);
         showing = true;
         await show(h);
+        if (ctx !== token) return;
         showing = false;
       }
     },
     // Called whenever the battle becomes idle and accepts input.
     async idle() {
       if (!ctx || showing) return;
+      const token = ctx;
       await Tut.flush();
-      if (!ctx) return;
+      if (!ctx || ctx !== token) return;
       const R = ctx.R, b = B();
       if (R.phase !== 'battle' || !b || b.status !== 'active') return;
       const st = R.stage;
@@ -196,10 +203,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
     // One-off hint for in-run windows (pick, relic, revive). Resolves when dismissed or immediately if seen.
     async once(key, h) {
       if (seen(key)) return;
+      const token = ctx;
       mark(key);
       showing = true;
       await show(Object.assign({ key }, h));
-      showing = false;
+      if (ctx === token) showing = false;
     },
     guided,
     reset() { P().tutorial = {}; UI.save(); },

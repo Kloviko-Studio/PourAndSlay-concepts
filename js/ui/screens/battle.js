@@ -96,24 +96,41 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   // ---------- view model (numbers shown while events play) ----------
   function inBattle() { return S.R.phase === 'battle' && !!S.R.battle; }
+  function battleVm(B) {
+    const pv = PS.Combat.preview(B);
+    return {
+      pHp: B.player.hp, pMax: B.player.maxHp, pShield: B.player.shield,
+      eHp: B.enemy.hp, eMax: B.enemy.maxHp, eShield: B.enemy.shield,
+      intent: { ...pv.intent }, timer: pv.timer, frozen: pv.frozen, rage: pv.rage, buff: pv.buff, combo: B.combo,
+    };
+  }
   function syncVm() {
     const R = S.R, B = R.battle, vm = S.vm;
+    if (B) Object.assign(vm, battleVm(B));
     const live = B && (R.phase === 'battle' || R.phase === 'revive');
     vm.pHp = live ? B.player.hp : R.hp;
     vm.pMax = live ? B.player.maxHp : R.maxHp;
     vm.pShield = live ? B.player.shield : 0;
-    if (B) {
-      const pv = PS.Combat.preview(B);
-      vm.eHp = B.enemy.hp; vm.eMax = B.enemy.maxHp; vm.eShield = B.enemy.shield;
-      vm.intent = pv.intent; vm.timer = pv.timer; vm.frozen = pv.frozen; vm.rage = pv.rage; vm.buff = pv.buff;
-      vm.combo = B.combo;
-    }
   }
 
   // ---------- DOM ----------
   const $ = sel => S.el.querySelector(sel);
   const tubeEl = i => S && S.el.querySelector(`.bt-tw[data-i="${i}"]`);
   const monEl = () => $('.bt-mon');
+  function setHtml(el, html) {
+    if (el._html === html) return;
+    el.innerHTML = html;
+    el._html = html;
+  }
+  function battleOverlay(content, options = {}) {
+    const token = S;
+    const close = UI.overlay(content, { ...options, onClose: value => {
+      if (token.ov === close) token.ov = null;
+      if (S === token && !token.dead && options.onClose) options.onClose(value);
+    } });
+    token.ov = close;
+    return close;
+  }
 
   function skeleton() {
     S.el.innerHTML = `
@@ -151,7 +168,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   function renderTop() {
     const R = S.R, isl = UI.island(R.island) || { stages: 1, bossAt: [] };
-    $('.bt-stage').innerHTML = PS.BattleLayout.progress(R.island, R.stage + 1, isl.stages, isl.bossAt, UI.art('boss', 14));
+    setHtml($('.bt-stage'), PS.BattleLayout.progress(R.island, R.stage + 1, isl.stages, isl.bossAt, UI.art('boss', 14)));
   }
 
   function enemyMeta() {
@@ -176,8 +193,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (enter) Fx.animClass(mon, 'enter', 560);
     const encs = S.R.boss ? S.R.boss.encounters : 1;
     const heals = m.e.cycle.some(c => c.t === 'heal') ? Math.max(0, D().economy.enemyHeals - (m.e.heals || 0)) : null;
-    $('.bt-ename').innerHTML = `${m.boss && encs > 1 ? `<span class="tag">${T(`встреча ${m.enc + 1}/${encs}`, `fight ${m.enc + 1}/${encs}`)}</span>` : ''}
-      ${heals != null ? `<span class="tag" data-tip="${T(`Враг лечится не больше ${D().economy.enemyHeals} раз за бой`, `Enemy heals at most ${D().economy.enemyHeals} times per fight`)}">💚 ${heals}</span>` : ''}`;
+    setHtml($('.bt-ename'), `${m.boss && encs > 1 ? `<span class="tag">${T(`встреча ${m.enc + 1}/${encs}`, `fight ${m.enc + 1}/${encs}`)}</span>` : ''}
+      ${heals != null ? `<span class="tag" data-tip="${T(`Враг лечится не больше ${D().economy.enemyHeals} раз за бой`, `Enemy heals at most ${D().economy.enemyHeals} times per fight`)}">💚 ${heals}</span>` : ''}`);
   }
 
   function setBar(bar, v, max, label) {
@@ -222,7 +239,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (vm.buff > 1) out.push(['c-buff', `${UI.inlineArt('gameplay/intents/intent_buff')} ×2`, T('Следующая атака врага ×2.', 'Next enemy attack ×2.')]);
     if (vm.rage) out.push(['c-rage', `${UI.inlineArt('gameplay/intents/status_rage')} ${T('ярость', 'rage')}`, T('Ярость: действует на 1 ход раньше.', 'Rage: acts 1 turn sooner.')]);
     if (B.burn && B.burn.length) out.push(['c-rage', `${UI.inlineArt('gameplay/intents/status_burn')} ${B.burn.reduce((s, b) => s + b.dmg, 0)}`, T('Поджог: урон тебе каждый ход, мимо щита.', 'Burn: damages you every turn, ignores shield.')]);
-    $('.bt-chips').innerHTML = out.map(c => `<span class="bt-chip ${c[0]}" data-tip="${esc(c[2])}">${c[1]}</span>`).join('');
+    setHtml($('.bt-chips'), out.map(c => `<span class="bt-chip ${c[0]}" data-tip="${esc(c[2])}">${c[1]}</span>`).join(''));
   }
 
   function renderIntent() {
@@ -239,7 +256,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     el.dataset.tip += '<br>' + esc(foot);
     el.setAttribute('aria-label', label + ', ' + foot);
     const count = paused ? vm.frozen : Math.max(1, vm.timer);
-    el.innerHTML = `<div class="il">${esc(paused ? T('Лёд', 'Frozen') : short[it.t] || label)}</div><div class="iv">${intentValue(it, vm.buff)}</div><div class="it">${count}</div>`;
+    setHtml(el, `<div class="il">${esc(paused ? T('Лёд', 'Frozen') : short[it.t] || label)}</div><div class="iv">${intentValue(it, vm.buff)}</div><div class="it">${count}</div>`);
   }
 
   function renderPlayer() {
@@ -430,15 +447,15 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
   function renderBelt() {
     const R = S.R, list = beltList();
-    const armedId = S.mode && S.mode.type === 'potion' ? list[S.mode.idx] : null;
+    const armedId = S.mode && S.mode.type === 'potion' ? S.mode.id : null;
     let html = '';
     // Same potions stack into one icon; a tap uses the first copy in the belt.
     beltStacks(list).forEach(g => {
       const p = UI.item('potions', g.id);
-      html += `<button class="bt-pot pt-${g.id}${g.id === armedId ? ' armed' : ''}" data-pot="${g.idx}" data-tip="<b>${esc(p.icon + ' ' + p.name)}${g.n > 1 ? ' ×' + g.n : ''}</b><br>${esc(p.desc)}" aria-label="${esc(p.name)}">${p.icon}${g.n > 1 ? `<span class="bt-pot-n">${g.n}</span>` : ''}</button>`;
+      html += `<button class="bt-pot pt-${g.id}${g.id === armedId ? ' armed' : ''}" data-pot="${g.idx}" data-potion-id="${g.id}" data-tip="<b>${esc(p.icon + ' ' + p.name)}${g.n > 1 ? ' ×' + g.n : ''}</b><br>${esc(p.desc)}" aria-label="${esc(p.name)}">${p.icon}${g.n > 1 ? `<span class="bt-pot-n">${g.n}</span>` : ''}</button>`;
     });
     for (let i = list.length; i < (R.beltSize || 3); i++) html += `<button class="bt-pot empty" data-a="buypot" aria-label="${T('Купить зелье', 'Buy a potion')}">+</button>`;
-    $('.bt-belt').innerHTML = html;
+    setHtml($('.bt-belt'), html);
     const dr = $('.bt-drain'), B = R.battle;
     const stuck = inBattle() && B.stuck;
     const armed = S.mode && S.mode.type === 'drain';
@@ -490,6 +507,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   // then it flies back. Only transforms move, on the tube's own layer.
   const TIP_DEG = 105, TIP = TIP_DEG * Math.PI / 180, TRAVEL = 150;
   async function animPour(ev) {
+    const token = S, active = () => S === token && !token.dead;
     Snd.play('pour');
     const aw = tubeEl(ev.from), bw = tubeEl(ev.to);
     if (!aw || !bw) { renderTubes(ev.tubes); return; }
@@ -502,18 +520,37 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const ox = sd => tx - sd * Math.cos(TIP) * lip, end = sd => ox(sd) - sd * Math.sin(TIP) * len;
     if (end(side) < 0 || end(side) > window.innerWidth) side = -side;
     const dx = ox(side) - (A.left + lip), dy = mouth - Math.sin(TIP) * lip - (A.top - lift);
-    const layoutToken = S, restoreTube = PS.BattleLayout.floatTube(S.el, aw);
+    const origin = getComputedStyle(aw).transform;
+    const restoreTube = PS.BattleLayout.floatTube(S.el, aw);
+    token.floats = token.floats || new Set();
+    token.floats.add(restoreTube);
+    const flights = [];
+    const travel = async (from, to) => {
+      const ms = TRAVEL / (UI.speed || 1);
+      aw.style.transform = to;
+      const animation = aw.animate([{ transform: from }, { transform: to }], { duration: ms, easing: 'ease-in-out' });
+      flights.push(animation);
+      await Fx.settle(animation, ms);
+    };
     aw.classList.add('pouring');
-    aw.style.transform = `translate(${dx}px, ${dy}px) rotate(${side * TIP_DEG}deg)`;
-    await sleep(TRAVEL);
-    const liq = bw.querySelector('.bt-liq').getBoundingClientRect();
-    const surface = liq.bottom - (ev.swallow ? 0 : S.tv[ev.to].t.layers.length * S.lh);
-    const ms = Math.max(260, renderTubes(ev.tubes));
-    stream(tx, mouth, surface, Math.max(4, liq.width * .3), colorDef(ev.color).css, ms);
-    await sleep(ms);
-    aw.style.transform = '';
-    setTimeout(() => { restoreTube(); if (S === layoutToken && !layoutToken.dead) fit(); }, TRAVEL + 40);
-    await sleep(TRAVEL * .4);
+    aw.style.transition = 'none';
+    const tipped = `translate(${dx}px, ${dy}px) rotate(${side * TIP_DEG}deg)`;
+    try {
+      await travel(origin, tipped);
+      if (!active()) return;
+      const liq = bw.querySelector('.bt-liq').getBoundingClientRect();
+      const surface = liq.bottom - (ev.swallow ? 0 : S.tv[ev.to].t.layers.length * S.lh);
+      const ms = Math.max(260, renderTubes(ev.tubes));
+      stream(tx, mouth, surface, Math.max(4, liq.width * .3), colorDef(ev.color).css, ms);
+      await sleep(ms);
+      if (!active()) return;
+      await travel(tipped, 'none');
+    } finally {
+      flights.forEach(animation => animation.cancel());
+      restoreTube();
+      token.floats.delete(restoreTube);
+      if (active()) fit();
+    }
   }
   function stream(x, y0, y1, w, color, ms) {
     const fx = document.getElementById('fx');
@@ -717,7 +754,13 @@ var PS = globalThis.PS || (globalThis.PS = {});
       renderBelt();
       Snd.play('buy');
       hitNum($('.bt-belt'), p.icon, '#fff', true);
-      if (ev.id === 'undo') { const ms = renderTubes(S.R.battle.field.tubes); renderAll(); bigPop(T('↶ Отмена', '↶ Undo')); return Math.max(500, ms); }
+      if (ev.id === 'undo') {
+        Object.assign(S.vm, ev.vm);
+        renderEnemyBars(); renderIntent(); renderPlayer();
+        const ms = renderTubes(ev.tubes);
+        bigPop(T('↶ Отмена', '↶ Undo'));
+        return Math.max(500, ms);
+      }
       let ms = 300;
       if (ev.tubes) ms = Math.max(ms, renderTubes(ev.tubes));
       if (ev.id === 'flask') fit();
@@ -800,17 +843,21 @@ var PS = globalThis.PS || (globalThis.PS = {});
     token.busy = true;
     token.pending = (token.pending || 0) + 1;
     prepare(evs);
+    evs.forEach(ev => {
+      if (ev.type === 'potion' && ev.id === 'undo') ev.vm = battleVm(token.R.battle);
+    });
     const tut = Tut();
     if (tut) tut.onEvents(evs);
     const handlers = {};
+    const indices = new Map(evs.map((ev, i) => [ev, i]));
     Object.keys(H).forEach(k => {
       handlers[k] = ev => {
         if (S !== token || token.dead) return 0;
-        token.evIdx = evs.indexOf(ev);
+        token.events = evs;
+        token.evIdx = indices.get(ev);
         return H[k](ev);
       };
     });
-    token.events = evs;
     handlers.done = () => {
       if (S !== token || token.dead) return null;
       // a move queued behind this one still has to play: re-rendering from the final state now would skip its animation
@@ -888,7 +935,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (tut && !tut.allowTube(i)) { wiggle(i); return; }
     const R = S.R, F = R.battle.field, t = F.tubes[i];
     if (S.mode) {
-      const a = S.mode.type === 'drain' ? { type: 'drain', tube: i } : { type: 'potion', idx: S.mode.idx, tube: i };
+      const a = S.mode.type === 'drain' ? { type: 'drain', tube: i } : { type: 'potion', idx: R.battle.potions.indexOf(S.mode.id), tube: i };
       if (!doAct(a)) { wiggle(i); Snd.play('bad'); }
       return;
     }
@@ -905,16 +952,18 @@ var PS = globalThis.PS || (globalThis.PS = {});
     else wiggle(i);
   }
 
-  function onPotion(idx) {
+  function onPotion(idx, id) {
     if (!S || inputLocked() || !inBattle()) return;
     const tut = Tut();
     if (tut && tut.locked()) return;
-    const B = S.R.battle, id = B.potions[idx];
+    const B = S.R.battle;
+    if (id) idx = B.potions.indexOf(id);
+    id = B.potions[idx];
     if (!id) return;
     S.sel = null;
     if (TUBE_POTIONS[id]) {
-      const same = S.mode && S.mode.type === 'potion' && S.mode.idx === idx;
-      S.mode = same ? null : { type: 'potion', idx };
+      const same = S.mode && S.mode.type === 'potion' && S.mode.id === id;
+      S.mode = same ? null : { type: 'potion', id };
       Snd.play('select');
       renderBelt(); refreshSel();
       if (S.mode) UI.toast(`${UI.item('potions', id).icon} ${T('Выбери колбу', 'Pick a tube')}`);
@@ -941,7 +990,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         <span class="boost-ico">${p.icon}</span><span class="grow"><span class="card-title" style="font-size:15px">${esc(p.name)}</span><br><span class="card-desc">${esc(p.desc)}</span></span>
         <span class="boost-price">${had ? `<span class="dim">${T('куплено', 'bought')}</span>` : `<span class="price">${UI.ico.gem(18)}${price}</span>`}</span></button>`;
     }).join('');
-    const close = UI.overlay(`<button class="btn-icon ov-x" data-close>${UI.ico.close}</button><h2 class="ov-title">${T('Купить зелье', 'Buy a potion')}</h2>
+    const close = battleOverlay(`<button class="btn-icon ov-x" data-close>${UI.ico.close}</button><h2 class="ov-title">${T('Купить зелье', 'Buy a potion')}</h2>
       <p class="ov-text">${T(`Каждое зелье — раз за бой; каждая следующая покупка до конца острова — ×${D().economy.potionBuy.mult}. Ход не тратится.`, `Each potion once per fight; every next buy on this island costs ×${D().economy.potionBuy.mult}. Doesn't use a turn.`)}</p>
       <div class="col">${rows}</div>`, { cls: 'sheet' });
     close.card.querySelectorAll('[data-buy]').forEach(b => b.onclick = () => {
@@ -1035,7 +1084,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       <div class="cards">${off.options.map((o, i) => cardHtml(o, i, off)).join('')}</div>
       <div class="ov-actions">${sub ? '' : `<button class="btn btn-gem" data-a="reroll">${T('Переброс', 'Reroll')} 💎${price}</button>`}
         <button class="btn btn-ghost" data-a="skip">${sub ? T('Отмена', 'Cancel') : T(`Пропустить +${skipV} 🪙`, `Skip +${skipV} 🪙`)}</button></div>`;
-    const close = UI.overlay(html, { cls: 'bt-ov', dismiss: false });
+    const close = battleOverlay(html, { cls: 'bt-ov', dismiss: false });
     S.ov = close;
     const card = close.card;
     const token = S;
@@ -1087,7 +1136,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         ${o.gemsPrice != null ? `<button class="btn btn-gem${gems < o.gemsPrice ? ' disabled' : ''}" data-a="gems">${T('Воскреснуть', 'Revive')} 💎${o.gemsPrice}</button>` : ''}
         <button class="btn ${o.free ? 'btn-ghost' : 'btn-cta'}" data-a="giveup">${o.free ? T('Сдаться', 'Give up') : T('К итогам', 'Results')}</button></div>
       ${seal || !o.free ? '' : `<button class="bt-seal-link" data-a="seal">${T('🔱 С Печатью алхимика — без рекламы', '🔱 Alchemist\'s Seal: no ads')}</button>`}`;
-    const close = UI.overlay(html, { cls: 'bt-ov', dismiss: false });
+    const close = battleOverlay(html, { cls: 'bt-ov', dismiss: false });
     S.ov = close;
     const card = close.card, token = S;
     let done = false;
@@ -1143,7 +1192,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   ];
   function showRules() {
     let i = 0;
-    const close = UI.overlay('<div class="bt-rules-host"></div>', { cls: 'bt-ov' });
+    const close = battleOverlay('<div class="bt-rules-host"></div>', { cls: 'bt-ov' });
     const host = close.card.querySelector('.bt-rules-host');
     const draw = () => {
       const r = RULES[i];
@@ -1158,7 +1207,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   function showPause() {
     if (S.busy) return;
     const R = S.R;
-    UI.overlay(`<h2 class="ov-title">${T('Пауза', 'Paused')}</h2><p class="ov-text">${T(`Остров ${R.island} · этап ${R.stage + 1}`, `Island ${R.island} · stage ${R.stage + 1}`)}</p><div class="ov-actions col">
+    battleOverlay(`<h2 class="ov-title">${T('Пауза', 'Paused')}</h2><p class="ov-text">${T(`Остров ${R.island} · этап ${R.stage + 1}`, `Island ${R.island} · stage ${R.stage + 1}`)}</p><div class="ov-actions col">
       <button class="btn btn-cta" data-close>${T('Продолжить', 'Resume')}</button>
       <button class="btn" data-close="rules">${T('📖 Как играть', '📖 How to play')}</button>
       <button class="btn" data-close="settings">${T('⚙ Настройки', '⚙ Settings')}</button>
@@ -1175,6 +1224,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
   }
 
   function showBuild() {
+    if (!S || S.busy) return;
     const R = S.R, d = D();
     const deck = Object.keys(R.deck).map(c => {
       const cd = d.elements[c], lvl = R.deck[c];
@@ -1192,7 +1242,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     const tubes = R.slots.map(k => { const t = UI.item('tubes', k); return itemTile(t.icon, t.name, '', `<b>${t.name}</b><br>${t.desc}`); }).join('');
     const pots = beltStacks(beltList()).map(g => { const p = UI.item('potions', g.id); return itemTile(p.icon, p.name, g.n > 1 ? '×' + g.n : '', `<b>${p.name}</b><br>${p.desc}`); }).join('');
     const empty = t => `<div class="bt-empty">${t}</div>`;
-    UI.overlay(`<button class="btn-icon ov-x" data-close>${UI.ico.close}</button><h2 class="ov-title">🎒 ${T('Сборка', 'Build')}</h2>
+    battleOverlay(`<button class="btn-icon ov-x" data-close>${UI.ico.close}</button><h2 class="ov-title">🎒 ${T('Сборка', 'Build')}</h2>
       <div class="tiny dim center">${T('Долгое нажатие — подробности', 'Long-press for details')}</div>
       <div class="bt-sec">${T('Стихии', 'Elements')}</div><div class="bt-items">${deck}</div>
       <div class="bt-sec">${T('Бонусы', 'Bonuses')}</div>${mods || finds ? `<div class="bt-items">${mods}${finds}</div>` : empty(T('Пока нет — бери их после этапов.', 'None yet — pick them up after stages.'))}
@@ -1244,7 +1294,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         const tw = e.target.closest('.bt-tw');
         if (tw) { onTube(+tw.dataset.i); return; }
         const pot = e.target.closest('[data-pot]');
-        if (pot) { onPotion(+pot.dataset.pot); return; }
+        if (pot) { onPotion(+pot.dataset.pot, pot.dataset.potionId); return; }
         const a = e.target.closest('[data-a]');
         if (!a) return;
         if (a.dataset.a === 'drain') onDrain();
@@ -1275,6 +1325,8 @@ var PS = globalThis.PS || (globalThis.PS = {});
     unmount() {
       if (!S) return;
       S.dead = true;
+      if (S.floats) S.floats.forEach(restore => restore());
+      if (S.tv) S.tv.forEach(v => { if (v.pend) clearTimeout(v.pend); });
       if (S.ov) { S.ov(); S.ov = null; }
       if (S.stopLayout) S.stopLayout();
       const tut = Tut();

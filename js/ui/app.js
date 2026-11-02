@@ -476,10 +476,11 @@ var PS = globalThis.PS || (globalThis.PS = {});
         for (const ev of events || []) {
           const fn = handlers[ev.type] || handlers['*'];
           if (!fn) continue;
-          let r;
-          try { r = fn(ev); } catch (e) { console.error('play', ev.type, e); }
-          if (r && typeof r.then === 'function') await r;
-          else if (typeof r === 'number' && r > 0) await sleep(r / UI.speed);
+          try {
+            const r = fn(ev);
+            if (r && typeof r.then === 'function') await r;
+            else if (typeof r === 'number' && r > 0) await sleep(r / UI.speed);
+          } catch (e) { console.error('play', ev.type, e); }
         }
         if (handlers.done) await handlers.done();
       } finally { UI.busy = false; }

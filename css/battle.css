@@ -238,6 +238,7 @@
 .tut-bubble .tt { font-family: var(--display); font-size: 22px; line-height: 26px; margin-bottom: 3px; }
 .tut-bubble .tx { font-size: 14px; font-weight: 800; color: var(--ink2); line-height: 1.35; }
 .tut-bubble .btn { margin-top: 10px; width: 100%; }
+.tut-bubble { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow: auto; overscroll-behavior: contain; }
 
 /* ---------- keyframes ---------- */
 @keyframes btFill { from { transform: scaleY(0); } }

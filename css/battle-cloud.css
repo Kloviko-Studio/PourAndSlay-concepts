@@ -71,9 +71,10 @@ body[data-screen="battle"][data-theme="night"] { background: #152738; }
 .scr-battle .bt-player .bar { min-width: 0; height: 25px; }
 .scr-battle .bt-player .bar-label { font-size: 13px; }
 .scr-battle .bt-heart .art-ico { width: 25px; height: 25px; }
-.scr-battle .bt-shield { flex: none; height: 26px; padding: 0 5px 0 2px; background: transparent; color: #dfedf6; font-size: 13px; }
+.scr-battle .bt-shield { flex: none; min-width: 52px; height: 25px; justify-content: center; padding: 0 5px 0 2px; background: transparent; color: #dfedf6; font-size: 13px; font-variant-numeric: tabular-nums; }
+.scr-battle .bt-shield.zero { display: inline-flex; visibility: hidden; }
 .scr-battle .bt-shield .art-ico { width: 24px; height: 24px; }
-.scr-battle .bt-combo { position: static; flex: none; height: 25px; padding: 0 6px; border: 0; background: transparent; color: #fff1d6; box-shadow: none; }
+.scr-battle .bt-combo { position: static; flex: none; width: 56px; height: 25px; justify-content: center; padding: 0 6px; border: 0; background: transparent; color: #fff1d6; box-shadow: none; font-variant-numeric: tabular-nums; }
 .scr-battle .bt-combo.hot { background: #f3dbac; color: #68462e; }
 .scr-battle .bt-field { flex: 1 1 0; flex-shrink: 1; min-width: 0; min-height: 0; margin: 0; padding: 18px 2px 8px; gap: 12px;
   border-radius: 0; background: none; box-shadow: none; justify-content: safe center; overflow: auto; overscroll-behavior: contain; touch-action: pan-x pan-y; scrollbar-width: thin; scrollbar-color: #bccbd780 transparent; }
