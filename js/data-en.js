@@ -142,7 +142,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
       7: 'Bomb and Fire Bomb',
       8: 'New element: dark',
       9: 'New element: mirror',
-      10: 'Big Tube and Vial'
+      10: 'Vial'
     },
     quests: {
       close_color: 'Close {n} {color} tubes',
