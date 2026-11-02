@@ -473,6 +473,17 @@ var PS = globalThis.PS || (globalThis.PS = {});
       w.classList.toggle('hint', !!S.mode && !!t && t.layers.length > 0);
     });
   }
+  function setBusy(busy) {
+    S.busy = busy;
+    S.el.classList.toggle('locked', busy);
+    S.el.setAttribute('aria-busy', String(busy));
+    ['.bt-field', '.bt-belt'].forEach(selector => {
+      const el = $(selector);
+      el.inert = busy;
+      el.setAttribute('aria-busy', String(busy));
+    });
+    $('.bt-drain').disabled = busy;
+  }
 
   function renderAll() {
     syncVm();
@@ -485,7 +496,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     renderQueue();
     renderBelt();
     fit();
-    S.el.classList.toggle('locked', !!S.busy);
+    setBusy(!!S.busy);
   }
 
   // ---------- event playback ----------
@@ -840,7 +851,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
 
   function play(evs) {
     const token = S;
-    token.busy = true;
+    setBusy(true);
     token.pending = (token.pending || 0) + 1;
     prepare(evs);
     evs.forEach(ev => {
@@ -875,8 +886,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     if (S !== token || token.dead) return;
     const R = S.R;
     if (R.phase === 'battle') {
-      S.busy = false;
-      S.el.classList.remove('locked');
+      setBusy(false);
       if (tut) setTimeout(() => { if (S === token && !token.dead && !token.busy) tut.idle(); }, 0);
     } else if (R.phase === 'reward') showOffer();
     else if (R.phase === 'revive') showRevive();
@@ -893,8 +903,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
     q.list.forEach((x, i) => { if (!x.claimed && snap.list[i]) { x.progress = snap.list[i].progress; x.done = snap.list[i].done; } });
   }
 
-  // The core has already applied every queued move, so the next one is legal against the final state while the animations still play; the tutorial keeps its strict turn-by-turn lock.
-  const inputLocked = () => !!S.busy && ((Tut() && Tut().active()) || S.R.phase !== 'battle');
+  const inputLocked = () => !!S.busy;
 
   function doAct(a) {
     if (inputLocked() || !PS.Run.canAct(S.R, a)) return false;
@@ -1318,7 +1327,7 @@ var PS = globalThis.PS || (globalThis.PS = {});
         play(params.events);
       } else {
         renderAll();
-        S.busy = true;
+        setBusy(true);
         requestAnimationFrame(() => { if (S && !S.dead) { fit(); afterPlay(); } });
       }
     },

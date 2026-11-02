@@ -105,7 +105,7 @@ try {
       PS.UI.debug.render(); await W(200);
       return R;
     };
-    window.tapTube = i => document.querySelector('.scr-battle .bt-tw[data-i="' + i + '"]').click();
+    window.tapTube = i => [...document.querySelectorAll('.scr-battle')].at(-1).querySelector('.bt-tw[data-i="' + i + '"]').click();
     window.checkField = () => {
       const B = PS.Meta.profile.activeRun.battle;
       ensure(!document.querySelector('.bt-pour-layer,.bt-pour-placeholder'), 'Flight left detached nodes');
@@ -118,11 +118,40 @@ try {
       });
     };
   `);
-  for (const speed of [1, 4, 8]) await check(`rapid pours reuse the same source at speed ${speed}`, `
-    await setupPour(${speed}); tapTube(0); await W(40); tapTube(1); await W(120 / ${speed}); tapTube(0); tapTube(3);
-    await idle(); await W(220); checkField();
+  await check('stage entry ignores early taps and unlocks the field afterwards', `
+    await setupPour(1); const { R } = PS.UI.startRun(3), B = R.battle;
+    let move;
+    for (let from = 0; from < B.field.tubes.length && !move; from++) {
+      for (let to = 0; to < B.field.tubes.length; to++) {
+        if (PS.Field.pourAmount(B.field, from, to)) { move = { from, to }; break; }
+      }
+    }
+    ensure(move, 'No legal starting move');
+    ensure([...document.querySelectorAll('.bt-field')].at(-1).inert, 'Field was not locked during entry');
+    tapTube(move.from); tapTube(move.to); await idle();
+    ensure(B.turn === 0, 'Entry taps were deferred');
+    ensure(!document.querySelector('.bt-field').inert, 'Field stayed locked after entry');
+    tapTube(move.from); tapTube(move.to); await idle(); checkField();
+    ensure(B.turn === 1, 'Starting move did not work after entry');
   `);
-  await check('queued sieve pour keeps its own event context', `
+  await check('early taps do not defer a second pour behind closing effects', `
+    const R = await setupPour(1), B = R.battle;
+    B.field.tubes[0].layers = ['fire']; B.field.tubes[1].layers = Array(3).fill('fire');
+    B.field.tubes[2].layers = ['water']; B.enemy.hp = B.enemy.maxHp = 100;
+    PS.UI.debug.render(); tapTube(0); tapTube(1); await W(80); tapTube(2); tapTube(3);
+    await idle(); await W(250); checkField();
+    ensure(B.turn === 1 && B.field.tubes[3].layers.length === 0, 'Early input executed a deferred pour');
+    tapTube(2); tapTube(3); await idle(); checkField();
+    ensure(B.turn === 2 && B.field.tubes[3].layers[0] === 'water', 'Pour did not respond when the field became ready');
+  `);
+  for (const speed of [1, 4, 8]) await check(`early source taps are ignored at speed ${speed}`, `
+    const R = await setupPour(${speed}); tapTube(0); await W(40); tapTube(1); await W(120 / ${speed}); tapTube(0); tapTube(3);
+    await idle(); await W(220); checkField();
+    ensure(R.battle.turn === 1 && R.battle.field.tubes[0].layers[0] === 'fire', 'Early taps queued a move');
+    tapTube(0); tapTube(3); await idle(); checkField();
+    ensure(R.battle.turn === 2 && R.battle.field.tubes[3].layers[0] === 'fire', 'Field did not unlock');
+  `);
+  await check('sieve context stays correct and early taps are not queued', `
     const R = await setupPour(), act = PS.Run.act, events = [];
     Object.assign(R.battle.field.tubes[0], { layers: ['stone'] });
     Object.assign(R.battle.field.tubes[1], { kind: 'sieve', layers: [] });
@@ -130,22 +159,29 @@ try {
     PS.Run.act = (...args) => { const result = act(...args); events.push(result); return result; };
     try { tapTube(0); tapTube(1); tapTube(2); tapTube(3); await idle(); }
     finally { PS.Run.act = act; }
+    ensure(events.length === 1, 'Early taps queued a move during sieve animation');
     ensure(events[0][0].swallow === true, 'Sieve used a later move for lookahead'); checkField();
+    tapTube(2); tapTube(3); await idle(); checkField();
   `);
-  await check('queued flask and undo keep all tubes', `
+  await check('undo and flask stay unused during a pour and work after it', `
     const R = await setupPour(); R.battle.potions = ['undo', 'flask']; PS.UI.debug.render();
     tapTube(0); tapTube(1); document.querySelector('[data-pot="0"]').click();
-    document.querySelector('[data-pot="1"]').click(); await idle(); await W(220); checkField();
-    ensure(R.battle.field.tubes.length === 9, 'Queued flask was lost');
+    document.querySelector('[data-pot="1"]').click(); await idle();
+    ensure(R.battle.potions.join(',') === 'undo,flask', 'Early potion tap was applied');
+    document.querySelector('[data-potion-id="undo"]').click(); await idle();
+    document.querySelector('[data-potion-id="flask"]').click(); await idle(); await W(220); checkField();
+    ensure(R.battle.field.tubes.length === 9, 'Flask did not add a tube');
     ensure(R.battle.field.tubes[0].layers.join(',') === 'fire,water', 'Undo did not restore layers');
   `);
-  await check('rapid potion taps use potion ids from the visible belt', `
+  await check('early potion taps are not spent or deferred', `
     const R = await setupPour(), B = R.battle;
     B.player.hp = 20; B.player.maxHp = 50; B.enemy.hp = 200; B.enemy.maxHp = 200;
     B.potions = ['heal', 'firebomb']; PS.UI.debug.render();
     document.querySelector('[data-pot="0"]').click(); document.querySelector('[data-pot="1"]').click();
-    await idle(); ensure(B.player.hp === 33 && B.enemy.hp === 182, 'Wrong potion used after indices shifted');
-    ensure(B.potions.length === 0, 'Second potion tap was lost'); checkField();
+    await idle(); ensure(B.player.hp === 33 && B.enemy.hp === 200, 'Early second potion was applied');
+    ensure(B.potions.join(',') === 'firebomb', 'Early second potion was spent');
+    document.querySelector('[data-potion-id="firebomb"]').click(); await idle();
+    ensure(B.enemy.hp === 182 && B.potions.length === 0, 'Potion did not work after unlock'); checkField();
   `);
   for (const [width, height] of [[375, 812], [320, 568]]) {
     await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: true });

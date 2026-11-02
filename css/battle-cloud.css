@@ -84,6 +84,7 @@ body[data-screen="battle"][data-theme="night"] { background: #152738; }
 .scr-battle .bt-tw { align-items: flex-start; }
 .scr-battle .bt-tube { margin-left: calc(var(--gl) * var(--s) + 2px); }
 .scr-battle .bt-tw.sel { transform: translateY(-12px); }
+.scr-battle.locked .bt-field, .scr-battle.locked .bt-belt, .scr-battle.locked .bt-drain { pointer-events: none; }
 .scr-battle .bt-queue { pointer-events: none; }
 .scr-battle .bt-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; padding-top: 4px; }
 .scr-battle .bt-belt { flex: 0 1 auto; min-width: 0; display: flex; gap: 8px; overflow-x: auto; padding: 3px; margin: -3px; scrollbar-width: thin; }
